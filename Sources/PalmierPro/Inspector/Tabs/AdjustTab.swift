@@ -189,7 +189,11 @@ extension InspectorView {
                 .accessibilityLabel("Enable \(title)")
             }
         ) {
-            content()
+            Group {
+                content()
+            }
+            .disabled(!isOn)
+            .opacity(isOn ? AppTheme.Opacity.opaque : AppTheme.Opacity.medium)
         }
     }
 
@@ -277,11 +281,16 @@ extension InspectorView {
 
     private func invertApplied(to clips: [Clip]) -> Bool {
         !clips.isEmpty && clips.allSatisfy { clip in
-            (clip.effects ?? []).contains { $0.type == "stylize.invert" }
+            (clip.effects ?? []).contains { $0.type == "stylize.invert" && $0.enabled }
         }
     }
 
     private func setInvertApplied(_ applied: Bool, clips: [Clip]) {
+        let currentClips = clips.compactMap { editor.clipFor(id: $0.id) }
+        guard !applied || (
+            currentClips.count == clips.count
+                && sectionEnabled(effectsEffectIds, clips: currentClips)
+        ) else { return }
         commitEffects(
             clips,
             actionName: applied ? "Apply Invert Colors" : "Remove Invert Colors"
