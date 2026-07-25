@@ -100,6 +100,7 @@ extension InspectorView {
 
     private var effectsEffectIds: Set<String> {
         Set((detailControls + blurControls + motionBlurControls + vignetteControls + grainControls + glowControls + chromaKeyControls).map(\.effectId))
+            .union(["stylize.invert"])
     }
 
     @ViewBuilder
@@ -130,6 +131,13 @@ extension InspectorView {
                 adjustSubgroup(title: "Film Grain", controls: grainControls, clips: clips)
                 adjustSubgroup(title: "Glow", controls: glowControls, clips: clips)
                 adjustSubgroup(title: "Chroma Key", controls: chromaKeyControls, clips: clips)
+                adjustToggleRow(
+                    title: "Invert Colors",
+                    isOn: Binding(
+                        get: { invertApplied(to: clips) },
+                        set: { setInvertApplied($0, clips: clips) }
+                    )
+                )
             }
         }
     }
@@ -231,6 +239,46 @@ extension InspectorView {
                         adjustmentRow(control, clips: clips)
                     }
                 }
+            }
+        }
+    }
+
+    private func adjustToggleRow(title: String, isOn: Binding<Bool>) -> some View {
+        HStack(spacing: AppTheme.Spacing.xs) {
+            Color.clear
+                .frame(width: AppTheme.IconSize.xxs, height: AppTheme.IconSize.xxs)
+            sectionTitleLabel(title: title)
+            Spacer(minLength: 0)
+            Toggle("", isOn: isOn)
+                .toggleStyle(.checkbox)
+                .labelsHidden()
+                .accessibilityLabel(title)
+        }
+        .frame(height: KeyframesMetrics.rowHeight)
+    }
+
+    private func invertApplied(to clips: [Clip]) -> Bool {
+        !clips.isEmpty && clips.allSatisfy { clip in
+            (clip.effects ?? []).contains { $0.type == "stylize.invert" }
+        }
+    }
+
+    private func setInvertApplied(_ applied: Bool, clips: [Clip]) {
+        commitEffects(
+            clips,
+            actionName: applied ? "Apply Invert Colors" : "Remove Invert Colors"
+        ) { [self] effects in
+            if applied {
+                if let index = effects.firstIndex(where: { $0.type == "stylize.invert" }) {
+                    effects[index].enabled = true
+                } else if let descriptor = EffectRegistry.descriptor(id: "stylize.invert") {
+                    effects.insert(
+                        descriptor.makeEffect(),
+                        at: alwaysOnInsertIndex(effects, for: "stylize.invert")
+                    )
+                }
+            } else {
+                effects.removeAll { $0.type == "stylize.invert" }
             }
         }
     }
