@@ -64,7 +64,14 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
         let cmd = mods.contains(.command)
         let rangeMarkShortcut = mods.intersection([.command, .option, .control]).isEmpty
 
-        if editorViewModel.focusedPanel == .media, !shift,
+        if editorViewModel.focusedPanel == .media, cmd, event.keyCode == 126,
+           mods.intersection([.option, .control, .shift]).isEmpty {
+            editorViewModel.mediaPanelNavigateUpRequestTick &+= 1
+            return true
+        }
+
+        if editorViewModel.focusedPanel == .media,
+           mods.intersection([.command, .option, .control, .shift]).isEmpty,
            let direction = mediaArrowDirection(for: event.keyCode) {
             editorViewModel.moveMediaSelection(direction: direction)
             return true
@@ -72,6 +79,11 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
 
         switch event.keyCode {
         case 0: // A key
+            if editorViewModel.focusedPanel == .media, cmd,
+               mods.intersection([.option, .control]).isEmpty {
+                editorViewModel.selectAllMediaPanelItems()
+                return true
+            }
             if editorViewModel.focusedPanel == .timeline,
                mods.intersection([.command, .option, .control]).isEmpty {
                 editorViewModel.selectForwardFromCurrentSelection(scope: shift ? .allTracks : .track)
@@ -92,18 +104,8 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
             return true
 
         case 51: // Delete/Backspace
-            if !editorViewModel.selectedFolderIds.isEmpty || !editorViewModel.selectedMediaAssetIds.isEmpty
-                || !editorViewModel.selectedTimelineIds.isEmpty {
-                if !editorViewModel.selectedFolderIds.isEmpty {
-                    editorViewModel.deleteFolders(ids: editorViewModel.selectedFolderIds)
-                }
-                if !editorViewModel.selectedMediaAssetIds.isEmpty {
-                    editorViewModel.deleteSelectedMediaAssets()
-                }
-                for id in editorViewModel.selectedTimelineIds {
-                    editorViewModel.deleteTimeline(id)
-                }
-                editorViewModel.selectedTimelineIds.removeAll()
+            if !editorViewModel.mediaPanelSelectedKeys().isEmpty {
+                editorViewModel.deleteMediaPanelItems()
             } else if shift {
                 if editorViewModel.selectedGap != nil {
                     editorViewModel.rippleDeleteSelectedGap()
@@ -230,11 +232,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
             if let panel = EditorViewModel.FocusedPanel(accessibilityID: v.accessibilityIdentifier()) {
                 editorViewModel.focusedPanel = panel
                 if panel == .media { editorViewModel.selectedClipIds.removeAll() }
-                if panel == .timeline {
-                    editorViewModel.selectedMediaAssetIds.removeAll()
-                    editorViewModel.selectedTimelineIds.removeAll()
-                    editorViewModel.selectedFolderIds.removeAll()
-                }
+                if panel == .timeline { editorViewModel.clearMediaPanelSelection() }
                 return
             }
             view = v.superview
@@ -269,6 +267,10 @@ extension EditorWindowController: EditorActions {
     }
     @objc func importMedia(_ sender: Any?) {
         // Handled by MediaTab directly
+    }
+
+    @objc func newMediaFolder(_ sender: Any?) {
+        editorViewModel.mediaPanelNewFolderRequestTick &+= 1
     }
 
     @objc func showExport(_ sender: Any?) {
@@ -345,6 +347,8 @@ extension EditorWindowController: EditorActions {
             return canHandleClipboardShortcut() && !editorViewModel.selectedClipIds.isEmpty
         case #selector(selectForwardOnTrack(_:)), #selector(selectForwardOnAllTracks(_:)):
             return editorViewModel.focusedPanel == .timeline && !editorViewModel.selectedClipIds.isEmpty
+        case #selector(newMediaFolder(_:)):
+            return editorViewModel.focusedPanel == .media
         case #selector(paste(_:)):
             if editorViewModel.focusedPanel == .media {
                 return MediaTab.clipboardHasImportableMedia()
