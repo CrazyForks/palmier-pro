@@ -144,24 +144,34 @@ extension InspectorView {
 
     // MARK: Section chrome
 
+    private var adjustSectionChildLabelInset: CGFloat { AppTheme.IconSize.xs }
+
+    private var adjustSubgroupInset: CGFloat { AppTheme.Spacing.smMd }
+
+    private var adjustSubgroupChildLabelInset: CGFloat {
+        adjustSubgroupInset + AppTheme.IconSize.xxs + AppTheme.Spacing.xs
+    }
+
     @ViewBuilder
     private func adjustSection<Content: View>(
         title: String,
         effectIds: Set<String>,
         clips: [Clip],
-        @ViewBuilder content: () -> Content
+        @ViewBuilder content: @escaping () -> Content
     ) -> some View {
-        let expanded = !collapsedAdjustSections.contains(title)
         let hasEffects = anyAdjusted(effectIds, clips: clips)
         let isOn = !hasEffects || sectionEnabled(effectIds, clips: clips)
-        VStack(spacing: 0) {
-            HStack(spacing: AppTheme.Spacing.sm) {
-                Image(systemName: expanded ? "chevron.down" : "chevron.right")
-                    .font(.system(size: AppTheme.FontSize.xxs))
-                    .foregroundStyle(AppTheme.Text.mutedColor)
-                    .frame(width: AppTheme.IconSize.xxs, alignment: .center)
-                sectionTitleLabel(title: title)
-                Spacer(minLength: AppTheme.Spacing.sm)
+        EditorPanelGroup(
+            title,
+            isExpanded: adjustSectionExpandedBinding(title),
+            contentSpacing: AppTheme.Spacing.md,
+            contentInsets: EdgeInsets(
+                top: AppTheme.Spacing.md,
+                leading: AppTheme.Spacing.lg,
+                bottom: AppTheme.Spacing.md,
+                trailing: AppTheme.Spacing.lg
+            ),
+            headerAccessory: {
                 if hasEffects {
                     EditorResetButton(
                         title: title,
@@ -178,31 +188,22 @@ extension InspectorView {
                 .help(hasEffects ? "Enable \(title.lowercased())" : "No adjustments yet")
                 .accessibilityLabel("Enable \(title)")
             }
-            .padding(.horizontal, AppTheme.Spacing.lg)
-            .padding(.vertical, AppTheme.Spacing.smMd)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(AppTheme.Background.surfaceColor)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                if expanded { collapsedAdjustSections.insert(title) }
-                else { collapsedAdjustSections.remove(title) }
-            }
-            if expanded {
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                    content()
-                }
-                .padding(.horizontal, AppTheme.Spacing.lg)
-                .padding(.vertical, AppTheme.Spacing.md)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
+        ) {
+            content()
         }
-        .overlay(alignment: .bottom) { sectionDivider }
     }
 
-    private var sectionDivider: some View {
-        Rectangle()
-            .fill(AppTheme.Border.primaryColor)
-            .frame(height: AppTheme.BorderWidth.thin)
+    private func adjustSectionExpandedBinding(_ title: String) -> Binding<Bool> {
+        Binding(
+            get: { !collapsedAdjustSections.contains(title) },
+            set: { expanded in
+                if expanded {
+                    collapsedAdjustSections.remove(title)
+                } else {
+                    collapsedAdjustSections.insert(title)
+                }
+            }
+        )
     }
 
     @ViewBuilder
@@ -214,7 +215,7 @@ extension InspectorView {
                     .font(.system(size: AppTheme.FontSize.xxs))
                     .foregroundStyle(AppTheme.Text.mutedColor)
                     .frame(width: AppTheme.IconSize.xxs, alignment: .center)
-                sectionTitleLabel(title: title)
+                adjustSubgroupTitleLabel(title: title)
                 Spacer(minLength: 0)
                 if title == "Chroma Key", clips.count == 1, let clip = clips.first {
                     let sampling = editor.chromaKeySamplingClipId == clip.id
@@ -228,6 +229,7 @@ extension InspectorView {
                     .accessibilityLabel(sampling ? "Cancel Key Color Sampling" : "Sample Key Color")
                 }
             }
+            .padding(.leading, adjustSubgroupInset)
             .contentShape(Rectangle())
             .onTapGesture {
                 if expanded { collapsedAdjustSubgroups.insert(title) }
@@ -243,18 +245,34 @@ extension InspectorView {
         }
     }
 
+    private func adjustSubgroupTitleLabel(title: String) -> some View {
+        Text(title)
+            .font(.system(size: AppTheme.FontSize.sm, weight: AppTheme.FontWeight.medium))
+            .foregroundStyle(AppTheme.Text.secondaryColor)
+            .fixedSize()
+    }
+
+    private func adjustRowLabel(_ title: String, inset: CGFloat) -> some View {
+        Text(title)
+            .font(.system(size: AppTheme.FontSize.sm))
+            .foregroundStyle(AppTheme.Text.secondaryColor)
+            .lineLimit(1)
+            .padding(.leading, inset)
+            .frame(width: AppTheme.Slider.labelColumn, alignment: .leading)
+    }
+
     private func adjustToggleRow(title: String, isOn: Binding<Bool>) -> some View {
         HStack(spacing: AppTheme.Spacing.xs) {
             Color.clear
                 .frame(width: AppTheme.IconSize.xxs, height: AppTheme.IconSize.xxs)
-            sectionTitleLabel(title: title)
+            adjustSubgroupTitleLabel(title: title)
             Spacer(minLength: 0)
             Toggle("", isOn: isOn)
                 .toggleStyle(.checkbox)
                 .labelsHidden()
                 .accessibilityLabel(title)
         }
-        .frame(height: KeyframesMetrics.rowHeight)
+        .padding(.leading, adjustSubgroupInset)
     }
 
     private func invertApplied(to clips: [Clip]) -> Bool {
@@ -432,10 +450,7 @@ extension InspectorView {
 
     private func lutFileRow(path: String?, clips: [Clip]) -> some View {
         HStack(spacing: AppTheme.Spacing.sm) {
-            Text("File")
-                .font(.system(size: AppTheme.FontSize.sm))
-                .foregroundStyle(AppTheme.Text.secondaryColor)
-                .frame(width: AppTheme.Slider.labelColumn, alignment: .leading)
+            adjustRowLabel("File", inset: adjustSectionChildLabelInset)
             Button { chooseLUT(clips: clips) } label: {
                 HStack(spacing: AppTheme.Spacing.xs) {
                     Image(systemName: "square.stack.3d.up")
@@ -467,11 +482,7 @@ extension InspectorView {
         let range = spec?.range ?? 0...1
         let value = lutIntensity(in: clips)
         return HStack(spacing: AppTheme.Spacing.sm) {
-            Text("Intensity")
-                .font(.system(size: AppTheme.FontSize.sm))
-                .foregroundStyle(AppTheme.Text.secondaryColor)
-                .lineLimit(1)
-                .frame(width: AppTheme.Slider.labelColumn, alignment: .leading)
+            adjustRowLabel("Intensity", inset: adjustSectionChildLabelInset)
             AdjustSlider(
                 value: value, range: range, defaultValue: spec?.defaultValue ?? 1,
                 onChanged: { setLUTIntensity($0, clips: clips, commit: false) },
@@ -542,11 +553,7 @@ extension InspectorView {
            let spec = descriptor.params.first(where: { $0.key == control.paramKey }) {
             let label = control.label ?? spec.label
             HStack(spacing: AppTheme.Spacing.sm) {
-                Text(label)
-                    .font(.system(size: AppTheme.FontSize.sm))
-                    .foregroundStyle(AppTheme.Text.secondaryColor)
-                    .lineLimit(1)
-                    .frame(width: AppTheme.Slider.labelColumn, alignment: .leading)
+                adjustRowLabel(label, inset: adjustSubgroupChildLabelInset)
                 AdjustSlider(
                     value: sharedClipValue(clips) { controlValue($0, control, spec) } ?? spec.defaultValue,
                     range: spec.range,
