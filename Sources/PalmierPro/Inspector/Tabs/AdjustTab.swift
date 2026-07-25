@@ -136,7 +136,8 @@ extension InspectorView {
                     isOn: Binding(
                         get: { invertApplied(to: clips) },
                         set: { setInvertApplied($0, clips: clips) }
-                    )
+                    ),
+                    isEnabled: invertApplied(to: clips) || sectionEnabled(effectsEffectIds, clips: clips)
                 )
             }
         }
@@ -189,11 +190,7 @@ extension InspectorView {
                 .accessibilityLabel("Enable \(title)")
             }
         ) {
-            Group {
-                content()
-            }
-            .disabled(!isOn)
-            .opacity(isOn ? AppTheme.Opacity.opaque : AppTheme.Opacity.medium)
+            content()
         }
     }
 
@@ -265,7 +262,7 @@ extension InspectorView {
             .frame(width: AppTheme.Slider.labelColumn, alignment: .leading)
     }
 
-    private func adjustToggleRow(title: String, isOn: Binding<Bool>) -> some View {
+    private func adjustToggleRow(title: String, isOn: Binding<Bool>, isEnabled: Bool) -> some View {
         HStack(spacing: AppTheme.Spacing.xs) {
             Color.clear
                 .frame(width: AppTheme.IconSize.xxs, height: AppTheme.IconSize.xxs)
@@ -277,6 +274,7 @@ extension InspectorView {
                 .accessibilityLabel(title)
         }
         .padding(.leading, adjustSubgroupInset)
+        .disabled(!isEnabled)
     }
 
     private func invertApplied(to clips: [Clip]) -> Bool {
