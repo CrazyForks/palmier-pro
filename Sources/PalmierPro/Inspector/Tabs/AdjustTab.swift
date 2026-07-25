@@ -2,6 +2,26 @@ import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 
+struct AdjustSectionState {
+    let hasEffects: Bool
+    let isEnabled: Bool
+
+    init(effectIds: Set<String>, clips: [Clip], chromaKeySamplingClipId: String?) {
+        var hasEffects = false
+        var hasEnabledEffect = false
+        for clip in clips {
+            for effect in clip.effects ?? [] where effectIds.contains(effect.type) {
+                hasEffects = true
+                hasEnabledEffect = hasEnabledEffect || effect.enabled
+            }
+        }
+        self.hasEffects = hasEffects
+        let isSamplingChromaKey = effectIds.contains("key.chroma")
+            && clips.contains { $0.id == chromaKeySamplingClipId }
+        isEnabled = !hasEffects || hasEnabledEffect || isSamplingChromaKey
+    }
+}
+
 extension InspectorView {
 
     // MARK: - Effects Tab
@@ -136,8 +156,7 @@ extension InspectorView {
                     isOn: Binding(
                         get: { invertApplied(to: clips) },
                         set: { setInvertApplied($0, clips: clips) }
-                    ),
-                    isEnabled: invertApplied(to: clips) || sectionEnabled(effectsEffectIds, clips: clips)
+                    )
                 )
             }
         }
@@ -160,8 +179,7 @@ extension InspectorView {
         clips: [Clip],
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
-        let hasEffects = anyAdjusted(effectIds, clips: clips)
-        let isOn = !hasEffects || sectionEnabled(effectIds, clips: clips)
+        let state = adjustSectionState(effectIds, clips: clips)
         EditorPanelGroup(
             title,
             isExpanded: adjustSectionExpandedBinding(title),
@@ -173,24 +191,28 @@ extension InspectorView {
                 trailing: AppTheme.Spacing.lg
             ),
             headerAccessory: {
-                if hasEffects {
+                if state.hasEffects {
                     EditorResetButton(
                         title: title,
                         action: { resetEffects(effectIds, clips: clips, actionName: "Reset \(title)") }
                     )
                 }
                 Toggle("", isOn: Binding(
-                    get: { isOn },
+                    get: { state.isEnabled },
                     set: { setSectionEnabled(effectIds, clips: clips, enabled: $0) }
                 ))
                 .toggleStyle(.checkbox)
                 .labelsHidden()
-                .disabled(!hasEffects)
-                .help(hasEffects ? "Enable \(title.lowercased())" : "No adjustments yet")
+                .disabled(!state.hasEffects)
+                .help(state.hasEffects ? "Enable \(title.lowercased())" : "No adjustments yet")
                 .accessibilityLabel("Enable \(title)")
             }
         ) {
-            content()
+            Group {
+                content()
+            }
+            .disabled(!state.isEnabled)
+            .opacity(state.isEnabled ? AppTheme.Opacity.opaque : AppTheme.Opacity.medium)
         }
     }
 
@@ -262,7 +284,7 @@ extension InspectorView {
             .frame(width: AppTheme.Slider.labelColumn, alignment: .leading)
     }
 
-    private func adjustToggleRow(title: String, isOn: Binding<Bool>, isEnabled: Bool) -> some View {
+    private func adjustToggleRow(title: String, isOn: Binding<Bool>) -> some View {
         HStack(spacing: AppTheme.Spacing.xs) {
             Color.clear
                 .frame(width: AppTheme.IconSize.xxs, height: AppTheme.IconSize.xxs)
@@ -274,7 +296,6 @@ extension InspectorView {
                 .accessibilityLabel(title)
         }
         .padding(.leading, adjustSubgroupInset)
-        .disabled(!isEnabled)
     }
 
     private func invertApplied(to clips: [Clip]) -> Bool {
@@ -625,10 +646,6 @@ extension InspectorView {
         EffectRegistry.insertIndex(effects, for: effectId)
     }
 
-    private func anyAdjusted(_ ids: Set<String>, clips: [Clip]) -> Bool {
-        clips.contains { ($0.effects ?? []).contains { ids.contains($0.type) } }
-    }
-
     private func resetEffects(_ ids: Set<String>, clips: [Clip], actionName: String) {
         commitEffects(clips, actionName: actionName) { effects in
             effects.removeAll { ids.contains($0.type) }
@@ -636,7 +653,15 @@ extension InspectorView {
     }
 
     private func sectionEnabled(_ ids: Set<String>, clips: [Clip]) -> Bool {
-        !clips.contains { ($0.effects ?? []).contains { ids.contains($0.type) && !$0.enabled } }
+        adjustSectionState(ids, clips: clips).isEnabled
+    }
+
+    private func adjustSectionState(_ ids: Set<String>, clips: [Clip]) -> AdjustSectionState {
+        AdjustSectionState(
+            effectIds: ids,
+            clips: clips,
+            chromaKeySamplingClipId: editor.chromaKeySamplingClipId
+        )
     }
 
     private func setSectionEnabled(_ ids: Set<String>, clips: [Clip], enabled: Bool) {
