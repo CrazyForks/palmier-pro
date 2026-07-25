@@ -662,6 +662,21 @@ struct MediaPanelSelectionTests {
         #expect(e.mediaPanelSelectionAnchor == clips[3].id)
     }
 
+    @Test func marqueeSelectionEstablishesAVisibleRangeAnchor() {
+        let e = editor()
+        let clips = (0..<3).map { asset(name: "clip-\($0)") }
+        for clip in clips { e.importMediaAsset(clip) }
+        e.mediaPanelOrderedItemIds = clips.map(\.id)
+        e.selectedMediaAssetIds = [clips[0].id, clips[1].id]
+        e.mediaPanelSelectionAnchor = nil
+
+        e.pruneMediaPanelSelectionAnchor()
+        e.selectMediaPanelItem(clips[2].id, mode: .range)
+
+        #expect(e.selectedMediaAssetIds == Set(clips.map(\.id)))
+        #expect(e.mediaPanelSelectionAnchor == clips[0].id)
+    }
+
     @Test func selectAllUsesOnlyVisibleItems() {
         let e = editor()
         let visible = asset(name: "visible")
@@ -688,6 +703,21 @@ struct MediaPanelSelectionTests {
 
         #expect(e.selectedMediaAssetIds.isEmpty)
         #expect(e.mediaPanelSelectionAnchor == nil)
+    }
+}
+
+@Suite("MediaTab — search selection order")
+@MainActor
+struct MediaTabSearchSelectionOrderTests {
+    @Test func orderIncludesVisibleSectionsAndDeduplicatesAssets() {
+        let ids = MediaTab.searchOrderedAssetIds(
+            momentAssetIds: ["moment", "shared"],
+            spokenAssetIds: ["spoken", "shared"],
+            fileAssetIds: ["file", "shared"],
+            collapsedSectionTitles: ["Spoken"]
+        )
+
+        #expect(ids == ["moment", "shared", "file"])
     }
 }
 

@@ -742,6 +742,7 @@ struct MediaTab: View {
                 }
             }
             .onEnded { _ in
+                editor.pruneMediaPanelSelectionAnchor()
                 marqueeSelection.reset()
             }
     }

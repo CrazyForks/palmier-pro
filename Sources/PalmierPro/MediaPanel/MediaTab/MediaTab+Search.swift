@@ -8,6 +8,12 @@ extension MediaTab {
 
     var searchResults: some View {
         let nameMatches = sortAndFilter(editor.mediaAssets)
+        let orderedAssetIds = Self.searchOrderedAssetIds(
+            momentAssetIds: visualHits.map(\.assetID),
+            spokenAssetIds: spokenHits.map(\.assetID),
+            fileAssetIds: nameMatches.map(\.id),
+            collapsedSectionTitles: collapsedSearchSections
+        )
         return ScrollView {
             LazyVStack(alignment: .leading, spacing: 0) {
                 if !visualHits.isEmpty {
@@ -40,6 +46,23 @@ extension MediaTab {
             .padding(.top, AppTheme.Spacing.sm)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .onAppear { publishOrderedIds(orderedAssetIds) }
+        .onChange(of: orderedAssetIds) { _, ids in publishOrderedIds(ids) }
+    }
+
+    static func searchOrderedAssetIds(
+        momentAssetIds: [String],
+        spokenAssetIds: [String],
+        fileAssetIds: [String],
+        collapsedSectionTitles: Set<String>
+    ) -> [String] {
+        var ids: [String] = []
+        if !collapsedSectionTitles.contains("Moments") { ids.append(contentsOf: momentAssetIds) }
+        if !collapsedSectionTitles.contains("Spoken") { ids.append(contentsOf: spokenAssetIds) }
+        ids.append(contentsOf: fileAssetIds)
+
+        var seen: Set<String> = []
+        return ids.filter { seen.insert($0).inserted }
     }
 
     private func resultsGrid<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
