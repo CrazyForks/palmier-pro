@@ -72,6 +72,11 @@ extension MediaTab {
             editor.mediaPanelOrderedItemIds = ids
         }
     }
+
+    func publishGridState(orderedIds: [String], columnCount: Int) {
+        publishOrderedIds(orderedIds)
+        if editor.mediaPanelColumnCount != columnCount { editor.mediaPanelColumnCount = columnCount }
+    }
 }
 
 // MARK: - Shared scroll/grid scaffolding (folder + flat modes)
@@ -107,7 +112,7 @@ extension MediaTab {
                 assetFrames = frames
                 if editor.mediaPanelColumnCount != cols { editor.mediaPanelColumnCount = cols }
             }
-            .onAppear { publishOrderedIds(orderedIds) }
+            .onAppear { publishGridState(orderedIds: orderedIds, columnCount: cols) }
             .onChange(of: orderedIds) { _, ids in publishOrderedIds(ids) }
             .onChange(of: editor.mediaPanelScrollTarget) { _, target in
                 guard let target else { return }
@@ -221,7 +226,7 @@ extension MediaTab {
                     assetFrames = frames
                     if editor.mediaPanelColumnCount != dims.cols { editor.mediaPanelColumnCount = dims.cols }
                 }
-                .onAppear { publishOrderedIds(orderedIds) }
+                .onAppear { publishGridState(orderedIds: orderedIds, columnCount: dims.cols) }
                 .onChange(of: orderedIds) { _, ids in publishOrderedIds(ids) }
                 .onChange(of: editor.mediaPanelScrollTarget) { _, target in
                     guard let target else { return }

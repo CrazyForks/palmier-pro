@@ -46,12 +46,7 @@ extension MediaTab {
             .padding(.top, AppTheme.Spacing.sm)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .onAppear {
-            publishOrderedIds(orderedAssetIds)
-            if editor.mediaPanelColumnCount != 1 {
-                editor.mediaPanelColumnCount = 1
-            }
-        }
+        .onAppear { publishGridState(orderedIds: orderedAssetIds, columnCount: 1) }
         .onChange(of: orderedAssetIds) { _, ids in publishOrderedIds(ids) }
     }
 
