@@ -75,7 +75,6 @@ enum VideoLayout: String, CaseIterable, Sendable {
         case .pipTopLeft:     return Self.pip(insetX: Self.pipMargin,                     insetY: Self.pipMargin)
 
         case .grid2x2: return Self.grid(rows: 2, columns: 2)
-
         case .grid3x3: return Self.grid(rows: 3, columns: 3)
         case .grid4x4: return Self.grid(rows: 4, columns: 4)
 
@@ -95,19 +94,13 @@ enum VideoLayout: String, CaseIterable, Sendable {
         }
     }
 
-    /// Equal cells addressed by position, row-major: r1c1, r1c2, … Shaped layouts name slots by role instead.
     private static func grid(rows: Int, columns: Int) -> [LayoutSlot] {
         let width = 1.0 / Double(columns), height = 1.0 / Double(rows)
-        return (1...rows).flatMap { row in
-            (1...columns).map { column in
+        return (0..<rows).flatMap { row in
+            (0..<columns).map { column in
                 LayoutSlot(
-                    id: "r\(row)c\(column)",
-                    rect: LayoutRect(
-                        x: Double(column - 1) * width,
-                        y: Double(row - 1) * height,
-                        w: width,
-                        h: height
-                    )
+                    id: "r\(row + 1)c\(column + 1)",
+                    rect: LayoutRect(x: Double(column) * width, y: Double(row) * height, w: width, h: height)
                 )
             }
         }
