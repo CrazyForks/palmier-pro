@@ -19,7 +19,8 @@ struct AudioGenerationSubmission {
         onComplete: (@MainActor (MediaAsset) -> Void)? = nil,
         onFailure: (@MainActor () -> Void)? = nil
     ) -> String {
-        let shouldExtractAudio = model.usesSourceURL
+        let usesReferences = model.supportsReferences
+        let shouldExtractAudio = !usesReferences && !references.isEmpty && model.usesSourceURL
             && (references.first?.type == .video || trimmedSourceOverride?.hasTrim == true)
         let extractionTrim = shouldExtractAudio ? trimmedSourceOverride : nil
         let preprocessRef: (@Sendable (Int, MediaAsset) async throws -> URL?)?
@@ -34,6 +35,34 @@ struct AudioGenerationSubmission {
         } else {
             preprocessRef = nil
         }
+        let imageCount = genInput.referenceImageAssetIds?.count ?? 0
+        let usesSourceURL = model.usesSourceURL
+        let buildParams: ([String]) -> BackendGenerationParams = { [params] uploaded in
+            var resolvedParams = params
+            if usesReferences {
+                let referenceURLs = Self.referenceURLs(uploaded: uploaded, imageCount: imageCount)
+                resolvedParams.referenceImageURL = referenceURLs.image
+                resolvedParams.referenceAudioURLs = referenceURLs.audio.isEmpty
+                    ? nil : referenceURLs.audio
+            } else if !uploaded.isEmpty {
+                if usesSourceURL && resolvedParams.sourceURL == nil {
+                    resolvedParams.sourceURL = uploaded.first
+                } else if resolvedParams.videoURL == nil {
+                    resolvedParams.videoURL = uploaded.first
+                }
+            }
+            return .audio(resolvedParams)
+        }
+        let snapshotRefs: (@Sendable (inout GenerationInput, [String]) -> Void)?
+        if usesReferences {
+            snapshotRefs = { input, uploaded in
+                let referenceURLs = Self.referenceURLs(uploaded: uploaded, imageCount: imageCount)
+                input.referenceImageURLs = referenceURLs.image.map { [$0] }
+                input.referenceAudioURLs = referenceURLs.audio.isEmpty ? nil : referenceURLs.audio
+            }
+        } else {
+            snapshotRefs = nil
+        }
         return service.generate(
             genInput: genInput,
             assetType: .audio,
@@ -42,15 +71,8 @@ struct AudioGenerationSubmission {
             trimmedSourceOverride: shouldExtractAudio ? nil : trimmedSourceOverride,
             name: name,
             folderId: folderId,
-            buildParams: { [params] uploaded in
-                var resolvedParams = params
-                if model.usesSourceURL && resolvedParams.sourceURL == nil {
-                    resolvedParams.sourceURL = uploaded.first
-                } else if resolvedParams.videoURL == nil {
-                    resolvedParams.videoURL = uploaded.first
-                }
-                return .audio(resolvedParams)
-            },
+            buildParams: buildParams,
+            snapshotRefs: snapshotRefs,
             preprocessRef: preprocessRef,
             fileExtension: "mp3",
             projectURL: projectURL,
@@ -67,24 +89,86 @@ struct AudioGenerationSubmission {
             : Defaults.audioTTSDurationSeconds
     }
 
+    @MainActor
     static func make(
-        genInput: GenerationInput,
+        genInput baseInput: GenerationInput,
         model: AudioModelConfig,
         params: AudioGenerationParams,
         name: String? = nil,
         folderId: String? = nil,
         references: [MediaAsset] = [],
+        inputAssets: InputAssets = InputAssets(),
         trimmedSourceOverride: TrimmedSource? = nil
     ) -> AudioGenerationSubmission {
-        AudioGenerationSubmission(
+        var genInput = baseInput
+        let inputReferences = inputAssets.references
+        precondition(
+            model.supportsReferences ? references.isEmpty : inputReferences.isEmpty,
+            "Audio models cannot combine source media and reference inputs"
+        )
+        if model.supportsReferences {
+            genInput.referenceImageAssetIds = inputAssets.imageRefs.isEmpty
+                ? nil : inputAssets.imageRefs.map(\.id)
+            genInput.referenceAudioAssetIds = inputAssets.audioRefs.isEmpty
+                ? nil : inputAssets.audioRefs.map(\.id)
+        }
+        return AudioGenerationSubmission(
             genInput: genInput,
             model: model,
             params: params,
             placeholderDuration: placeholderDuration(model: model, params: params),
             name: name,
             folderId: folderId,
-            references: references,
+            references: model.supportsReferences ? inputReferences : references,
             trimmedSourceOverride: trimmedSourceOverride
         )
+    }
+
+    struct InputAssets {
+        var imageRefs: [MediaAsset] = []
+        var audioRefs: [MediaAsset] = []
+
+        @MainActor
+        var references: [MediaAsset] { imageRefs + audioRefs }
+
+        @MainActor
+        func validate(for model: AudioModelConfig) -> String? {
+            if imageRefs.count > model.maxReferenceImages {
+                return "\(model.displayName) accepts at most \(model.maxReferenceImages) image reference(s)."
+            }
+            if audioRefs.count > model.maxReferenceAudios {
+                return "\(model.displayName) accepts at most \(model.maxReferenceAudios) audio references."
+            }
+            if model.referenceImagesAndAudiosExclusive,
+               !imageRefs.isEmpty, !audioRefs.isEmpty {
+                return "\(model.displayName) uses either image or audio references, not both."
+            }
+            if imageRefs.contains(where: { $0.type != .image }) {
+                return "Image references must be image assets."
+            }
+            for asset in audioRefs {
+                guard asset.type == .audio else {
+                    return "Audio references must be audio assets."
+                }
+                if let maximum = model.maxReferenceAudioSeconds,
+                   !asset.duration.isFinite || asset.duration <= 0 || asset.duration > maximum {
+                    return "\(asset.name) must be valid audio no longer than \(Int(maximum)) seconds."
+                }
+                if let allowed = model.referenceAudioExtensions,
+                   !allowed.contains(asset.url.pathExtension.lowercased()) {
+                    return "\(asset.name) must be a WAV or MP3 file."
+                }
+            }
+            return nil
+        }
+    }
+
+    private static func referenceURLs(
+        uploaded: [String],
+        imageCount: Int
+    ) -> (image: String?, audio: [String]) {
+        let image = imageCount > 0 ? uploaded.first : nil
+        let audio = Array(uploaded.dropFirst(imageCount))
+        return (image, audio)
     }
 }
