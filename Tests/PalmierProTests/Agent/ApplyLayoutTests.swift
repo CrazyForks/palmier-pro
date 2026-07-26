@@ -112,17 +112,11 @@ struct ApplyLayoutTests {
         }
     }
 
-    @Test(arguments: [
-        (layout: "grid_2x2", edge: 2, slotIDs: ["top_left", "top_right", "bottom_left", "bottom_right"]),
-        (layout: "grid_3x3", edge: 3, slotIDs: [
-            "top_left", "top_center", "top_right",
-            "center_left", "center", "center_right",
-            "bottom_left", "bottom_center", "bottom_right",
-        ]),
-        (layout: "grid_4x4", edge: 4, slotIDs: (1...4).flatMap { row in (1...4).map { "r\(row)c\($0)" } }),
-    ])
-    func gridsTileTheCanvas(layout: String, edge: Int, slotIDs: [String]) async throws {
+    @Test(arguments: [2, 3, 4])
+    func gridsTileTheCanvas(edge: Int) async throws {
         let h = ToolHarness()
+        let layout = "grid_\(edge)x\(edge)"
+        let slotIDs = (1...edge).flatMap { row in (1...edge).map { "r\(row)c\($0)" } }
         for id in slotIDs { videoAsset(h, id: id) }
 
         let r = await h.runRaw("apply_layout", args: [
@@ -150,8 +144,8 @@ struct ApplyLayoutTests {
         let r = await h.runRaw("apply_layout", args: [
             "layout": "grid_2x2", "endFrame": 90,
             "slots": [
-                ["slot": "top_left", "mediaRef": "a"], ["slot": "top_right", "mediaRef": "b"],
-                ["slot": "bottom_left", "mediaRef": "c"], ["slot": "bottom_right", "mediaRef": "d"],
+                ["slot": "r1c1", "mediaRef": "a"], ["slot": "r1c2", "mediaRef": "b"],
+                ["slot": "r2c1", "mediaRef": "c"], ["slot": "r2c2", "mediaRef": "d"],
             ],
         ])
         #expect(r.isError == false)
