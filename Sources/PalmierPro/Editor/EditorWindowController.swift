@@ -53,6 +53,10 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
         }
     }
 
+    private var handlesMediaPanelCommands: Bool {
+        editorViewModel.mediaPanelVisible && editorViewModel.focusedPanel == .media
+    }
+
     private func handleKeyDown(_ event: NSEvent) -> Bool {
         // Don't intercept keys when a text field has focus
         if isTextInputFocused {
@@ -64,13 +68,13 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
         let cmd = mods.contains(.command)
         let rangeMarkShortcut = mods.intersection([.command, .option, .control]).isEmpty
 
-        if editorViewModel.focusedPanel == .media, cmd, event.keyCode == 126,
+        if handlesMediaPanelCommands, cmd, event.keyCode == 126,
            mods.intersection([.option, .control, .shift]).isEmpty {
             editorViewModel.mediaPanelNavigateUpRequestTick &+= 1
             return true
         }
 
-        if editorViewModel.focusedPanel == .media,
+        if handlesMediaPanelCommands,
            mods.intersection([.command, .option, .control, .shift]).isEmpty,
            let direction = mediaArrowDirection(for: event.keyCode) {
             editorViewModel.moveMediaSelection(direction: direction)
@@ -79,7 +83,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
 
         switch event.keyCode {
         case 0: // A key
-            if editorViewModel.focusedPanel == .media, cmd,
+            if handlesMediaPanelCommands, cmd,
                mods.intersection([.option, .control]).isEmpty {
                 editorViewModel.selectAllMediaPanelItems()
                 return true
@@ -104,7 +108,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
             return true
 
         case 51: // Delete/Backspace
-            if !editorViewModel.mediaPanelSelectedKeys().isEmpty {
+            if handlesMediaPanelCommands, !editorViewModel.mediaPanelSelectedKeys().isEmpty {
                 editorViewModel.deleteMediaPanelItems()
             } else if shift {
                 if editorViewModel.selectedGap != nil {
@@ -168,7 +172,7 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
             return false
 
         case 36: // Return / Enter
-            if editorViewModel.focusedPanel == .media,
+            if handlesMediaPanelCommands,
                editorViewModel.selectedFolderIds.count == 1,
                let folderId = editorViewModel.selectedFolderIds.first {
                 editorViewModel.mediaPanelOpenFolderId = folderId
@@ -270,6 +274,7 @@ extension EditorWindowController: EditorActions {
     }
 
     @objc func newMediaFolder(_ sender: Any?) {
+        guard handlesMediaPanelCommands else { return }
         editorViewModel.mediaPanelNewFolderRequestTick &+= 1
     }
 
@@ -291,7 +296,7 @@ extension EditorWindowController: EditorActions {
     }
 
     @objc func paste(_ sender: Any?) {
-        if editorViewModel.focusedPanel == .media {
+        if handlesMediaPanelCommands {
             editorViewModel.mediaPanelPasteRequestTick &+= 1
             return
         }
@@ -348,9 +353,9 @@ extension EditorWindowController: EditorActions {
         case #selector(selectForwardOnTrack(_:)), #selector(selectForwardOnAllTracks(_:)):
             return editorViewModel.focusedPanel == .timeline && !editorViewModel.selectedClipIds.isEmpty
         case #selector(newMediaFolder(_:)):
-            return editorViewModel.focusedPanel == .media
+            return handlesMediaPanelCommands
         case #selector(paste(_:)):
-            if editorViewModel.focusedPanel == .media {
+            if handlesMediaPanelCommands {
                 return MediaTab.clipboardHasImportableMedia()
             }
             return canHandleClipboardShortcut() && editorViewModel.canPasteClips

@@ -98,6 +98,10 @@ struct MediaTab: View {
                     VStack(spacing: 0) {
                         if showsEmptyState {
                             emptyStateView
+                                .onAppear {
+                                    publishGridState(orderedIds: [], columnCount: 1)
+                                    editor.clearMediaPanelSelection()
+                                }
                         } else if !trimmedSearchQuery.isEmpty {
                             searchResults
                         } else {

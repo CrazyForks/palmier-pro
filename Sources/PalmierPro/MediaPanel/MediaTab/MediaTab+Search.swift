@@ -56,13 +56,13 @@ extension MediaTab {
         fileAssetIds: [String],
         collapsedSectionTitles: Set<String>
     ) -> [String] {
-        var ids: [String] = []
-        if !collapsedSectionTitles.contains("Moments") { ids.append(contentsOf: momentAssetIds) }
-        if !collapsedSectionTitles.contains("Spoken") { ids.append(contentsOf: spokenAssetIds) }
-        ids.append(contentsOf: fileAssetIds)
-
+        let sections = [
+            collapsedSectionTitles.contains("Moments") ? [] : momentAssetIds,
+            collapsedSectionTitles.contains("Spoken") ? [] : spokenAssetIds,
+            fileAssetIds,
+        ]
         var seen: Set<String> = []
-        return ids.filter { seen.insert($0).inserted }
+        return sections.joined().filter { seen.insert($0).inserted }
     }
 
     private func resultsGrid<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
@@ -139,7 +139,8 @@ extension MediaTab {
                 .frame(width: 80, height: 45)
                 .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.sm))
         }
-        .onTapGesture { previewMoment(assetID: hit.assetID, atSeconds: range.lowerBound) }
+        .overlay { searchSelectionBorder(for: hit.assetID) }
+        .onTapGesture { selectSearchHit(assetID: hit.assetID, atSeconds: range.lowerBound) }
     }
 
     @ViewBuilder
@@ -189,7 +190,8 @@ extension MediaTab {
                 .frame(width: 80, height: 45)
                 .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.sm))
         }
-        .onTapGesture { previewMoment(assetID: hit.assetID, atSeconds: range.lowerBound) }
+        .overlay { searchSelectionBorder(for: hit.assetID) }
+        .onTapGesture { selectSearchHit(assetID: hit.assetID, atSeconds: range.lowerBound) }
     }
 
     private func fileCard(_ asset: MediaAsset) -> some View {
@@ -212,7 +214,8 @@ extension MediaTab {
                 .lineLimit(1)
         }
         .draggable(dragPayload(for: asset)) { dragPreview(for: asset) }
-        .onTapGesture { editor.selectMediaPanelItem(asset.id) }
+        .overlay { searchSelectionBorder(for: asset.id) }
+        .onTapGesture { selectSearchHit(assetID: asset.id, atSeconds: 0) }
         .task(id: searchThumbnailTaskID(for: asset)) {
             await loadSearchThumbnail(asset)
         }
@@ -227,9 +230,19 @@ extension MediaTab {
         await asset.loadLibraryThumbnail()
     }
 
-    private func previewMoment(assetID: String, atSeconds seconds: Double) {
-        guard let asset = editor.mediaAssets.first(where: { $0.id == assetID }) else { return }
-        editor.selectMediaAsset(asset, atSourceFrame: secondsToFrame(seconds: seconds, fps: editor.timeline.fps))
+    private func searchSelectionBorder(for assetID: String) -> some View {
+        RoundedRectangle(cornerRadius: AppTheme.Radius.sm)
+            .strokeBorder(editor.selectedMediaAssetIds.contains(assetID) ? AppTheme.Accent.primary : .clear,
+                          lineWidth: AppTheme.BorderWidth.medium)
+            .allowsHitTesting(false)
+    }
+
+    private func selectSearchHit(assetID: String, atSeconds seconds: Double) {
+        editor.selectMediaPanelItem(
+            assetID,
+            mode: MediaPanelSelectionMode(modifierFlags: NSEvent.modifierFlags),
+            atSourceFrame: secondsToFrame(seconds: seconds, fps: editor.timeline.fps)
+        )
     }
 
     private func timecode(_ seconds: Double) -> String {

@@ -1,10 +1,7 @@
 import AppKit
 
 enum MediaPanelSelectionMode: Equatable {
-    case replacing
-    case toggling
-    case range
-    case extendingRange
+    case replacing, toggling, range, extendingRange
 
     init(modifierFlags: NSEvent.ModifierFlags) {
         let command = modifierFlags.contains(.command)
@@ -18,10 +15,7 @@ enum MediaPanelSelectionMode: Equatable {
     }
 }
 
-private struct MediaPanelSelectionSnapshot {
-    let keys: Set<String>
-    let anchor: String?
-}
+private typealias MediaPanelSelectionSnapshot = (keys: Set<String>, anchor: String?)
 
 extension EditorViewModel {
     enum MediaSelectionDirection {
@@ -64,7 +58,7 @@ extension EditorViewModel {
         selectMediaPanelItem(key, mode: .replacing)
     }
 
-    func selectMediaPanelItem(_ key: String, mode: MediaPanelSelectionMode) {
+    func selectMediaPanelItem(_ key: String, mode: MediaPanelSelectionMode, atSourceFrame sourceFrame: Int = 0) {
         guard isValidMediaPanelItemKey(key) else { return }
         var selection = mediaPanelSelectedKeys()
         var anchor = mediaPanelSelectionAnchor
@@ -94,7 +88,7 @@ extension EditorViewModel {
         }
 
         applyMediaPanelSelection(selection, anchor: anchor)
-        previewMediaPanelAsset(for: key, replacingSelection: mode == .replacing)
+        previewMediaPanelAsset(for: key, replacingSelection: mode == .replacing, atSourceFrame: sourceFrame)
     }
 
     func selectAllMediaPanelItems() {
@@ -105,11 +99,8 @@ extension EditorViewModel {
         )
     }
 
-    func clearMediaPanelSelection() {
-        applyMediaPanelSelection([], anchor: nil)
-    }
+    func clearMediaPanelSelection() { applyMediaPanelSelection([], anchor: nil) }
 
-    @discardableResult
     func createMediaPanelFolder(in parentFolderId: String?) -> String {
         let selectionBefore = mediaPanelSelectionSnapshot()
         return undo.perform("New Folder") {
@@ -136,19 +127,9 @@ extension EditorViewModel {
         })
 
         let selectedTimelines = selectedTimelineIds.intersection(Set(timelines.map(\.id)))
-        var remainingTimelineCount = timelines.count
-        var timelineIds: [String] = []
-        var refusedTimelineDeletion = false
-        for timeline in timelines where selectedTimelines.contains(timeline.id) {
-            if remainingTimelineCount > 1 {
-                timelineIds.append(timeline.id)
-                remainingTimelineCount -= 1
-            } else {
-                refusedTimelineDeletion = true
-            }
-        }
-
-        if refusedTimelineDeletion {
+        let timelineIds = timelines.filter { selectedTimelines.contains($0.id) }
+            .prefix(max(0, timelines.count - 1)).map(\.id)
+        if selectedTimelines.count > timelineIds.count {
             mediaPanelToast = "Can't delete every timeline — the project needs at least one."
         }
 
@@ -173,7 +154,6 @@ extension EditorViewModel {
         pruneMediaPanelSelectionAnchor()
     }
 
-    /// Reset the anchor to the first visible selected item when it left the selection.
     func pruneMediaPanelSelectionAnchor() {
         let selection = mediaPanelSelectedKeys()
         guard mediaPanelSelectionAnchor.map(selection.contains) != true else { return }
@@ -181,10 +161,9 @@ extension EditorViewModel {
     }
 
     func mediaPanelSelectedKeys() -> Set<String> {
-        var keys = selectedMediaAssetIds
-        keys.formUnion(selectedFolderIds.map(MediaPanelItemKey.folder))
-        keys.formUnion(selectedTimelineIds.map(MediaPanelItemKey.timeline))
-        return keys
+        selectedMediaAssetIds
+            .union(selectedFolderIds.map(MediaPanelItemKey.folder))
+            .union(selectedTimelineIds.map(MediaPanelItemKey.timeline))
     }
 
     private func mediaPanelSelectionRange(through key: String) -> Set<String>? {
@@ -211,9 +190,7 @@ extension EditorViewModel {
         return mediaAssetsById[key] != nil ? .asset(key) : nil
     }
 
-    private func isValidMediaPanelItemKey(_ key: String) -> Bool {
-        mediaPanelItem(for: key) != nil
-    }
+    private func isValidMediaPanelItemKey(_ key: String) -> Bool { mediaPanelItem(for: key) != nil }
 
     private func applyMediaPanelSelection(_ keys: Set<String>, anchor: String?) {
         var assetIds: Set<String> = []
@@ -235,20 +212,17 @@ extension EditorViewModel {
         mediaPanelSelectionAnchor = anchor
     }
 
-    private func previewMediaPanelAsset(for key: String, replacingSelection: Bool) {
+    private func previewMediaPanelAsset(for key: String, replacingSelection: Bool, atSourceFrame sourceFrame: Int) {
         guard let asset = mediaAssetsById[key] else { return }
         if replacingSelection {
-            selectMediaAsset(asset)
+            selectMediaAsset(asset, atSourceFrame: sourceFrame)
         } else {
-            openPreviewTab(for: asset)
+            openPreviewTab(for: asset, atSourceFrame: sourceFrame)
         }
     }
 
     private func mediaPanelSelectionSnapshot() -> MediaPanelSelectionSnapshot {
-        MediaPanelSelectionSnapshot(
-            keys: mediaPanelSelectedKeys(),
-            anchor: mediaPanelSelectionAnchor
-        )
+        (keys: mediaPanelSelectedKeys(), anchor: mediaPanelSelectionAnchor)
     }
 
     private func restoreMediaPanelSelection(_ snapshot: MediaPanelSelectionSnapshot, actionName: String) {
@@ -259,11 +233,7 @@ extension EditorViewModel {
         }
     }
 
-    private func mediaPanelDeleteActionName(
-        folderCount: Int,
-        assetCount: Int,
-        timelineCount: Int
-    ) -> String {
+    private func mediaPanelDeleteActionName(folderCount: Int, assetCount: Int, timelineCount: Int) -> String {
         guard folderCount + assetCount + timelineCount == 1 else { return "Delete Media Items" }
         if folderCount == 1 { return "Delete Folder" }
         if timelineCount == 1 { return "Delete Timeline" }
