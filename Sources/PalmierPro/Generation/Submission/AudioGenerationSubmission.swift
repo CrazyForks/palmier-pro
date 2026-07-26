@@ -37,10 +37,13 @@ struct AudioGenerationSubmission {
         }
         let imageCount = genInput.referenceImageAssetIds?.count ?? 0
         let usesSourceURL = model.usesSourceURL
+        let splitReferences: @Sendable ([String]) -> (image: String?, audio: [String]) = { uploaded in
+            (imageCount > 0 ? uploaded.first : nil, Array(uploaded.dropFirst(imageCount)))
+        }
         let buildParams: ([String]) -> BackendGenerationParams = { [params] uploaded in
             var resolvedParams = params
             if usesReferences {
-                let referenceURLs = Self.referenceURLs(uploaded: uploaded, imageCount: imageCount)
+                let referenceURLs = splitReferences(uploaded)
                 resolvedParams.referenceImageURL = referenceURLs.image
                 resolvedParams.referenceAudioURLs = referenceURLs.audio.isEmpty
                     ? nil : referenceURLs.audio
@@ -56,7 +59,7 @@ struct AudioGenerationSubmission {
         let snapshotRefs: (@Sendable (inout GenerationInput, [String]) -> Void)?
         if usesReferences {
             snapshotRefs = { input, uploaded in
-                let referenceURLs = Self.referenceURLs(uploaded: uploaded, imageCount: imageCount)
+                let referenceURLs = splitReferences(uploaded)
                 input.referenceImageURLs = referenceURLs.image.map { [$0] }
                 input.referenceAudioURLs = referenceURLs.audio.isEmpty ? nil : referenceURLs.audio
             }
@@ -97,20 +100,14 @@ struct AudioGenerationSubmission {
         name: String? = nil,
         folderId: String? = nil,
         references: [MediaAsset] = [],
-        inputAssets: InputAssets = InputAssets(),
         trimmedSourceOverride: TrimmedSource? = nil
     ) -> AudioGenerationSubmission {
         var genInput = baseInput
-        let inputReferences = inputAssets.references
-        precondition(
-            model.supportsReferences ? references.isEmpty : inputReferences.isEmpty,
-            "Audio models cannot combine source media and reference inputs"
-        )
         if model.supportsReferences {
-            genInput.referenceImageAssetIds = inputAssets.imageRefs.isEmpty
-                ? nil : inputAssets.imageRefs.map(\.id)
-            genInput.referenceAudioAssetIds = inputAssets.audioRefs.isEmpty
-                ? nil : inputAssets.audioRefs.map(\.id)
+            let imageRefs = references.filter { $0.type == .image }
+            let audioRefs = references.filter { $0.type == .audio }
+            genInput.referenceImageAssetIds = imageRefs.isEmpty ? nil : imageRefs.map(\.id)
+            genInput.referenceAudioAssetIds = audioRefs.isEmpty ? nil : audioRefs.map(\.id)
         }
         return AudioGenerationSubmission(
             genInput: genInput,
@@ -119,7 +116,7 @@ struct AudioGenerationSubmission {
             placeholderDuration: placeholderDuration(model: model, params: params),
             name: name,
             folderId: folderId,
-            references: model.supportsReferences ? inputReferences : references,
+            references: references,
             trimmedSourceOverride: trimmedSourceOverride
         )
     }
@@ -161,14 +158,5 @@ struct AudioGenerationSubmission {
             }
             return nil
         }
-    }
-
-    private static func referenceURLs(
-        uploaded: [String],
-        imageCount: Int
-    ) -> (image: String?, audio: [String]) {
-        let image = imageCount > 0 ? uploaded.first : nil
-        let audio = Array(uploaded.dropFirst(imageCount))
-        return (image, audio)
     }
 }

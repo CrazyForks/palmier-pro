@@ -409,8 +409,8 @@ extension GenerationView {
                     ?? sourceAsset?.folderId
                     ?? inputAssets.references.last?.folderId
                     ?? editor.mediaPanelCurrentFolderId,
-                references: sourceAsset.map { [$0] } ?? [],
-                inputAssets: inputAssets,
+                references: model.supportsReferences
+                    ? inputAssets.references : sourceAsset.map { [$0] } ?? [],
                 trimmedSourceOverride: sourceAsset.flatMap(audioSourceTrimmedSource)
             ).submit(
                 service: editor.generationService,

@@ -234,15 +234,13 @@ extension ToolExecutor {
         try requirePlan(for: model.id, paidOnly: model.paidOnly)
 
         let prompt = (args.string("prompt") ?? "").trimmingCharacters(in: .whitespaces)
-        let referenceImages = try args.stringArray("referenceImageMediaRefs").map {
-            try asset($0, editor: editor, label: "Image reference")
-        }
-        let referenceAudios = try args.stringArray("referenceAudioMediaRefs").map {
-            try asset($0, editor: editor, label: "Audio reference")
-        }
         let inputAssets = AudioGenerationSubmission.InputAssets(
-            imageRefs: referenceImages,
-            audioRefs: referenceAudios
+            imageRefs: try args.stringArray("referenceImageMediaRefs").map {
+                try asset($0, editor: editor, label: "Image reference")
+            },
+            audioRefs: try args.stringArray("referenceAudioMediaRefs").map {
+                try asset($0, editor: editor, label: "Audio reference")
+            }
         )
         if let error = inputAssets.validate(for: model) {
             throw ToolError(error)
@@ -364,8 +362,7 @@ extension ToolExecutor {
             params: params,
             name: args.string("name"),
             folderId: folderId,
-            references: sourceReferences,
-            inputAssets: inputAssets
+            references: model.supportsReferences ? inputAssets.references : sourceReferences
         )
 
         if let startFrame = placementStartFrame, let sourceSpan = spanSeconds {
@@ -599,7 +596,6 @@ extension ToolExecutor {
         }
         if let defaultVoice = m.defaultVoice { info["defaultVoice"] = defaultVoice }
         if let durations = m.durations { info["durations"] = durations }
-        if let maxPromptLength = m.maxPromptLength { info["maxPromptLength"] = maxPromptLength }
         if m.maxReferenceImages > 0 { info["maxReferenceImages"] = m.maxReferenceImages }
         if m.maxReferenceAudios > 0 { info["maxReferenceAudios"] = m.maxReferenceAudios }
         if let maxReferenceAudioSeconds = m.maxReferenceAudioSeconds {

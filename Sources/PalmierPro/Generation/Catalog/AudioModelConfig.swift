@@ -93,7 +93,6 @@ struct AudioModelConfig: Identifiable, Sendable {
     var durationRange: AudioDurationRange? { caps.durationRange }
     var hasDurationControl: Bool { durations != nil || durationRange != nil }
     var minPromptLength: Int { caps.minPromptLength }
-    var maxPromptLength: Int? { caps.maxPromptLength }
     var maxReferenceImages: Int { caps.maxReferenceImages ?? 0 }
     var maxReferenceAudios: Int { caps.maxReferenceAudios ?? 0 }
     var maxReferenceAudioSeconds: Double? { caps.maxReferenceAudioSeconds }
@@ -156,12 +155,9 @@ struct AudioModelConfig: Identifiable, Sendable {
     }
 
     func validate(params: AudioGenerationParams) -> String? {
-        let promptLen = params.prompt.trimmingCharacters(in: .whitespacesAndNewlines).utf16.count
+        let promptLen = params.prompt.trimmingCharacters(in: .whitespaces).count
         if inputs.contains(.text), promptLen < minPromptLength {
             return "\(displayName) requires prompt ≥ \(minPromptLength) characters (got \(promptLen))."
-        }
-        if let maximum = maxPromptLength, promptLen > maximum {
-            return "\(displayName) accepts prompts up to \(maximum) characters (got \(promptLen))."
         }
         if let allowed = voices, let v = params.voice, !v.isEmpty, !allowed.contains(v) {
             let shown = Array(allowed.prefix(6)) + (allowed.count > 6 ? ["…"] : [])

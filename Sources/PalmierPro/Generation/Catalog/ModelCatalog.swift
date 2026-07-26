@@ -267,7 +267,6 @@ struct AudioCaps: Decodable, Sendable {
     let durations: [Int]?
     let durationRange: AudioDurationRange?
     let minPromptLength: Int
-    let maxPromptLength: Int?
     let maxReferenceImages: Int?
     let maxReferenceAudios: Int?
     let maxReferenceAudioSeconds: Double?
