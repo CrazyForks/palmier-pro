@@ -27,6 +27,8 @@ enum VideoLayout: String, CaseIterable, Sendable {
     case pipTopRight = "pip_top_right"
     case pipTopLeft = "pip_top_left"
     case grid2x2 = "grid_2x2"
+    case grid3x3 = "grid_3x3"
+    case grid4x4 = "grid_4x4"
     case mainSidebar = "main_sidebar"
     case threeUp = "three_up"
 
@@ -40,6 +42,8 @@ enum VideoLayout: String, CaseIterable, Sendable {
         case .pipTopRight: "PiP Top Right"
         case .pipTopLeft: "PiP Top Left"
         case .grid2x2: "Grid 2×2"
+        case .grid3x3: "Grid 3×3"
+        case .grid4x4: "Grid 4×4"
         case .mainSidebar: "Main + Sidebar"
         case .threeUp: "Three-Up"
         }
@@ -78,6 +82,19 @@ enum VideoLayout: String, CaseIterable, Sendable {
                 LayoutSlot(id: "bottom_right", rect: LayoutRect(x: 0.5, y: 0.5, w: 0.5, h: 0.5)),
             ]
 
+        case .grid3x3:
+            return Self.grid(rows: 3, columns: 3, ids: [
+                "top_left", "top_center", "top_right",
+                "center_left", "center", "center_right",
+                "bottom_left", "bottom_center", "bottom_right",
+            ])
+
+        // No natural names for a 4×4's middle rows and columns, so cells are addressed by position.
+        case .grid4x4:
+            return Self.grid(rows: 4, columns: 4, ids: (1...4).flatMap { row in
+                (1...4).map { "r\(row)c\($0)" }
+            })
+
         case .mainSidebar:
             return [
                 LayoutSlot(id: "main",    rect: LayoutRect(x: 0,   y: 0, w: 0.7, h: 1)),
@@ -91,6 +108,19 @@ enum VideoLayout: String, CaseIterable, Sendable {
                 LayoutSlot(id: "center", rect: LayoutRect(x: third,     y: 0, w: third, h: 1)),
                 LayoutSlot(id: "right",  rect: LayoutRect(x: third * 2, y: 0, w: third, h: 1)),
             ]
+        }
+    }
+
+    /// Row-major equal cells; `ids` must hold exactly `rows * columns` names.
+    private static func grid(rows: Int, columns: Int, ids: [String]) -> [LayoutSlot] {
+        let width = 1.0 / Double(columns), height = 1.0 / Double(rows)
+        return (0..<rows).flatMap { row in
+            (0..<columns).map { column in
+                LayoutSlot(
+                    id: ids[row * columns + column],
+                    rect: LayoutRect(x: Double(column) * width, y: Double(row) * height, w: width, h: height)
+                )
+            }
         }
     }
 

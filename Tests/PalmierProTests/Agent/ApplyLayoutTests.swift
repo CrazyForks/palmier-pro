@@ -112,20 +112,34 @@ struct ApplyLayoutTests {
         }
     }
 
-    @Test func gridFillsFourSlots() async throws {
+    @Test(arguments: [
+        (layout: "grid_2x2", edge: 2, slotIDs: ["top_left", "top_right", "bottom_left", "bottom_right"]),
+        (layout: "grid_3x3", edge: 3, slotIDs: [
+            "top_left", "top_center", "top_right",
+            "center_left", "center", "center_right",
+            "bottom_left", "bottom_center", "bottom_right",
+        ]),
+        (layout: "grid_4x4", edge: 4, slotIDs: (1...4).flatMap { row in (1...4).map { "r\(row)c\($0)" } }),
+    ])
+    func gridsTileTheCanvas(layout: String, edge: Int, slotIDs: [String]) async throws {
         let h = ToolHarness()
-        for id in ["a", "b", "c", "d"] { videoAsset(h, id: id) }
+        for id in slotIDs { videoAsset(h, id: id) }
+
         let r = await h.runRaw("apply_layout", args: [
-            "layout": "grid_2x2", "endFrame": 90,
-            "slots": [
-                ["slot": "top_left", "mediaRef": "a"], ["slot": "top_right", "mediaRef": "b"],
-                ["slot": "bottom_left", "mediaRef": "c"], ["slot": "bottom_right", "mediaRef": "d"],
-            ],
+            "layout": layout, "endFrame": 90,
+            "slots": slotIDs.map { ["slot": $0, "mediaRef": $0] },
         ])
+
         #expect(r.isError == false)
-        let cs = h.editor.timeline.tracks.flatMap(\.clips)
-        #expect(cs.count == 4)
-        for c in cs { #expect(approx(c.transform.width, 0.5) && approx(c.transform.height, 0.5)) }
+        #expect(h.editor.timeline.tracks.flatMap(\.clips).count == edge * edge)
+        let cell = 1.0 / Double(edge)
+        for (index, id) in slotIDs.enumerated() {
+            let clip = try #require(clips(h, mediaRef: id))
+            #expect(approx(clip.transform.width * clip.crop.visibleWidthFraction, cell))
+            #expect(approx(clip.transform.height * clip.crop.visibleHeightFraction, cell))
+            #expect(approx(clip.transform.centerX, (Double(index % edge) + 0.5) * cell))
+            #expect(approx(clip.transform.centerY, (Double(index / edge) + 0.5) * cell))
+        }
     }
 
     @Test func placementIsSingleUndoStep() async throws {
