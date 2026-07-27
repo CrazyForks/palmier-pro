@@ -35,6 +35,7 @@ struct VideoModelConfig: Identifiable, Sendable {
     var requiresSourceVideo: Bool { caps.requiresSourceVideo }
     var requiresReferenceImage: Bool { caps.requiresReferenceImage }
     var requiresReferenceAudio: Bool { caps.requiresReferenceAudio ?? false }
+    var isLipSync: Bool { !supportsPrompt && requiresSourceVideo && requiresReferenceAudio }
 
     var supportsReferences: Bool {
         maxReferenceImages > 0 || maxReferenceVideos > 0 || maxReferenceAudios > 0
