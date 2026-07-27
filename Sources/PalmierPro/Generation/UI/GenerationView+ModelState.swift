@@ -232,22 +232,22 @@ extension GenerationView {
         }
     }
 
-    var effectiveVideoSpanSeconds: Double {
+    var effectiveSourceVideoSeconds: Double {
         guard videoModel.requiresSourceVideo else { return Double(selectedDuration) }
         if let trim = editor.pendingEditTrimmedSource,
            let sv = sourceVideo,
            trim.sourceURL == sv.url, trim.hasTrim {
             return trim.durationSeconds
         }
-        return sourceVideo?.duration ?? 0
+        return sourceVideo?.resolvedDuration ?? 0
     }
 
     var effectiveVideoSeconds: Int {
         guard videoModel.requiresSourceVideo else { return selectedDuration }
-        let seconds = effectiveVideoSpanSeconds
-        guard seconds.isFinite, seconds > 0,
-              let rounded = Int(exactly: seconds.rounded()) else { return 0 }
-        return max(1, rounded)
+        return videoModel.billingDurationSeconds(
+            sourceVideoDuration: effectiveSourceVideoSeconds,
+            sourceAudioDuration: refAudios.first?.resolvedDuration
+        ) ?? 0
     }
 
     var effectiveAudioSourceSpanSeconds: Double {

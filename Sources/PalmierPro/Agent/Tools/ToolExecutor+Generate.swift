@@ -86,12 +86,18 @@ extension ToolExecutor {
             throw ToolError(err)
         }
 
-        let sourceDuration = trimmed?.durationSeconds ?? sourceAsset.duration
-        guard sourceDuration.isFinite, sourceDuration > 0,
-              let roundedDuration = safeInt(sourceDuration.rounded()) else {
-            throw ToolError("Source video has an invalid duration.")
+        let sourceVideoDuration = trimmed?.durationSeconds ?? sourceAsset.resolvedDuration
+        if let error = model.validateSourceDuration(sourceVideoDuration) {
+            throw ToolError(error)
         }
-        let duration = max(1, roundedDuration)
+        guard let duration = model.billingDurationSeconds(
+            sourceVideoDuration: sourceVideoDuration,
+            sourceAudioDuration: audioRefs.first?.resolvedDuration
+        ) else {
+            throw ToolError(model.isLipSync
+                ? "Replacement audio has an invalid duration."
+                : "Source video has an invalid duration.")
+        }
         let genInput = GenerationInput(
             prompt: prompt, model: model.id,
             duration: duration,
@@ -101,7 +107,7 @@ extension ToolExecutor {
             genInput: genInput,
             model: model,
             inputAssets: inputAssets,
-            placeholderDuration: trimmed?.durationSeconds ?? (sourceAsset.duration > 0 ? sourceAsset.duration : 5),
+            placeholderDuration: sourceVideoDuration,
             trimmedSourceOverride: trimmed,
             name: args.string("name"),
             folderId: sourceAsset.folderId,

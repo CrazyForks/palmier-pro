@@ -61,6 +61,9 @@ struct VideoGenerationSubmission {
             let videoRefCount = inputAssets.videoRefs.count
             let audioRefCount = inputAssets.audioRefs.count
             let references = inputAssets.editReferences
+            let sourceVideoDuration = trimmedSourceOverride?.hasTrim == true
+                ? trimmedSourceOverride?.durationSeconds
+                : inputAssets.sourceVideo?.resolvedDuration
             genInput.imageURLAssetIds = assetIds(inputAssets.sourceVideo.map { [$0] } ?? [])
             genInput.referenceImageAssetIds = assetIds(inputAssets.imageRefs)
             genInput.referenceVideoAssetIds = assetIds(inputAssets.videoRefs)
@@ -96,6 +99,7 @@ struct VideoGenerationSubmission {
                         duration: genInput.duration,
                         aspectRatio: genInput.aspectRatio,
                         resolution: genInput.resolution,
+                        sourceVideoDuration: sourceVideoDuration,
                         sourceVideoURL: urls.frames.first,
                         startFrameURL: nil,
                         endFrameURL: nil,
