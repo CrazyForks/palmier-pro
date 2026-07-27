@@ -87,9 +87,11 @@ extension ToolExecutor {
         }
 
         let sourceDuration = trimmed?.durationSeconds ?? sourceAsset.duration
-        guard let duration = safeInt(sourceDuration.rounded()), duration > 0 else {
+        guard sourceDuration.isFinite, sourceDuration > 0,
+              let roundedDuration = safeInt(sourceDuration.rounded()) else {
             throw ToolError("Source video has an invalid duration.")
         }
+        let duration = max(1, roundedDuration)
         let genInput = GenerationInput(
             prompt: prompt, model: model.id,
             duration: duration,

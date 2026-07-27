@@ -196,7 +196,7 @@ struct AIEditTab: View {
         if asset.isGenerating {
             return .disabled(reason: "Generation in progress")
         }
-        let duration = effectiveDurationForAvailability ?? asset.duration
+        let duration = effectiveDurationForAvailability ?? EditAction.effectiveDuration(of: asset)
         if let error = model.validateSourceDuration(duration) {
             return .disabled(reason: error)
         }

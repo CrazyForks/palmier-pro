@@ -101,7 +101,7 @@ enum EditAction {
 
     /// Falls back to the recorded generation duration when AVAsset metadata hasn't loaded.
     @MainActor
-    private static func effectiveDuration(of asset: MediaAsset) -> Double {
+    static func effectiveDuration(of asset: MediaAsset) -> Double {
         if asset.duration > 0 { return asset.duration }
         if let gd = asset.generationInput?.duration, gd > 0 { return Double(gd) }
         return 0
