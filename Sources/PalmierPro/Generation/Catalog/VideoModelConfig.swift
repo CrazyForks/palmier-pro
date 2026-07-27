@@ -17,6 +17,7 @@ struct VideoModelConfig: Identifiable, Sendable {
     var paidOnly: Bool { entry.paidOnly }
     var creditsPerSecond: [String: Double] { entry.creditsPerSecond ?? [:] }
     var audioDiscountRate: [String: Double]? { entry.audioDiscountRate }
+    var supportsPrompt: Bool { caps.supportsPrompt ?? true }
 
     var durations: [Int] { caps.durations }
     var resolutions: [String]? { caps.resolutions }
@@ -33,6 +34,7 @@ struct VideoModelConfig: Identifiable, Sendable {
     var referenceTagNoun: String { caps.referenceTagNoun }
     var requiresSourceVideo: Bool { caps.requiresSourceVideo }
     var requiresReferenceImage: Bool { caps.requiresReferenceImage }
+    var requiresReferenceAudio: Bool { caps.requiresReferenceAudio ?? false }
 
     var supportsReferences: Bool {
         maxReferenceImages > 0 || maxReferenceVideos > 0 || maxReferenceAudios > 0

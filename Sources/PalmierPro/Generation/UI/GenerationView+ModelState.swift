@@ -130,7 +130,12 @@ extension GenerationView {
         return audioSource.type == .video ? .video : .audio
     }
     var showsPrompt: Bool {
-        selectedType != .upscale && (selectedType != .audio || audioModel.inputs.contains(.text))
+        switch selectedType {
+        case .video: videoModel.supportsPrompt
+        case .audio: audioModel.inputs.contains(.text)
+        case .image: true
+        case .upscale: false
+        }
     }
 
     var initialAudioTargetLanguage: String {

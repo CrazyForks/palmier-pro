@@ -18,6 +18,7 @@ extension GenerationView {
         if selectedType == .video && videoModel.requiresSourceVideo {
             guard sourceVideo != nil else { return false }
             if videoModel.requiresReferenceImage && imageReferences.isEmpty { return false }
+            if videoModel.requiresReferenceAudio && refAudios.isEmpty { return false }
             if !videoModel.supportsReferences && isPromptEmpty { return false }
             return true
         }
@@ -146,7 +147,8 @@ extension GenerationView {
         if model.requiresSourceVideo {
             return VideoGenerationSubmission.InputAssets(
                 sourceVideo: sourceVideo,
-                imageRefs: model.supportsReferences ? Array(imageReferences.prefix(1)) : []
+                imageRefs: Array(imageReferences.prefix(model.maxReferenceImages)),
+                audioRefs: Array(refAudios.prefix(model.maxReferenceAudios))
             )
         }
 
@@ -523,7 +525,9 @@ extension GenerationView {
         case .video:
             if videoModel.requiresSourceVideo {
                 sourceVideo = primary.first
-                if videoModel.supportsReferences, primary.count > 1 {
+                imageReferences = (stored.referenceImageAssetIds ?? []).compactMap(lookup)
+                refAudios = (stored.referenceAudioAssetIds ?? []).compactMap(lookup)
+                if imageReferences.isEmpty, videoModel.maxReferenceImages > 0, primary.count > 1 {
                     imageReferences = [primary[1]]
                 }
             } else {
