@@ -148,6 +148,7 @@ extension GenerationView {
             return VideoGenerationSubmission.InputAssets(
                 sourceVideo: sourceVideo,
                 imageRefs: Array(imageReferences.prefix(model.maxReferenceImages)),
+                videoRefs: Array(refVideos.prefix(model.maxReferenceVideos)),
                 audioRefs: Array(refAudios.prefix(model.maxReferenceAudios))
             )
         }
@@ -526,6 +527,7 @@ extension GenerationView {
             if videoModel.requiresSourceVideo {
                 sourceVideo = primary.first
                 imageReferences = (stored.referenceImageAssetIds ?? []).compactMap(lookup)
+                refVideos = (stored.referenceVideoAssetIds ?? []).compactMap(lookup)
                 refAudios = (stored.referenceAudioAssetIds ?? []).compactMap(lookup)
                 if imageReferences.isEmpty, videoModel.maxReferenceImages > 0, primary.count > 1 {
                     imageReferences = [primary[1]]

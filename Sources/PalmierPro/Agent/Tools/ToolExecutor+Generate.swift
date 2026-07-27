@@ -86,9 +86,13 @@ extension ToolExecutor {
             throw ToolError(err)
         }
 
+        let sourceDuration = trimmed?.durationSeconds ?? sourceAsset.duration
+        guard let duration = safeInt(sourceDuration.rounded()), duration > 0 else {
+            throw ToolError("Source video has an invalid duration.")
+        }
         let genInput = GenerationInput(
             prompt: prompt, model: model.id,
-            duration: Int((trimmed?.durationSeconds ?? sourceAsset.duration).rounded()),
+            duration: duration,
             aspectRatio: "", resolution: nil
         )
         let placeholderId = VideoGenerationSubmission.make(
