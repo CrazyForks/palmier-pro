@@ -247,6 +247,7 @@ struct VideoCaps: Decodable, Sendable {
     let framesAndReferencesExclusive: Bool
     let referenceTagNoun: String
     let requiresSourceVideo: Bool
+    let maxSourceVideoSeconds: Double?
     let maxSourceVideoResolution: SourceVideoResolution?
     let requiresReferenceImage: Bool
     let requiresReferenceAudio: Bool?

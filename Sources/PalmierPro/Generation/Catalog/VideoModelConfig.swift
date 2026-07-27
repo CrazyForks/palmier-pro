@@ -33,12 +33,34 @@ struct VideoModelConfig: Identifiable, Sendable {
     var framesAndReferencesExclusive: Bool { caps.framesAndReferencesExclusive }
     var referenceTagNoun: String { caps.referenceTagNoun }
     var requiresSourceVideo: Bool { caps.requiresSourceVideo }
+    var maxSourceVideoSeconds: Double? { caps.maxSourceVideoSeconds }
     var requiresReferenceImage: Bool { caps.requiresReferenceImage }
     var requiresReferenceAudio: Bool { caps.requiresReferenceAudio ?? false }
     var isLipSync: Bool { !supportsPrompt && requiresSourceVideo && requiresReferenceAudio }
 
     var supportsReferences: Bool {
         maxReferenceImages > 0 || maxReferenceVideos > 0 || maxReferenceAudios > 0
+    }
+
+    var sourceDurationLimitLabel: String? {
+        guard let maximum = maxSourceVideoSeconds,
+              maximum.isFinite, maximum > 0,
+              let seconds = Int(exactly: maximum.rounded()) else { return nil }
+        if seconds.isMultiple(of: 60) {
+            let minutes = seconds / 60
+            return minutes == 1 ? "1 minute" : "\(minutes) minutes"
+        }
+        return seconds == 1 ? "1 second" : "\(seconds) seconds"
+    }
+
+    func validateSourceDuration(_ duration: Double) -> String? {
+        guard duration.isFinite, duration > 0 else {
+            return "Loading video metadata…"
+        }
+        guard let maximum = maxSourceVideoSeconds,
+              duration > maximum,
+              let limit = sourceDurationLimitLabel else { return nil }
+        return "\(displayName) supports source videos up to \(limit). Trim the clip to continue."
     }
 
     func audioDiscount(for resolution: String?) -> Double? {

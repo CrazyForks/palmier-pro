@@ -192,13 +192,13 @@ struct AIEditTab: View {
         VideoModelConfig.allModels.first(where: { $0.isLipSync })
     }
 
-    private var lipSyncAvailability: EditActionAvailability {
+    private func lipSyncAvailability(for model: VideoModelConfig) -> EditActionAvailability {
         if asset.isGenerating {
             return .disabled(reason: "Generation in progress")
         }
         let duration = effectiveDurationForAvailability ?? asset.duration
-        guard duration.isFinite, duration > 0 else {
-            return .disabled(reason: "Loading video metadata…")
+        if let error = model.validateSourceDuration(duration) {
+            return .disabled(reason: error)
         }
         return .available
     }
@@ -246,7 +246,7 @@ struct AIEditTab: View {
     }
 
     private func lipSyncActionRow(model: VideoModelConfig) -> some View {
-        let availability = lipSyncAvailability
+        let availability = lipSyncAvailability(for: model)
         let paidBlocked = model.paidOnly && !account.isPaid
         let isEnabled = availability.isAvailable && !paidBlocked && aiDisabledReason == nil
         let disabledReason = aiDisabledReason
@@ -256,6 +256,7 @@ struct AIEditTab: View {
             icon: "mouth",
             title: "Lip Sync",
             description: "Match mouth movement to replacement audio",
+            detail: model.sourceDurationLimitLabel.map { "Up to \($0)" },
             isEnabled: isEnabled,
             disabledReason: disabledReason
         ) {

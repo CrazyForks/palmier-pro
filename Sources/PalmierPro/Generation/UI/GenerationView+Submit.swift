@@ -177,7 +177,8 @@ extension GenerationView {
             let inputAssets = videoInputAssets(for: videoModel)
             let modelError: String?
             if videoModel.requiresSourceVideo {
-                modelError = videoModel.validate(duration: 0, aspectRatio: "", resolution: nil)
+                modelError = videoModel.validateSourceDuration(effectiveVideoSpanSeconds)
+                    ?? videoModel.validate(duration: 0, aspectRatio: "", resolution: nil)
             } else {
                 modelError = videoModel.validate(
                     duration: selectedDuration,
