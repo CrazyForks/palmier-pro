@@ -19,6 +19,7 @@ extension GenerationView {
             guard sourceVideo != nil else { return false }
             if videoModel.requiresReferenceImage && imageReferences.isEmpty { return false }
             if videoModel.requiresReferenceAudio && refAudios.isEmpty { return false }
+            if videoModel.isLipSync && effectiveVideoSeconds == 0 { return false }
             if !videoModel.supportsReferences && isPromptEmpty { return false }
             return true
         }
