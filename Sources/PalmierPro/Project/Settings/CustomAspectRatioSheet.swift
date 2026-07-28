@@ -5,6 +5,17 @@ struct CustomAspectRatioContext: Identifiable {
     let timelineID: String
     let width: Int
     let height: Int
+
+    var initialInput: (horizontal: String, vertical: String) {
+        let components = CanvasAspectRatio.displayLabel(width: width, height: height).split(separator: ":")
+        return (components.first.map(String.init) ?? "", components.last.map(String.init) ?? "")
+    }
+
+    func resolution(horizontal: String, vertical: String) throws -> (width: Int, height: Int) {
+        let initial = initialInput
+        guard horizontal != initial.horizontal || vertical != initial.vertical else { return (width, height) }
+        return try CanvasAspectRatio("\(horizontal):\(vertical)").resolution(shortEdge: min(width, height))
+    }
 }
 
 struct CustomAspectRatioSheet: View {
@@ -18,9 +29,9 @@ struct CustomAspectRatioSheet: View {
 
     init(context: CustomAspectRatioContext) {
         self.context = context
-        let components = CanvasAspectRatio.displayLabel(width: context.width, height: context.height).split(separator: ":")
-        _horizontalText = State(initialValue: components.first.map(String.init) ?? "")
-        _verticalText = State(initialValue: components.last.map(String.init) ?? "")
+        let initial = context.initialInput
+        _horizontalText = State(initialValue: initial.horizontal)
+        _verticalText = State(initialValue: initial.vertical)
     }
 
     var body: some View {
@@ -65,7 +76,7 @@ struct CustomAspectRatioSheet: View {
                 }
                     .buttonStyle(.capsule(.prominent, size: .regular))
                     .keyboardShortcut(.defaultAction)
-                    .disabled(validation.resolution == nil)
+                    .disabled(validation.resolution == nil || !hasChanges)
             }
         }
         .padding(AppTheme.Spacing.xlXxl)
@@ -92,10 +103,14 @@ struct CustomAspectRatioSheet: View {
             return (nil, "The timeline settings changed. Close this sheet and try again.")
         }
         do {
-            let ratio = try CanvasAspectRatio("\(horizontalText):\(verticalText)")
-            return (try ratio.resolution(shortEdge: min(context.width, context.height)), nil)
+            return (try context.resolution(horizontal: horizontalText, vertical: verticalText), nil)
         } catch {
             return (nil, error.localizedDescription)
         }
+    }
+
+    private var hasChanges: Bool {
+        let initial = context.initialInput
+        return horizontalText != initial.horizontal || verticalText != initial.vertical
     }
 }

@@ -93,9 +93,7 @@ enum AspectPreset: CaseIterable {
     }
 
     func matches(width: Int, height: Int) -> Bool {
-        guard width > 0, height > 0 else { return false }
-        return abs(Double(width) / Double(height) - Double(self.width) / Double(self.height))
-            <= 1 / Double(min(width, height))
+        width == self.width && height == self.height
     }
 }
 

@@ -27,7 +27,9 @@ extension ToolExecutor {
             } else if let quality, size.0 > 0, size.1 > 0 {
                 size = quality.resolution(currentWidth: size.0, currentHeight: size.1)
             }
-            guard size.0 > 0, size.1 > 0, size.0 <= 8_192, size.1 <= 8_192 else {
+            let changesResolution = input.width != nil || aspectRatio != nil || quality != nil
+            guard size.0 > 0, size.1 > 0,
+                  !changesResolution || (size.0 <= 8_192 && size.1 <= 8_192) else {
                 throw ToolError("Resolution must be positive and no larger than 8192 pixels on either edge")
             }
             return (input.fps ?? timeline.fps, size.0, size.1)

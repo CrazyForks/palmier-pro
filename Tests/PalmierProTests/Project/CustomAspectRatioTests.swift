@@ -33,4 +33,19 @@ struct CustomAspectRatioTests {
             try ratio.resolution(shortEdge: 1080)
         }
     }
+
+    @Test func untouchedRoundedInputPreservesResolution() throws {
+        let context = CustomAspectRatioContext(timelineID: "timeline", width: 1919, height: 1080)
+        let input = context.initialInput
+        let resolution = try context.resolution(horizontal: input.horizontal, vertical: input.vertical)
+
+        #expect(input.horizontal == "1.78")
+        #expect(resolution.width == 1919)
+        #expect(resolution.height == 1080)
+    }
+
+    @Test func presetMatchesOnlyItsAppliedResolution() {
+        #expect(AspectPreset.sixteenNine.matches(width: 1920, height: 1080))
+        #expect(!AspectPreset.sixteenNine.matches(width: 3840, height: 2160))
+    }
 }
