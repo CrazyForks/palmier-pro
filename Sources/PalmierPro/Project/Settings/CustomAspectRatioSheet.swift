@@ -70,6 +70,7 @@ struct CustomAspectRatioSheet: View {
         }
         .padding(AppTheme.Spacing.xlXxl)
         .frame(width: AppTheme.EditorPanel.defaultWidth)
+        .appSheetBackground()
     }
 
     private func ratioField(_ label: String, text: Binding<String>) -> some View {

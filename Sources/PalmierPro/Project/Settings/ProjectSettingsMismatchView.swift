@@ -70,6 +70,7 @@ struct ProjectSettingsMismatchView: View {
         }
         .padding(AppTheme.Spacing.xl + AppTheme.Spacing.md)
         .frame(width: 360)
+        .appSheetBackground()
     }
 
     private func dismiss() {
