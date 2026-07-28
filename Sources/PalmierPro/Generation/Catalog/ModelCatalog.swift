@@ -249,12 +249,17 @@ struct VideoCaps: Decodable, Sendable {
     let requiresSourceVideo: Bool
     let maxSourceVideoSeconds: Double?
     let maxSourceVideoResolution: SourceVideoResolution?
+    let requiredSourceVideoEncoding: SourceVideoEncoding?
     let requiresReferenceImage: Bool
     let requiresReferenceAudio: Bool?
 }
 
 enum SourceVideoResolution: String, Decodable, Sendable {
     case p720 = "720p", p1080 = "1080p", p4k = "4k"
+}
+
+enum SourceVideoEncoding: String, Decodable, Sendable {
+    case h264MP4 = "h264-mp4"
 }
 
 struct ImageCaps: Decodable, Sendable {
