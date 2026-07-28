@@ -91,6 +91,9 @@ enum EditAction {
         case .edit:
             switch asset.type {
             case .video:
+                guard VideoModelConfig.edit != nil else {
+                    return .disabled(reason: "Edit model not available")
+                }
                 let duration = effectiveDurationOverride ?? asset.resolvedDuration
                 guard duration > 0 else {
                     return .disabled(reason: "Loading video metadata…")

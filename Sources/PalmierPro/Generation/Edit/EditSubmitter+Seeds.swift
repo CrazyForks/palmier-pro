@@ -26,9 +26,7 @@ extension EditSubmitter {
         let modelId: String
         switch asset.type {
         case .video:
-            guard let model = VideoModelConfig.allModels.first(where: { $0.requiresSourceVideo }) else {
-                return nil
-            }
+            guard let model = VideoModelConfig.edit else { return nil }
             modelId = model.id
         case .image:
             guard let model = ImageModelConfig.nanoBananaPro else { return nil }
