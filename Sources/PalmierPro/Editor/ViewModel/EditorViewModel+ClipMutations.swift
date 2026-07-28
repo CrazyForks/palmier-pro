@@ -360,8 +360,9 @@ extension EditorViewModel {
     func applyClipProperties(clipIds: [String], rebuild: Bool = false, _ modify: (inout Clip) -> Void) {
         var touchedText = false
         var touchedVisual = false
+        let locations = clipLocations(for: clipIds)
         for clipId in clipIds {
-            guard let loc = findClip(id: clipId) else { continue }
+            guard let loc = locations[clipId] else { continue }
             var clip = timeline.tracks[loc.trackIndex].clips[loc.clipIndex]
             if dragBefore[clipId] == nil {
                 dragBefore[clipId] = clip
@@ -536,8 +537,9 @@ extension EditorViewModel {
         var touchedVisual = false
         var before: [(id: String, clip: Clip)] = []
         var after: [(id: String, clip: Clip)] = []
+        let locations = clipLocations(for: clipIds)
         for clipId in clipIds {
-            guard let loc = findClip(id: clipId) else { continue }
+            guard let loc = locations[clipId] else { continue }
             let current = timeline.tracks[loc.trackIndex].clips[loc.clipIndex]
             var clip = current
             let undoTarget = dragBefore.removeValue(forKey: clipId) ?? current
@@ -559,6 +561,25 @@ extension EditorViewModel {
         }
         if touchedText { videoEngine?.refreshVisuals() }
         if touchedVisual { notifyTimelineChanged() }
+    }
+
+    private func clipLocations(for clipIds: [String]) -> [String: ClipLocation] {
+        let requestedIds = Set(clipIds)
+        guard !requestedIds.isEmpty else { return [:] }
+
+        var locations: [String: ClipLocation] = [:]
+        locations.reserveCapacity(requestedIds.count)
+        for trackIndex in timeline.tracks.indices {
+            for clipIndex in timeline.tracks[trackIndex].clips.indices {
+                let clipId = timeline.tracks[trackIndex].clips[clipIndex].id
+                guard requestedIds.contains(clipId), locations[clipId] == nil else { continue }
+                locations[clipId] = ClipLocation(trackIndex: trackIndex, clipIndex: clipIndex)
+                if locations.count == requestedIds.count {
+                    return locations
+                }
+            }
+        }
+        return locations
     }
 
     /// Bidirectional undo/redo for a single clip's property change.

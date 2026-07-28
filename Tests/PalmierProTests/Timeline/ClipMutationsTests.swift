@@ -546,6 +546,31 @@ struct ClipPropertyCommitTests {
         #expect(undoManager.canUndo == false)
     }
 
+    @Test func bulkClipPropertyPreviewCommitAndUndoResolveAcrossTracks() {
+        let a = Fixtures.clip(id: "a", mediaRef: "text", mediaType: .text, start: 0, duration: 30)
+        let b = Fixtures.clip(id: "b", mediaRef: "text", mediaType: .text, start: 30, duration: 30)
+        let c = Fixtures.clip(id: "c", mediaRef: "text", mediaType: .text, start: 0, duration: 30)
+        let e = editor([
+            Fixtures.videoTrack(clips: [a, b]),
+            Fixtures.videoTrack(clips: [c]),
+        ])
+        let undoManager = UndoManager()
+        e.undo.attach(undoManager)
+
+        let selectedIds = ["c", "missing", "a"]
+        e.applyClipProperties(clipIds: selectedIds) { $0.opacity = 0.25 }
+        e.commitClipProperties(clipIds: selectedIds) { $0.opacity = 0.25 }
+
+        #expect(e.clipFor(id: "a")?.opacity == 0.25)
+        #expect(e.clipFor(id: "b")?.opacity == 1)
+        #expect(e.clipFor(id: "c")?.opacity == 0.25)
+        undoManager.undo()
+        #expect(e.clipFor(id: "a")?.opacity == 1)
+        #expect(e.clipFor(id: "b")?.opacity == 1)
+        #expect(e.clipFor(id: "c")?.opacity == 1)
+        #expect(undoManager.canUndo == false)
+    }
+
     @Test func cancelDebouncedCommitPreventsPendingHighlightWrite() async throws {
         var clip = Fixtures.clip(id: "caption", mediaRef: "text", mediaType: .text, start: 0, duration: 30)
         clip.textAnimation = TextAnimation(preset: .highlightPop, highlight: .init(r: 1, g: 0, b: 0, a: 1))
