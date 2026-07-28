@@ -8,6 +8,16 @@ struct VideoModelConfig: Identifiable, Sendable {
     @MainActor
     static var allModels: [VideoModelConfig] { ModelCatalog.shared.video }
 
+    @MainActor
+    static var reframe: VideoModelConfig? {
+        allModels.first(where: { $0.id.contains("reframe") })
+    }
+
+    @MainActor
+    static var lipSync: VideoModelConfig? {
+        allModels.first(where: \.isLipSync)
+    }
+
     let entry: CatalogEntry
     let caps: VideoCaps
 

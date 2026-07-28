@@ -30,7 +30,7 @@ enum ModelRegistry {
 @MainActor
 final class ModelCatalog {
     static let shared = ModelCatalog()
-    private static let supportedCatalogVersion: Double = 2
+    private static let supportedCatalogVersion: Double = 3
 
     private(set) var video: [VideoModelConfig] = []
     private(set) var image: [ImageModelConfig] = []
