@@ -22,8 +22,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         AppState.shared.startMCPService()
 
         // Pre-warm NSOpenPanel to avoid main thread blocking during cold start.
-        Task { @MainActor in
+        Task { @MainActor [weak self] in
             try? await Task.sleep(for: .seconds(3))
+            guard let self, !self.isTerminating else { return }
             _ = NSOpenPanel()
         }
     }
