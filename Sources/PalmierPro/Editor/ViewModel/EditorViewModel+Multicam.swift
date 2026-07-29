@@ -569,7 +569,10 @@ extension EditorViewModel {
         let cellSeconds = VoiceActivity.chunkDuration
         var masks: [[Bool]] = []
         for mic in mics {
-            guard let mask = mediaVisualCache.deadAirMask(for: mic.mediaRef), !mask.isEmpty else { return nil }
+            guard let mask = mediaVisualCache.deadAirMask(
+                for: mic.mediaRef,
+                settings: silenceRemovalSettings
+            ), !mask.isEmpty else { return nil }
             let shift = Int((mic.sync.offsetSeconds / cellSeconds).rounded())
             var shifted = [Bool](repeating: true, count: max(0, mask.count + shift))
             for (i, dead) in mask.enumerated() where i + shift >= 0 && i + shift < shifted.count {

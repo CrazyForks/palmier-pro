@@ -3,9 +3,25 @@ import AppKit
 /// Dead-air removal: maps SpeechMaskStore spans onto timeline ranges and ripple-deletes them.
 extension EditorViewModel {
 
+    func setMinimumSilenceDuration(_ seconds: Double) {
+        guard let settings = SilenceRemovalSettings(
+            minimumPauseSeconds: seconds,
+            speechPaddingSeconds: silenceRemovalSettings.speechPaddingSeconds
+        ) else { return }
+        silenceRemovalSettings = settings
+    }
+
+    func setSpeechPaddingDuration(_ seconds: Double) {
+        guard let settings = SilenceRemovalSettings(
+            minimumPauseSeconds: silenceRemovalSettings.minimumPauseSeconds,
+            speechPaddingSeconds: seconds
+        ) else { return }
+        silenceRemovalSettings = settings
+    }
+
     private func deadAirMask(for clip: Clip) -> [Bool]? {
         guard let member = multicamGroup(of: clip)?.member(mediaRef: clip.mediaRef) else {
-            return mediaVisualCache.deadAirMask(for: clip.mediaRef)
+            return mediaVisualCache.deadAirMask(for: clip.mediaRef, settings: silenceRemovalSettings)
         }
         guard let groupMask = multicamDeadAirMask(for: clip) else { return nil }
         let shift = Int((member.sync.offsetSeconds / VoiceActivity.chunkDuration).rounded())

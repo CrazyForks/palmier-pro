@@ -74,6 +74,7 @@ enum ClipRenderer {
         opacity: CGFloat = 1.0,
         context: CGContext,
         cache: MediaVisualCache? = nil,
+        silenceRemovalSettings: SilenceRemovalSettings? = nil,
         displayName: String? = nil,
         linkOffset: Int? = nil,
         multicamAngleLabel: String? = nil,
@@ -124,7 +125,9 @@ enum ClipRenderer {
             drawTiledImage(image: image, in: thumbRect, clipRect: rect, cornerRadius: cornerRadius, context: context)
         } else if type == .audio, let samples = cache?.samples(for: clip.mediaRef), !samples.isEmpty {
             let audioRect = CGRect(x: contentX, y: contentY, width: contentWidth, height: mainHeight)
-            let mask = markDeadAir ? cache?.deadAirMask(for: clip.mediaRef) : nil
+            let mask = silenceRemovalSettings.flatMap {
+                cache?.deadAirMask(for: clip.mediaRef, settings: $0)
+            }
             drawWaveform(samples: samples, deadAirMask: mask,
                          speakerMask: speakerColors.isEmpty ? nil : cache?.speakerMask(for: clip.mediaRef),
                          clip: clip, type: colorType, in: audioRect, context: context)
@@ -302,7 +305,6 @@ enum ClipRenderer {
 
     private static let washColor = AppTheme.Status.error.withAlphaComponent(AppTheme.Opacity.medium).cgColor
     nonisolated(unsafe) static var speakerColors: [Int: CGColor] = [:]
-    private static var markDeadAir: Bool { UserDefaults.standard.object(forKey: "markDeadAir") as? Bool ?? true }
     private static var markBeats: Bool { UserDefaults.standard.object(forKey: "markBeats") as? Bool ?? true }
 
     private static func drawWaveform(
