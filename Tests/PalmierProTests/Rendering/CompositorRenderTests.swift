@@ -35,14 +35,20 @@ struct CompositorRenderTests {
     static func render(
         _ timeline: Timeline, frame: Int,
         renderSize: CGSize = size, imageURLs: [String: URL] = [:],
-        timelines: [Timeline] = []
+        timelines: [Timeline] = [], maskURLs: [String: URL] = [:],
+        maskPreviewClipId: String? = nil
     ) async throws -> Frame {
         var urls = imageURLs
         if urls["pattern"] == nil { urls["pattern"] = try await CompositorFixtures.patternVideoURL() }
         let resolved = urls
         let byId = Dictionary(uniqueKeysWithValues: timelines.map { ($0.id, $0) })
         let result = try await CompositionBuilder.build(
-            timeline: timeline, resolveURL: { resolved[$0] }, resolveTimeline: { byId[$0] }, renderSize: renderSize
+            timeline: timeline,
+            resolveURL: { resolved[$0] },
+            resolveTimeline: { byId[$0] },
+            resolveMaskURL: { maskURLs[$0] },
+            maskPreviewClipId: maskPreviewClipId,
+            renderSize: renderSize
         )
         let gen = AVAssetImageGenerator(asset: result.composition)
         gen.videoComposition = result.videoComposition
@@ -74,6 +80,110 @@ extension CompositorRenderTests {
         #expect(isGreen(f.tr), "TR \(f.tr)")
         #expect(isBlue(f.bl), "BL \(f.bl)")
         #expect(isWhite(f.br), "BR \(f.br)")
+    }
+
+    @Test func trimAndSpeedAlignAlphaMask() async throws {
+        var clip = CompositorFixtures.patternClip(duration: 20)
+        clip.trimStartFrame = 10
+        clip.speed = 2
+        var mask = Fixtures.mask(id: "half")
+        mask.sourceRange = MediaTimeRange(start: MediaTime(value: 20, timescale: 30), duration: MediaTime(value: 20, timescale: 30))
+        clip.mask = mask
+        let maskURL = try await CompositorFixtures.halfMaskVideoURL()
+        let beforeTracking = try await Self.render(
+            Self.timelineWith(Fixtures.videoTrack(clips: [clip])), frame: 2, maskURLs: ["half": maskURL]
+        )
+        let frame = try await Self.render(
+            Self.timelineWith(Fixtures.videoTrack(clips: [clip])),
+            frame: 12,
+            maskURLs: ["half": maskURL]
+        )
+        let afterMask = try await Self.render(
+            Self.timelineWith(Fixtures.videoTrack(clips: [clip])), frame: 17, maskURLs: ["half": maskURL]
+        )
+
+        #expect(isGreen(beforeTracking.tr), "a partial matte should not freeze outside its source range")
+        #expect(isRed(frame.tl), "white half should keep foreground: \(frame.tl)")
+        #expect(isBlue(frame.bl), "white half should keep foreground: \(frame.bl)")
+        #expect(isBlack(frame.tr), "black half should remove foreground: \(frame.tr)")
+        #expect(isBlack(frame.br), "black half should remove foreground: \(frame.br)")
+        #expect(isGreen(afterMask.tr), "mask should end at its source-timed boundary: \(afterMask.tr)")
+    }
+
+    @Test(arguments: [(12.0, 0.0, 5), (0.0, 12.0, 140)])
+    func maskEdgeControlsAffectRendering(feather: Double, expansion: Double, minimumGreen: Int) async throws {
+        var clip = CompositorFixtures.patternClip()
+        clip.mask = Fixtures.mask(id: "half", feather: feather, expansion: expansion)
+        let frame = try await Self.render(
+            Self.timelineWith(Fixtures.videoTrack(clips: [clip])), frame: 15,
+            maskURLs: ["half": try await CompositorFixtures.halfMaskVideoURL()]
+        )
+        #expect(frame.at(165, 45).g > minimumGreen)
+    }
+
+    @Test func softMaskOverIdenticalClipDoesNotCreateHalo() async throws {
+        let baseline = try await Self.render(
+            Self.timelineWith(Fixtures.videoTrack(clips: [CompositorFixtures.patternClip()])),
+            frame: 15
+        )
+        var top = CompositorFixtures.patternClip(id: "top")
+        top.mask = Fixtures.mask(id: "soft")
+        let bottom = CompositorFixtures.patternClip(id: "bottom")
+        let maskURL = try await CompositorFixtures.softMaskVideoURL()
+
+        let stacked = try await Self.render(
+            Self.timelineWith(
+                Fixtures.videoTrack(clips: [top]),
+                Fixtures.videoTrack(clips: [bottom])
+            ),
+            frame: 15,
+            maskURLs: ["soft": maskURL]
+        )
+        let maximumDelta = zip(stacked.bytes, baseline.bytes)
+            .map { abs(Int($0) - Int($1)) }
+            .max() ?? 0
+
+        #expect(maximumDelta <= 2, "soft mask changed identical stacked clips by \(maximumDelta)")
+    }
+
+    @Test func unappliedMaskOnlyAppearsInPreview() async throws {
+        var clip = CompositorFixtures.patternClip()
+        clip.mask = Fixtures.mask(id: "half", applied: false)
+        let maskURL = try await CompositorFixtures.halfMaskVideoURL()
+        let timeline = Self.timelineWith(Fixtures.videoTrack(clips: [clip]))
+        let inactive = try await Self.render(
+            timeline,
+            frame: 15,
+            maskURLs: ["half": maskURL]
+        )
+        let preview = try await Self.render(
+            timeline,
+            frame: 15,
+            maskURLs: ["half": maskURL],
+            maskPreviewClipId: clip.id
+        )
+
+        #expect(isRed(inactive.tl))
+        #expect(isGreen(inactive.tr))
+        #expect(preview.bl.r > 50, "masked blue should receive the red overlay: \(preview.bl)")
+        #expect(preview.bl.b > 80, "overlay should preserve the source beneath it: \(preview.bl)")
+        #expect(isGreen(preview.tr), "unmasked pixels should remain unchanged: \(preview.tr)")
+    }
+
+    @Test func invertedAlphaMaskKeepsBlackHalf() async throws {
+        var clip = CompositorFixtures.patternClip()
+        clip.mask = Fixtures.mask(id: "half", inverted: true)
+        let maskURL = try await CompositorFixtures.halfMaskVideoURL()
+        let frame = try await Self.render(
+            Self.timelineWith(Fixtures.videoTrack(clips: [clip])),
+            frame: 15,
+            maskURLs: ["half": maskURL]
+        )
+
+        #expect(isBlack(frame.tl), "inverted white half should remove foreground: \(frame.tl)")
+        #expect(isBlack(frame.bl), "inverted white half should remove foreground: \(frame.bl)")
+        #expect(isGreen(frame.tr), "inverted black half should keep foreground: \(frame.tr)")
+        #expect(isWhite(frame.br), "inverted black half should keep foreground: \(frame.br)")
     }
 
     @Test func flipHorizontalSwapsLeftRight() async throws {

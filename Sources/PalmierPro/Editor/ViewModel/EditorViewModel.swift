@@ -110,6 +110,7 @@ final class EditorViewModel {
     var selectedMediaAssetIds: Set<String> = []
     var selectedFolderIds: Set<String> = []
     var selectedTimelineIds: Set<String> = []
+    var maskSession: MaskSession = .idle
     var pendingSwapClipId: String?
     var clipClipboard: [ClipClipboardEntry] = []
     var zoomScale: Double = Defaults.pixelsPerFrame
@@ -309,6 +310,7 @@ final class EditorViewModel {
 
     @ObservationIgnored let undo = EditorUndo()
     @ObservationIgnored let projectPackageCoordinator = ProjectPackageCoordinator()
+    @ObservationIgnored var maskGenerationTask: Task<ClipMask, Error>?
     @ObservationIgnored var onProjectCheckpointRequired: (() -> Void)?
     @ObservationIgnored var onCancelTimelineDrag: (() -> Void)?
     var isDocumentEdited: Bool = false

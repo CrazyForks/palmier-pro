@@ -33,6 +33,7 @@ enum TimelineRenderer {
             timeline: timeline,
             resolveURL: { mediaURLs[$0] },
             resolveTimeline: resolveTimeline,
+            resolveMaskURL: { resolver.expectedMaskURL(for: $0) },
             missingMediaRefs: missingMediaRefs,
             renderSize: renderSize
         )

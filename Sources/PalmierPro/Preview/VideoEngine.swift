@@ -48,6 +48,7 @@ final class VideoEngine {
     private var clipNaturalSizes: [String: CGSize] = [:]
     private var resolveTimelineSnapshot: @Sendable (String) -> Timeline? = { _ in nil }
     private var clipTransforms: [String: CGAffineTransform] = [:]
+    private var maskPlans: [String: LayerPlan.MaskPlan] = [:]
     private var compositionDuration: CMTime = .zero
 
     private var pendingInteractiveSeek: (time: CMTime, tolerance: CMTime)?
@@ -284,6 +285,8 @@ final class VideoEngine {
         let mediaURLs: [String: URL]
         let assetSizes: [String: CGSize]
         let missingMediaRefs: Set<String>
+        let maskDirectoryURL: URL?
+        let maskPreviewClipId: String?
     }
 
     func rebuild() {
@@ -299,13 +302,17 @@ final class VideoEngine {
             }
         )
         let resolveTimeline = editor.timelineResolver()
+        let maskDirectoryURL = editor.projectURL?
+            .appendingPathComponent(Project.maskDirectoryName, isDirectory: true)
 
         let timelineId = editor.timeline.id
         let inputs = RebuildInputs(
             involved: [editor.timeline] + editor.timeline.reachableTimelines(resolve: { editor.timeline(for: $0) }),
             mediaURLs: mediaURLs,
             assetSizes: assetSizes,
-            missingMediaRefs: missingMediaRefs
+            missingMediaRefs: missingMediaRefs,
+            maskDirectoryURL: maskDirectoryURL,
+            maskPreviewClipId: editor.maskPreviewClipId
         )
         if let cached = compositionCache[timelineId], cached.inputs == inputs {
             apply(cached.result, resolveTimeline: resolveTimeline, editor: editor)
@@ -321,6 +328,10 @@ final class VideoEngine {
                     resolveURL: { mediaURLs[$0] },
                     resolveSourceSize: { assetSizes[$0] },
                     resolveTimeline: resolveTimeline,
+                    resolveMaskURL: { id in
+                        MediaResolver.expectedMaskURL(for: id, directoryURL: inputs.maskDirectoryURL)
+                    },
+                    maskPreviewClipId: inputs.maskPreviewClipId,
                     missingMediaRefs: missingMediaRefs,
                     renderSize: CGSize(width: snapshot.width, height: snapshot.height)
                 )
@@ -363,6 +374,7 @@ final class VideoEngine {
         trackMappings = result.trackMappings
         clipNaturalSizes = result.clipNaturalSizes
         clipTransforms = result.clipTransforms
+        maskPlans = result.maskPlans
         compositionDuration = result.composition.duration
         resolveTimelineSnapshot = resolveTimeline
         editor.offlineMediaRefs = result.offlineMediaRefs
@@ -390,6 +402,7 @@ final class VideoEngine {
             trackMappings: trackMappings,
             clipNaturalSizes: clipNaturalSizes,
             clipTransforms: clipTransforms,
+            maskPlans: maskPlans,
             resolveTimeline: resolveTimelineSnapshot,
             compositionDuration: compositionDuration,
             renderSize: CGSize(width: editor.timeline.width, height: editor.timeline.height)

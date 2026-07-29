@@ -17,6 +17,7 @@ struct ProjectDocumentIOTests {
         try doc.write(to: package, ofType: VideoProject.typeIdentifier)
 
         #expect(try String(contentsOf: package.appendingPathComponent("media/clip.mp4"), encoding: .utf8) == "MEDIA")
+        #expect(try String(contentsOf: package.appendingPathComponent("masks/mask.mov"), encoding: .utf8) == "MASK")
         #expect(try String(contentsOf: package.appendingPathComponent(Project.thumbnailFilename), encoding: .utf8) == "THUMB")
         #expect(fm.fileExists(atPath: package.appendingPathComponent(ChatSessionStore.dirName).path))
     }
@@ -32,6 +33,7 @@ struct ProjectDocumentIOTests {
         try doc.write(to: destination, ofType: VideoProject.typeIdentifier)
 
         #expect(try String(contentsOf: destination.appendingPathComponent("media/clip.mp4"), encoding: .utf8) == "MEDIA")
+        #expect(try String(contentsOf: destination.appendingPathComponent("masks/mask.mov"), encoding: .utf8) == "MASK")
         #expect(try String(contentsOf: destination.appendingPathComponent(Project.thumbnailFilename), encoding: .utf8) == "THUMB")
         #expect(fm.fileExists(atPath: destination.appendingPathComponent(Project.timelineFilename).path))
         #expect(fm.fileExists(atPath: destination.appendingPathComponent(Project.manifestFilename).path))
@@ -41,6 +43,9 @@ struct ProjectDocumentIOTests {
         let media = url.appendingPathComponent(Project.mediaDirectoryName, isDirectory: true)
         try fm.createDirectory(at: media, withIntermediateDirectories: true)
         try Data("MEDIA".utf8).write(to: media.appendingPathComponent("clip.mp4"))
+        let masks = url.appendingPathComponent(Project.maskDirectoryName, isDirectory: true)
+        try fm.createDirectory(at: masks, withIntermediateDirectories: true)
+        try Data("MASK".utf8).write(to: masks.appendingPathComponent("mask.mov"))
         try Data("THUMB".utf8).write(to: url.appendingPathComponent(Project.thumbnailFilename))
     }
 

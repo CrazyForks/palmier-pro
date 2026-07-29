@@ -24,6 +24,21 @@ final class MediaResolver: @unchecked Sendable {
         Self.expectedURLMap(entries: manifest().entries, projectURL: projectURL())
     }
 
+    func expectedMaskURL(for id: String) -> URL? {
+        Self.expectedMaskURL(
+            for: id,
+            directoryURL: projectURL()?.appendingPathComponent(Project.maskDirectoryName, isDirectory: true)
+        )
+    }
+
+    static func expectedMaskURL(for id: String, directoryURL: URL?) -> URL? {
+        directoryURL?.appendingPathComponent(maskFilename(for: id), isDirectory: false)
+    }
+
+    static func maskFilename(for id: String) -> String {
+        "mask-\(id).mov"
+    }
+
     func snapshot() -> MediaResolver {
         let manifest = manifest()
         let projectURL = projectURL()

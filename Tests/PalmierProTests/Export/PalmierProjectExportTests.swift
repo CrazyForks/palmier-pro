@@ -16,6 +16,9 @@ struct PalmierProjectExportTests {
         try fm.createDirectory(at: sourceMedia, withIntermediateDirectories: true)
 
         try Data("INTERNAL-BYTES".utf8).write(to: sourceMedia.appendingPathComponent("gen-abc123.mp4"))
+        let masks = source.appendingPathComponent(Project.maskDirectoryName, isDirectory: true)
+        try fm.createDirectory(at: masks, withIntermediateDirectories: true)
+        try Data("MASK-BYTES".utf8).write(to: masks.appendingPathComponent("mask.mov"))
         try Data("JPEG".utf8).write(to: source.appendingPathComponent(Project.thumbnailFilename))
 
         let externalContents = "EXTERNAL-BYTES"
@@ -58,6 +61,10 @@ struct PalmierProjectExportTests {
         for name in [Project.timelineFilename, Project.manifestFilename, Project.generationLogFilename, Project.thumbnailFilename] {
             #expect(fm.fileExists(atPath: dest.appendingPathComponent(name).path), "missing \(name)")
         }
+        #expect(try String(
+            contentsOf: dest.appendingPathComponent("masks/mask.mov"),
+            encoding: .utf8
+        ) == "MASK-BYTES")
 
         // Manifest sources rewritten: resolvable entries internalized, missing one untouched.
         let outManifest = try JSONDecoder().decode(

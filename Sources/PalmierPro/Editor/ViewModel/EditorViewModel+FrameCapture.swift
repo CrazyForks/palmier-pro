@@ -75,6 +75,10 @@ extension EditorViewModel {
                 frame: frame,
                 mediaURLs: mediaURLs,
                 resolveTimeline: resolveTimeline,
+                maskDirectoryURL: projectURL?.appendingPathComponent(
+                    Project.maskDirectoryName,
+                    isDirectory: true
+                ),
                 missingMediaRefs: missingMediaRefs
             )
 

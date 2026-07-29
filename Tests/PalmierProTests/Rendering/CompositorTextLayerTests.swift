@@ -65,6 +65,28 @@ struct CompositorTextLayerTests {
         #expect(whiteInBand(f) == 0, "text behind an opaque video must be hidden: \(whiteInBand(f))")
     }
 
+    @Test func maskedForegroundOccludesText() async throws {
+        let videoURL = try await CompositorFixtures.midtoneVideoURL()
+        var foreground = CompositorFixtures.midtoneClip(id: "foreground")
+        foreground.mask = Fixtures.mask(id: "half", mediaRef: "midtone")
+        let background = CompositorFixtures.midtoneClip(id: "background")
+        let rendered = try await CompositorRenderTests.render(
+            CompositorRenderTests.timelineWith(
+                Fixtures.videoTrack(clips: [foreground]),
+                Fixtures.videoTrack(clips: [textClip("HELLO")]),
+                Fixtures.videoTrack(clips: [background])
+            ), frame: 15, imageURLs: ["midtone": videoURL], maskURLs: ["half": try await CompositorFixtures.halfMaskVideoURL()]
+        )
+        let baseline = try await CompositorRenderTests.render(
+            CompositorRenderTests.timelineWith(Fixtures.videoTrack(clips: [background])), frame: 15,
+            imageURLs: ["midtone": videoURL]
+        )
+        let maximumDelta = zip(rendered.bytes, baseline.bytes).enumerated()
+            .filter { ($0.offset / 4) % rendered.w < rendered.w / 2 }
+            .map { abs(Int($0.element.0) - Int($0.element.1)) }.max() ?? 0
+        #expect(maximumDelta <= 2, "text changed pixels beneath an opaque mask by \(maximumDelta)")
+    }
+
     @Test func textUsesVideoCanvasRotation() async throws {
         let timeline = CompositorRenderTests.timelineWith(
             Fixtures.videoTrack(clips: [backgroundTextClip(rotation: 90)])

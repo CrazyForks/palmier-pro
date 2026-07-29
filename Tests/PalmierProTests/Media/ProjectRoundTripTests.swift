@@ -25,6 +25,27 @@ struct ProjectRoundTripTests {
         #expect(try roundTrip(timeline) == timeline)
     }
 
+    @Test func projectPreservesClipMask() throws {
+        var clip = Fixtures.clip(start: 0, duration: 60)
+        clip.mask = Fixtures.mask(
+            mediaRef: clip.mediaRef,
+            applied: false,
+            inverted: true,
+            feather: 3,
+            expansion: -1
+        )
+        let file = ProjectFile(
+            timelines: [Fixtures.timeline(tracks: [Fixtures.videoTrack(clips: [clip])])],
+            activeTimelineId: nil,
+            openTimelineIds: nil
+        )
+
+        let data = try JSONEncoder().encode(file)
+        let decoded = try ProjectFile.decode(data)
+
+        #expect(decoded.timelines[0].tracks[0].clips[0].mask == clip.mask)
+    }
+
     @Test func clipPreservesFadeAndSpeedAndTrimAcrossRoundTrip() throws {
         var clip = Fixtures.clip(start: 0, duration: 60, trimStart: 10, trimEnd: 5, speed: 1.5, volume: 0.75)
         clip.fadeInFrames = 12
@@ -163,6 +184,7 @@ struct ProjectRoundTripTests {
         #expect(clip.edgeSoftness == 0)
         #expect(clip.linkGroupId == nil)
         #expect(clip.textContent == nil)
+        #expect(clip.mask == nil)
     }
 
     @Test(arguments: [-0.1, 1.1])

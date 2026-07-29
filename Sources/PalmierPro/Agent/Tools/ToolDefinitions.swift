@@ -55,6 +55,7 @@ enum ToolName: String, CaseIterable, Sendable {
     // Color & effects
     case applyColor = "apply_color"
     case applyEffect = "apply_effect"
+    case applyMask = "apply_mask"
     case inspectColor = "inspect_color"
     case denoiseAudio = "denoise_audio"
 
@@ -916,6 +917,24 @@ enum ToolDefinitions {
                     "atFrame": ["type": "integer", "description": "Optional project frame to sample a clip. Defaults to the clip's midpoint. Ignored for mediaRef."],
                     "reference": ["type": "string", "description": "Optional image/video asset id from get_media to compare against; returns its scopes + the subject−reference gap."],
                 ]
+            )
+        ),
+        AgentTool(
+            name: .applyMask,
+            description: "Create, adjust, or remove a point-selected mask for one video clip. create tracks forward from atFrame and requires a normalized source-image point. applied controls whether the result removes the background or remains a selection. update changes rendering controls without re-analyzing. remove detaches the mask. Undoable. get_timeline returns mask for masked clips.",
+            inputSchema: objectSchema(
+                properties: [
+                    "clipId": ["type": "string", "description": "One video clip id from get_timeline."],
+                    "action": ["type": "string", "enum": ["create", "update", "remove"], "description": "create tracks a new mask; update changes its controls; remove detaches it."],
+                    "pointX": ["type": "number", "minimum": 0, "maximum": 1, "description": "create only. Required horizontal source-image position, normalized from the left."],
+                    "pointY": ["type": "number", "minimum": 0, "maximum": 1, "description": "create only. Required vertical source-image position, normalized from the top."],
+                    "atFrame": ["type": "integer", "description": "create only. Project frame where forward tracking starts. Defaults to the current frame."],
+                    "applied": ["type": "boolean", "description": "Create or update. Whether the mask removes the background. Defaults to true on create."],
+                    "inverted": ["type": "boolean", "description": "Optional. Swap kept and removed regions."],
+                    "feather": ["type": "number", "minimum": 0, "maximum": 100, "description": "Optional edge feather in source pixels, 0–100."],
+                    "expansion": ["type": "number", "minimum": -50, "maximum": 50, "description": "Optional edge expansion in source pixels, -50…50; negative contracts."],
+                ],
+                required: ["clipId", "action"]
             )
         ),
         AgentTool(

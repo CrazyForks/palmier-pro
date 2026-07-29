@@ -134,6 +134,23 @@ extension EditorViewModel {
         maxBytes: Int64? = nil,
         workAlreadyAdmitted: Bool = false
     ) async throws -> URL {
+        try await commitStagedProjectFile(
+            stagedURL,
+            directoryName: Project.mediaDirectoryName,
+            filename: filename,
+            maxBytes: maxBytes,
+            workAlreadyAdmitted: workAlreadyAdmitted
+        )
+    }
+
+    func commitStagedProjectFile(
+        _ stagedURL: URL,
+        directoryName: String,
+        filename: String,
+        expectedProjectURL: URL? = nil,
+        maxBytes: Int64? = nil,
+        workAlreadyAdmitted: Bool = false
+    ) async throws -> URL {
         defer { try? FileManager.default.removeItem(at: stagedURL) }
         guard projectURL != nil else {
             let destination = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
@@ -144,6 +161,9 @@ extension EditorViewModel {
         }
         for _ in 0..<3 {
             guard let targetProjectURL = projectURL else { break }
+            guard expectedProjectURL == nil
+                    || targetProjectURL.standardizedFileURL == expectedProjectURL?.standardizedFileURL
+            else { break }
             try Task.checkCancellation()
             do {
                 let preparedURL = try await Task.detached(priority: .userInitiated) {
@@ -161,7 +181,7 @@ extension EditorViewModel {
                 }
                 if let destination = try await projectPackageCoordinator.performMutation({ () -> URL? in
                     guard self.projectURL?.standardizedFileURL == targetProjectURL.standardizedFileURL else { return nil }
-                    let destination = targetProjectURL.appendingPathComponent(Project.mediaDirectoryName, isDirectory: true)
+                    let destination = targetProjectURL.appendingPathComponent(directoryName, isDirectory: true)
                         .appendingPathComponent(filename, isDirectory: false)
                     try FileIO.installPreparedFile(from: preparedURL, to: destination)
                     return destination

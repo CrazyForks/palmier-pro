@@ -172,6 +172,7 @@ struct Clip: Codable, Sendable, Equatable, Identifiable {
     var volumeTrack: KeyframeTrack<Double>?
 
     var effects: [Effect]?
+    var mask: ClipMask? = nil
 
     /// How this clip composites over the tracks below it. nil = normal (source-over).
     var blendMode: BlendMode?
@@ -184,7 +185,7 @@ struct Clip: Codable, Sendable, Equatable, Identifiable {
         case linkGroupId, captionGroupId, multicamGroupId, textContent, textStyle, textAnimation, wordTimings
         case textFillMode
         case opacityTrack, positionTrack, scaleTrack, rotationTrack, cropTrack, volumeTrack
-        case effects, blendMode
+        case effects, mask, blendMode
     }
 
     /// Frame where this clip ends on the timeline
@@ -478,6 +479,7 @@ extension Clip {
             cropTrack: try? c.decode(KeyframeTrack<Crop>.self, forKey: .cropTrack),
             volumeTrack: try? c.decode(KeyframeTrack<Double>.self, forKey: .volumeTrack),
             effects: try? c.decode([Effect].self, forKey: .effects),
+            mask: try? c.decode(ClipMask.self, forKey: .mask),
             blendMode: try? c.decode(BlendMode.self, forKey: .blendMode)
         )
     }

@@ -49,6 +49,36 @@ enum CompositorFixtures {
         return try await ImageVideoGenerator.stillVideo(for: png, mediaRef: "compositor-pattern", size: renderSize)
     }
 
+    static func halfMaskVideoURL() async throws -> URL {
+        let extent = CGRect(origin: .zero, size: renderSize)
+        let image = CIImage(color: .white)
+            .cropped(to: CGRect(x: 0, y: 0, width: renderSize.width / 2, height: renderSize.height))
+            .composited(over: CIImage(color: .black).cropped(to: extent))
+        return try await maskVideoURL(name: "half", image: image)
+    }
+
+    static func softMaskVideoURL() async throws -> URL {
+        let image = CIImage(color: CIColor(red: 0.5, green: 0.5, blue: 0.5))
+            .cropped(to: CGRect(origin: .zero, size: renderSize))
+        return try await maskVideoURL(name: "soft", image: image)
+    }
+
+    @concurrent private static func maskVideoURL(name: String, image: CIImage) async throws -> URL {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("compositor-\(name)-mask.png")
+        if !FileManager.default.fileExists(atPath: url.path) {
+            try CIContext().writePNGRepresentation(
+                of: image, to: url, format: .RGBA8,
+                colorSpace: CGColorSpace(name: CGColorSpace.sRGB)!
+            )
+        }
+        return try await ImageVideoGenerator.stillVideo(
+            for: url,
+            mediaRef: "compositor-\(name)-mask",
+            size: renderSize
+        )
+    }
+
     static func patternClip(id: String = "c1", start: Int = 0, duration: Int = 60) -> Clip {
         Fixtures.clip(id: id, mediaRef: "pattern", start: start, duration: duration)
     }

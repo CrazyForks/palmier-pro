@@ -38,7 +38,9 @@ struct PreviewContainerView: View {
                     if let overlay = offlineOverlay(timelineState: timelineState) {
                         offlinePreview(assetId: overlay.assetId, path: overlay.path, isUnprocessable: overlay.isUnprocessable)
                     }
-                    if editor.chromaKeySamplingClipId != nil {
+                    if editor.maskPointSelectionClipId != nil {
+                        MaskPointSamplerOverlayView()
+                    } else if editor.chromaKeySamplingClipId != nil {
                         ChromaKeySamplerOverlayView()
                     } else if editor.cropEditingActive {
                         CropOverlayView()
@@ -55,6 +57,7 @@ struct PreviewContainerView: View {
                         .onEnded { value in
                             guard isTimeline,
                                   !editor.cropEditingActive,
+                                  editor.maskPointSelectionClipId == nil,
                                   editor.chromaKeySamplingClipId == nil,
                                   let id = PreviewHitTester.clipID(
                                     at: value.location,
@@ -82,6 +85,7 @@ struct PreviewContainerView: View {
         .background(AppTheme.Background.surfaceColor)
         .onChange(of: editor.activePreviewTabId) { _, _ in
             editor.cancelChromaKeySampling()
+            editor.cancelMaskPointSelection()
         }
     }
 

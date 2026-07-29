@@ -44,6 +44,7 @@ struct InspectorView: View {
         case textAnimate = "Animate"
         case video = "Video"
         case effects = "Adjust"
+        case mask = "Mask"
         case audio = "Audio"
         case multicam = "Multicam"
         case ai = "AI Edit"
@@ -75,13 +76,17 @@ struct InspectorView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onChange(of: editor.selectedClipIds) { _, _ in
             editor.cancelChromaKeySampling()
+            editor.cancelMaskPointSelection()
+            if let clipId = editor.maskPreviewClipId { editor.hideMaskPreview(clipId: clipId) }
             if !editor.isMarqueeSelecting { resolvePreferredTab() }
         }
         .onChange(of: editor.isMarqueeSelecting) { _, selecting in
             if !selecting { resolvePreferredTab() }
         }
-        .onChange(of: preferredTab) { _, newTab in
+        .onChange(of: preferredTab) { oldTab, newTab in
             if newTab != .video { editor.cropEditingActive = false }
+            if oldTab == .mask { editor.cancelMaskPointSelection() }
+            if oldTab == .mask, let clipId = editor.maskPreviewClipId { editor.hideMaskPreview(clipId: clipId) }
         }
     }
 
@@ -284,6 +289,7 @@ struct InspectorView: View {
             tabs.append(.video)
             tabs.append(.effects)
         }
+        if nonText.count == 1, nonText[0].mediaType == .video { tabs.append(.mask) }
         if !audios.isEmpty { tabs.append(.audio) }
         if selectedMulticamGroupId != nil { tabs.append(.multicam) }
         if aiEditEligible(selection: selection, resolvedClipAsset: resolvedClipAsset)
@@ -359,6 +365,10 @@ struct InspectorView: View {
                                     clips: selection.nonTextVisualClips,
                                     audioClips: selection.audioClips
                                 )
+                            case .mask:
+                                if let clip = selection.nonTextVisualClips.first {
+                                    MaskTab(clipId: clip.id)
+                                }
                             case .audio:
                                 audioTabContent(
                                     audioClips: selection.audioClips,

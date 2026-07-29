@@ -74,7 +74,8 @@ enum FrameRenderer {
             switch layer.source {
             case .track(let id):
                 guard let buffer = sourceFrame(id) else { continue }
-                image = composedLayer(layer, buffer: buffer, frame: frame,
+                let maskBuffer = layer.mask.flatMap { sourceFrame($0.trackID) }
+                image = composedLayer(layer, buffer: buffer, maskBuffer: maskBuffer, frame: frame,
                                       renderSize: renderSize, bakeOpacity: isNormal)
             case .text:
                 image = composedTextLayer(layer, frame: frame, renderSize: renderSize,
@@ -129,7 +130,8 @@ enum FrameRenderer {
         )
         return applyClipPipeline(
             image: intermediate, srcHeight: canvas.height, layer: layer, frame: frame,
-            renderSize: renderSize, alpha: alpha, bakeOpacity: bakeOpacity
+            renderSize: renderSize, alpha: alpha, bakeOpacity: bakeOpacity,
+            maskBuffer: layer.mask.flatMap { sourceFrame($0.trackID) }
         )
     }
 
@@ -233,6 +235,7 @@ enum FrameRenderer {
     private static func composedLayer(
         _ layer: LayerPlan,
         buffer: CVPixelBuffer,
+        maskBuffer: CVPixelBuffer?,
         frame: Int,
         renderSize: CGSize,
         bakeOpacity: Bool = true
@@ -248,7 +251,8 @@ enum FrameRenderer {
             .unpremultiplyingAlpha()
         return applyClipPipeline(
             image: image, srcHeight: CGFloat(CVPixelBufferGetHeight(buffer)), layer: layer,
-            frame: frame, renderSize: renderSize, alpha: alpha, bakeOpacity: bakeOpacity
+            frame: frame, renderSize: renderSize, alpha: alpha, bakeOpacity: bakeOpacity,
+            maskBuffer: maskBuffer
         )
     }
 
@@ -260,10 +264,12 @@ enum FrameRenderer {
         frame: Int,
         renderSize: CGSize,
         alpha: Double,
-        bakeOpacity: Bool
+        bakeOpacity: Bool,
+        maskBuffer: CVPixelBuffer?
     ) -> CIImage? {
         let clip = layer.clip
         var image = input
+        var sourceCropRect: CGRect?
 
         let crop = clip.cropAt(frame: frame)
         if !crop.isIdentity {
@@ -274,12 +280,14 @@ enum FrameRenderer {
                 width: max(1, crop.visibleWidthFraction * layer.natSize.width),
                 height: max(1, crop.visibleHeightFraction * layer.natSize.height)
             ).applying(layer.preferredTransform.inverted())
-            image = image.cropped(to: CGRect(
+            let rect = CGRect(
                 x: avRect.origin.x,
                 y: srcHeight - avRect.origin.y - avRect.height,
                 width: avRect.width,
                 height: avRect.height
-            ))
+            )
+            sourceCropRect = rect
+            image = image.cropped(to: rect)
         }
 
         // Effects apply in source-pixel space: after crop, before placement.
@@ -289,6 +297,37 @@ enum FrameRenderer {
                 guard let descriptor = EffectRegistry.descriptor(id: effect.type) else { continue }
                 image = descriptor.render(image, effect: effect, atOffset: offset)
             }
+        }
+
+        if let clipMask = clip.mask,
+           let maskPlan = layer.mask,
+           let maskBuffer,
+           let mask = alphaMask(
+               buffer: maskBuffer,
+               sourceExtent: input.extent,
+               cropRect: sourceCropRect,
+               outputExtent: image.extent,
+               clipMask: clipMask
+           ) {
+            if maskPlan.overlays {
+                let red = CIImage(
+                    color: CIColor(
+                        cgColor: AppTheme.Status.error
+                            .withAlphaComponent(AppTheme.Opacity.medium)
+                            .cgColor
+                    )
+                ).cropped(to: image.extent).composited(over: image)
+                image = red.applyingFilter("CIBlendWithMask", parameters: [
+                    kCIInputBackgroundImageKey: image,
+                    kCIInputMaskImageKey: mask,
+                ])
+            } else {
+                image = image.applyingFilter("CIBlendWithMask", parameters: [
+                    kCIInputBackgroundImageKey: CIImage(color: .clear).cropped(to: image.extent),
+                    kCIInputMaskImageKey: mask,
+                ])
+            }
+            image = image.cropped(to: image.extent).unpremultiplyingAlpha()
         }
 
         image = EdgeRoundingKernel.apply(
@@ -313,6 +352,42 @@ enum FrameRenderer {
             ])
         }
         return image
+    }
+
+    private static func alphaMask(
+        buffer: CVPixelBuffer,
+        sourceExtent: CGRect,
+        cropRect: CGRect?,
+        outputExtent: CGRect,
+        clipMask: ClipMask
+    ) -> CIImage? {
+        var mask = CIImage(cvPixelBuffer: buffer, options: [.colorSpace: NSNull()])
+        guard mask.extent.width > 0, mask.extent.height > 0 else { return nil }
+
+        if mask.extent.size != sourceExtent.size {
+            mask = mask.transformed(by: CGAffineTransform(
+                scaleX: sourceExtent.width / mask.extent.width,
+                y: sourceExtent.height / mask.extent.height
+            ))
+        }
+        if let cropRect { mask = mask.cropped(to: cropRect) }
+
+        if clipMask.expansion != 0 {
+            let radius = abs(clipMask.expansion)
+            let filter = clipMask.expansion > 0 ? "CIMorphologyMaximum" : "CIMorphologyMinimum"
+            mask = mask.clampedToExtent()
+                .applyingFilter(filter, parameters: [kCIInputRadiusKey: radius])
+                .cropped(to: outputExtent)
+        }
+        if clipMask.feather > 0 {
+            mask = mask.clampedToExtent()
+                .applyingFilter("CIGaussianBlur", parameters: [kCIInputRadiusKey: clipMask.feather])
+                .cropped(to: outputExtent)
+        }
+        if clipMask.inverted {
+            mask = mask.applyingFilter("CIColorInvert")
+        }
+        return mask.cropped(to: outputExtent)
     }
 
     /// Text renders in place; effects run before rotation and opacity, matching visual clips.

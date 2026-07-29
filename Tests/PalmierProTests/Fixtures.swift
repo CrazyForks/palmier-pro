@@ -42,4 +42,25 @@ enum Fixtures {
         t.tracks = tracks
         return t
     }
+
+    static func mask(
+        id: String = "mask-1",
+        mediaRef: String = "pattern",
+        applied: Bool = true,
+        inverted: Bool = false,
+        feather: Double = 0,
+        expansion: Double = 0
+    ) -> ClipMask {
+        let start = MediaTime(value: 0, timescale: 30)
+        return ClipMask(
+            id: id,
+            sourceMediaRef: mediaRef,
+            sourceRange: MediaTimeRange(start: start, duration: MediaTime(value: 60, timescale: 30)),
+            selection: MaskSelection(point: MaskNormalizedPoint(x: 0.25, y: 0.5), sourceTime: start),
+            isApplied: applied,
+            inverted: inverted,
+            feather: feather,
+            expansion: expansion
+        )
+    }
 }

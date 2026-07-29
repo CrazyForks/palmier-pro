@@ -45,24 +45,12 @@ enum PreviewHitTester {
         videoRect: CGRect,
         crop: Crop?
     ) -> Bool {
-        let t = clip.transformAt(frame: frame)
-        let rect = clipFrame(t, videoRect: videoRect)
-        guard rect.width > 0, rect.height > 0 else { return false }
-
-        // Move the point into the clip's unrotated local space (origin at clip center).
-        let center = CGPoint(x: rect.midX, y: rect.midY)
-        let rad = t.rotation * .pi / 180
-        let c = cos(rad), s = sin(rad)
-        let dx = point.x - center.x, dy = point.y - center.y
-        let lx = dx * c + dy * s
-        let ly = -dx * s + dy * c
-
-        let halfW = rect.width / 2, halfH = rect.height / 2
-        let left = -halfW + (crop?.left ?? 0) * rect.width
-        let right = halfW - (crop?.right ?? 0) * rect.width
-        let top = -halfH + (crop?.top ?? 0) * rect.height
-        let bottom = halfH - (crop?.bottom ?? 0) * rect.height
-        return lx >= left && lx <= right && ly >= top && ly <= bottom
+        guard let source = sourcePoint(at: point, clip: clip, frame: frame, videoRect: videoRect) else {
+            return false
+        }
+        let crop = crop ?? Crop()
+        return source.x >= crop.left && source.x <= 1 - crop.right
+            && source.y >= crop.top && source.y <= 1 - crop.bottom
     }
 
     static func videoContentRect(in viewSize: CGSize, timeline: Timeline) -> CGRect {
@@ -78,7 +66,43 @@ enum PreviewHitTester {
         return CGRect(x: (viewSize.width - w) / 2, y: (viewSize.height - h) / 2, width: w, height: h)
     }
 
-    private static func clipFrame(_ t: Transform, videoRect: CGRect) -> CGRect {
+    static func sourceNormalizedPoint(
+        at point: CGPoint,
+        viewSize: CGSize,
+        clip: Clip,
+        frame: Int,
+        timeline: Timeline
+    ) -> MaskNormalizedPoint? {
+        let videoRect = videoContentRect(in: viewSize, timeline: timeline)
+        guard let source = sourcePoint(at: point, clip: clip, frame: frame, videoRect: videoRect) else {
+            return nil
+        }
+        let crop = clip.cropAt(frame: frame)
+        guard source.x >= crop.left, source.x <= 1 - crop.right,
+              source.y >= crop.top, source.y <= 1 - crop.bottom
+        else { return nil }
+        return MaskNormalizedPoint(x: source.x, y: source.y)
+    }
+
+    private static func sourcePoint(
+        at point: CGPoint,
+        clip: Clip,
+        frame: Int,
+        videoRect: CGRect
+    ) -> CGPoint? {
+        let transform = clip.transformAt(frame: frame)
+        let rect = clipFrame(transform, videoRect: videoRect)
+        guard rect.width > 0, rect.height > 0 else { return nil }
+        let radians = transform.rotation * .pi / 180
+        let dx = point.x - rect.midX, dy = point.y - rect.midY
+        var x = (dx * cos(radians) + dy * sin(radians)) / rect.width + 0.5
+        var y = (-dx * sin(radians) + dy * cos(radians)) / rect.height + 0.5
+        if transform.flipHorizontal { x = 1 - x }
+        if transform.flipVertical { y = 1 - y }
+        return CGPoint(x: x, y: y)
+    }
+
+    static func clipFrame(_ t: Transform, videoRect: CGRect) -> CGRect {
         let tl = t.topLeft
         return CGRect(
             x: videoRect.origin.x + tl.x * videoRect.width,
