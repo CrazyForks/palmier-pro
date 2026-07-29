@@ -94,6 +94,15 @@ struct RemoveSilenceParamTests {
         #expect(parsed.speechPaddingSeconds == 0.15)
     }
 
+    @Test func acceptsClipScopeWithoutChangingSettings() throws {
+        let parsed = try ToolExecutor.parseSilenceRemovalSettings(
+            ["clipIds": ["clip-1"]],
+            defaults: .default
+        )
+
+        #expect(parsed == .default)
+    }
+
     @Test func rejectsInvalidValuesAndUnknownKeys() {
         #expect(throws: ToolError.self) {
             _ = try ToolExecutor.parseSilenceRemovalSettings(
@@ -125,5 +134,51 @@ struct RemoveSilenceParamTests {
         )
 
         #expect(harness.editor.silenceRemovalSettings == before)
+    }
+
+    @Test func rejectsInvalidOrMissingClipScope() async {
+        let harness = ToolHarness()
+
+        #expect((await harness.runRaw("remove_silence", args: ["clipIds": []])).isError)
+        #expect((await harness.runRaw("remove_silence", args: ["clipIds": [42]])).isError)
+        #expect((await harness.runRaw("remove_silence", args: ["clipIds": ["missing-clip"]])).isError)
+    }
+
+    @Test func resolvesShortClipIdAndUsesClipScope() async {
+        let clipId = "AAAAAAAA-1111-2222-3333-444444444444"
+        let timeline = Fixtures.timeline(tracks: [
+            Fixtures.audioTrack(clips: [
+                Fixtures.clip(id: clipId, mediaType: .audio, start: 0, duration: 100),
+            ]),
+        ])
+        let harness = ToolHarness(timeline: timeline)
+
+        let result = await harness.runRaw(
+            "remove_silence",
+            args: ["clipIds": [String(clipId.prefix(8))]]
+        )
+
+        #expect(result.isError)
+        #expect(ToolHarness.textOf(result).contains("No dead air in the selected clips"))
+    }
+
+    @Test func rejectsUnlinkedClipsAcrossTracks() async {
+        let timeline = Fixtures.timeline(tracks: [
+            Fixtures.audioTrack(clips: [
+                Fixtures.clip(id: "a1", mediaType: .audio, start: 0, duration: 100),
+            ]),
+            Fixtures.audioTrack(clips: [
+                Fixtures.clip(id: "a2", mediaType: .audio, start: 0, duration: 100),
+            ]),
+        ])
+        let harness = ToolHarness(timeline: timeline)
+
+        let result = await harness.runRaw(
+            "remove_silence",
+            args: ["clipIds": ["a1", "a2"]]
+        )
+
+        #expect(result.isError)
+        #expect(ToolHarness.textOf(result).contains("must share one track"))
     }
 }

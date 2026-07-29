@@ -3,7 +3,7 @@ import Foundation
 extension ToolExecutor {
 
     private static let removeWordsAllowedKeys: Set<String> = ["words", "matches", "cutAggressiveness", "language"]
-    private static let removeSilenceAllowedKeys: Set<String> = ["minimumPauseSeconds", "speechPaddingSeconds"]
+    private static let removeSilenceAllowedKeys: Set<String> = ["clipIds", "minimumPauseSeconds", "speechPaddingSeconds"]
 
     func removeWords(_ editor: EditorViewModel, _ args: [String: Any]) async throws -> ToolResult {
         try validateUnknownKeys(args, allowed: Self.removeWordsAllowedKeys, path: "remove_words")
@@ -130,12 +130,36 @@ extension ToolExecutor {
             args,
             defaults: editor.silenceRemovalSettings
         )
+        let clipIds: [String]?
+        if let rawClipIds = args["clipIds"] {
+            guard let values = rawClipIds as? [Any], !values.isEmpty else {
+                throw ToolError("remove_silence: clipIds must be a non-empty array of clip IDs.")
+            }
+            var seen = Set<String>()
+            clipIds = try values.enumerated().compactMap { index, raw in
+                guard let value = raw as? String,
+                      !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                    throw ToolError("remove_silence: clipIds[\(index)] must be a non-empty string.")
+                }
+                guard editor.findClip(id: value) != nil else {
+                    throw ToolError("Clip not found: \(value)")
+                }
+                return seen.insert(value).inserted ? value : nil
+            }
+        } else {
+            clipIds = nil
+        }
         let snapshot = timelineSnapshot(editor)
         let result = editor.undo.perform("Remove Silence (Agent)") {
-            editor.removeAllDeadAir(settings: settings)
+            if let clipIds {
+                editor.removeDeadAir(clipIds: clipIds, settings: settings)
+            } else {
+                editor.removeAllDeadAir(settings: settings)
+            }
         }
         guard let result else {
-            throw ToolError("No dead air on the timeline. Speech analysis may still be running, or the audio has no quiet non-speech sections.")
+            let scope = clipIds == nil ? "on the timeline" : "in the selected clips"
+            throw ToolError("No dead air \(scope). Speech analysis may still be running, or the audio has no quiet non-speech sections.")
         }
         if let refusal = result.refusal, result.sections == 0 {
             throw ToolError("Ripple delete refused: \(refusal)")
@@ -144,12 +168,13 @@ extension ToolExecutor {
         if let refusal = result.refusal {
             notes.append("A later track refused: \(refusal). Earlier tracks were already edited.")
         }
-        let extra: [String: Any] = [
+        var extra: [String: Any] = [
             "sectionsRemoved": result.sections,
             "removedFrames": result.removedFrames,
             "minimumPauseSeconds": settings.minimumPauseSeconds,
             "speechPaddingSeconds": settings.speechPaddingSeconds,
         ]
+        if let clipIds { extra["clipIds"] = clipIds }
         return mutationResult(
             editor, since: snapshot,
             extra: extra,

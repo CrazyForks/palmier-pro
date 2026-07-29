@@ -89,6 +89,49 @@ extension EditorViewModel {
         }
     }
 
+    /// Ripples every dead-air span within selected clips on one track or in one linked A/V unit.
+    @discardableResult
+    func removeDeadAir(
+        clipIds: [String],
+        settings: SilenceRemovalSettings
+    ) -> (sections: Int, removedFrames: Int, refusal: String?)? {
+        let targets = clipIds.compactMap { id -> (trackIndex: Int, clip: Clip)? in
+            guard let loc = findClip(id: id) else { return nil }
+            return (loc.trackIndex, timeline.tracks[loc.trackIndex].clips[loc.clipIndex])
+        }
+        guard targets.count == clipIds.count, !targets.isEmpty else { return nil }
+
+        let trackIndices = Set(targets.map(\.trackIndex))
+        let anchorTrackIndex: Int
+        let anchorClips: [Clip]
+        if trackIndices.count == 1, let onlyTrack = trackIndices.first {
+            anchorTrackIndex = onlyTrack
+            anchorClips = targets.map(\.clip)
+        } else {
+            let linkGroups = targets.compactMap { $0.clip.linkGroupId }
+            guard linkGroups.count == targets.count, Set(linkGroups).count == 1 else {
+                return (0, 0, "Selected clips must share one track or belong to one linked A/V unit.")
+            }
+            anchorTrackIndex = trackIndices
+                .filter { timeline.tracks[$0].type == .audio }
+                .min() ?? trackIndices.min()!
+            anchorClips = targets.filter { $0.trackIndex == anchorTrackIndex }.map(\.clip)
+        }
+
+        let ranges = RippleEngine.mergeRanges(
+            anchorClips.flatMap { deadAirRanges(for: $0, settings: settings) }
+        )
+        guard !ranges.isEmpty else { return nil }
+        switch rippleDeleteRangesOnTrack(trackIndex: anchorTrackIndex, ranges: ranges) {
+        case .ok(let report):
+            return (ranges.count, report.removedFrames, nil)
+        case .refused(let reason):
+            NSSound.beep()
+            Log.editor.notice("remove dead air blocked: \(reason)")
+            return (0, 0, reason)
+        }
+    }
+
     /// Ripples dead air per-track, updating ranges between passes. Stops if a track refuses.
     @discardableResult
     func removeAllDeadAir(
