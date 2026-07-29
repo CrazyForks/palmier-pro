@@ -329,9 +329,11 @@ extension EditorViewModel {
     ) {
         registerTimelineUndo(actionName) { vm in
             let locations = vm.clipLocations(for: undoTarget.map(\.id))
-            for entry in undoTarget {
-                if let loc = locations[entry.id] {
-                    vm.timeline.tracks[loc.trackIndex].clips[loc.clipIndex] = entry.clip
+            vm.mutateActiveTimeline { timeline in
+                for entry in undoTarget {
+                    if let loc = locations[entry.id] {
+                        timeline.tracks[loc.trackIndex].clips[loc.clipIndex] = entry.clip
+                    }
                 }
             }
             vm.registerClipStateSwap(undoTarget: redoTarget, redoTarget: undoTarget, actionName: actionName)
@@ -362,18 +364,20 @@ extension EditorViewModel {
         var touchedText = false
         var touchedVisual = false
         let locations = clipLocations(for: clipIds)
-        for clipId in clipIds {
-            guard let loc = locations[clipId] else { continue }
-            var clip = timeline.tracks[loc.trackIndex].clips[loc.clipIndex]
-            if dragBefore[clipId] == nil {
-                dragBefore[clipId] = clip
-            }
-            modify(&clip)
-            timeline.tracks[loc.trackIndex].clips[loc.clipIndex] = clip
-            if clip.mediaType == .text {
-                touchedText = true
-            } else {
-                touchedVisual = true
+        mutateActiveTimeline { timeline in
+            for clipId in clipIds {
+                guard let loc = locations[clipId] else { continue }
+                var clip = timeline.tracks[loc.trackIndex].clips[loc.clipIndex]
+                if dragBefore[clipId] == nil {
+                    dragBefore[clipId] = clip
+                }
+                modify(&clip)
+                timeline.tracks[loc.trackIndex].clips[loc.clipIndex] = clip
+                if clip.mediaType == .text {
+                    touchedText = true
+                } else {
+                    touchedVisual = true
+                }
             }
         }
         if touchedText { videoEngine?.refreshVisuals() }
@@ -394,14 +398,16 @@ extension EditorViewModel {
         var touchedText = false
         var touchedVisual = false
         let locations = clipLocations(for: clipIds)
-        for clipId in clipIds {
-            guard let original = dragBefore.removeValue(forKey: clipId),
-                  let loc = locations[clipId] else { continue }
-            timeline.tracks[loc.trackIndex].clips[loc.clipIndex] = original
-            if original.mediaType == .text {
-                touchedText = true
-            } else {
-                touchedVisual = true
+        mutateActiveTimeline { timeline in
+            for clipId in clipIds {
+                guard let original = dragBefore.removeValue(forKey: clipId),
+                      let loc = locations[clipId] else { continue }
+                timeline.tracks[loc.trackIndex].clips[loc.clipIndex] = original
+                if original.mediaType == .text {
+                    touchedText = true
+                } else {
+                    touchedVisual = true
+                }
             }
         }
         if touchedText { videoEngine?.refreshVisuals() }
@@ -550,22 +556,24 @@ extension EditorViewModel {
         var before: [(id: String, clip: Clip)] = []
         var after: [(id: String, clip: Clip)] = []
         let locations = clipLocations(for: clipIds)
-        for clipId in clipIds {
-            guard let loc = locations[clipId] else { continue }
-            let current = timeline.tracks[loc.trackIndex].clips[loc.clipIndex]
-            var clip = current
-            let undoTarget = dragBefore.removeValue(forKey: clipId) ?? current
-            modify(&clip)
-            guard current != clip || undoTarget != clip else { continue }
-            timeline.tracks[loc.trackIndex].clips[loc.clipIndex] = clip
-            if undoTarget != clip {
-                before.append((clipId, undoTarget))
-                after.append((clipId, clip))
-            }
-            if clip.mediaType == .text {
-                touchedText = true
-            } else {
-                touchedVisual = true
+        mutateActiveTimeline { timeline in
+            for clipId in clipIds {
+                guard let loc = locations[clipId] else { continue }
+                let current = timeline.tracks[loc.trackIndex].clips[loc.clipIndex]
+                var clip = current
+                let undoTarget = dragBefore.removeValue(forKey: clipId) ?? current
+                modify(&clip)
+                guard current != clip || undoTarget != clip else { continue }
+                timeline.tracks[loc.trackIndex].clips[loc.clipIndex] = clip
+                if undoTarget != clip {
+                    before.append((clipId, undoTarget))
+                    after.append((clipId, clip))
+                }
+                if clip.mediaType == .text {
+                    touchedText = true
+                } else {
+                    touchedVisual = true
+                }
             }
         }
         if !before.isEmpty {
@@ -573,6 +581,10 @@ extension EditorViewModel {
         }
         if touchedText { videoEngine?.refreshVisuals() }
         if touchedVisual { notifyTimelineChanged() }
+    }
+
+    private func mutateActiveTimeline(_ mutation: (inout Timeline) -> Void) {
+        mutation(&timeline)
     }
 
     private func clipLocations(for clipIds: [String]) -> [String: ClipLocation] {
