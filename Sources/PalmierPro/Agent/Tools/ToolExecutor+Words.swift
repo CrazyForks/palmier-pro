@@ -3,6 +3,7 @@ import Foundation
 extension ToolExecutor {
 
     private static let removeWordsAllowedKeys: Set<String> = ["words", "matches", "cutAggressiveness", "language"]
+    private static let removeSilenceAllowedKeys: Set<String> = ["minimumPauseSeconds", "speechPaddingSeconds"]
 
     func removeWords(_ editor: EditorViewModel, _ args: [String: Any]) async throws -> ToolResult {
         try validateUnknownKeys(args, allowed: Self.removeWordsAllowedKeys, path: "remove_words")
@@ -125,10 +126,13 @@ extension ToolExecutor {
     }
 
     func removeSilence(_ editor: EditorViewModel, _ args: [String: Any]) throws -> ToolResult {
-        try validateUnknownKeys(args, allowed: [], path: "remove_silence")
+        let settings = try Self.parseSilenceRemovalSettings(
+            args,
+            defaults: editor.silenceRemovalSettings
+        )
         let snapshot = timelineSnapshot(editor)
         let result = editor.undo.perform("Remove Silence (Agent)") {
-            editor.removeAllDeadAir()
+            editor.removeAllDeadAir(settings: settings)
         }
         guard let result else {
             throw ToolError("No dead air on the timeline. Speech analysis may still be running, or the audio has no quiet non-speech sections.")
@@ -140,11 +144,57 @@ extension ToolExecutor {
         if let refusal = result.refusal {
             notes.append("A later track refused: \(refusal). Earlier tracks were already edited.")
         }
+        let extra: [String: Any] = [
+            "sectionsRemoved": result.sections,
+            "removedFrames": result.removedFrames,
+            "minimumPauseSeconds": settings.minimumPauseSeconds,
+            "speechPaddingSeconds": settings.speechPaddingSeconds,
+        ]
         return mutationResult(
             editor, since: snapshot,
-            extra: ["sectionsRemoved": result.sections, "removedFrames": result.removedFrames],
+            extra: extra,
             notes: notes
         )
+    }
+
+    static func parseSilenceRemovalSettings(
+        _ args: [String: Any],
+        defaults: SilenceRemovalSettings
+    ) throws -> SilenceRemovalSettings {
+        try validateUnknownKeys(args, allowed: removeSilenceAllowedKeys, path: "remove_silence")
+
+        func value(
+            _ key: String,
+            fallback: Double,
+            range: ClosedRange<Double>
+        ) throws -> Double {
+            guard args[key] != nil else { return fallback }
+            guard let value = args.double(key), value.isFinite, range.contains(value) else {
+                throw ToolError(
+                    "remove_silence: \(key) must be a finite number from "
+                    + "\(range.lowerBound) through \(range.upperBound)."
+                )
+            }
+            return value
+        }
+
+        let minimumPause = try value(
+            "minimumPauseSeconds",
+            fallback: defaults.minimumPauseSeconds,
+            range: SilenceRemovalSettings.minimumPauseRange
+        )
+        let speechPadding = try value(
+            "speechPaddingSeconds",
+            fallback: defaults.speechPaddingSeconds,
+            range: SilenceRemovalSettings.speechPaddingRange
+        )
+        guard let settings = SilenceRemovalSettings(
+            minimumPauseSeconds: minimumPause,
+            speechPaddingSeconds: speechPadding
+        ) else {
+            throw ToolError("remove_silence: invalid silence-removal settings.")
+        }
+        return settings
     }
 
     static func parseWordSpans(_ raw: [Any]) throws -> [(Int, Int)] {

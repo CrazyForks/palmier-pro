@@ -19,11 +19,11 @@ extension EditorViewModel {
         silenceRemovalSettings = settings
     }
 
-    private func deadAirMask(for clip: Clip) -> [Bool]? {
+    private func deadAirMask(for clip: Clip, settings: SilenceRemovalSettings) -> [Bool]? {
         guard let member = multicamGroup(of: clip)?.member(mediaRef: clip.mediaRef) else {
-            return mediaVisualCache.deadAirMask(for: clip.mediaRef, settings: silenceRemovalSettings)
+            return mediaVisualCache.deadAirMask(for: clip.mediaRef, settings: settings)
         }
-        guard let groupMask = multicamDeadAirMask(for: clip) else { return nil }
+        guard let groupMask = multicamDeadAirMask(for: clip, settings: settings) else { return nil }
         let shift = Int((member.sync.offsetSeconds / VoiceActivity.chunkDuration).rounded())
         if shift > 0 { return Array(groupMask.dropFirst(shift)) }
         if shift < 0 { return [Bool](repeating: false, count: -shift) + groupMask }
@@ -32,7 +32,7 @@ extension EditorViewModel {
 
     /// The dead-air span under `timelineFrame` in `clip`, as a timeline range. Nil when the frame isn't dead air.
     func deadAirSpanRange(clip: Clip, atTimelineFrame frame: Int) -> FrameRange? {
-        guard let mask = deadAirMask(for: clip), !mask.isEmpty else { return nil }
+        guard let mask = deadAirMask(for: clip, settings: silenceRemovalSettings), !mask.isEmpty else { return nil }
         let cellFrames = VoiceActivity.chunkDuration * Double(max(1, timeline.fps))
         let sourceFrame = Double(clip.trimStartFrame) + Double(frame - clip.startFrame) * clip.speed
         let cell = Int(sourceFrame / cellFrames)
@@ -45,8 +45,12 @@ extension EditorViewModel {
     }
 
     /// Every dead-air span visible within `clip`, as timeline ranges.
-    func deadAirRanges(for clip: Clip) -> [FrameRange] {
-        guard let mask = deadAirMask(for: clip), !mask.isEmpty else { return [] }
+    func deadAirRanges(
+        for clip: Clip,
+        settings: SilenceRemovalSettings? = nil
+    ) -> [FrameRange] {
+        let effectiveSettings = settings ?? silenceRemovalSettings
+        guard let mask = deadAirMask(for: clip, settings: effectiveSettings), !mask.isEmpty else { return [] }
         let cellFrames = VoiceActivity.chunkDuration * Double(max(1, timeline.fps))
         var ranges: [FrameRange] = []
         var i = 0
@@ -63,10 +67,13 @@ extension EditorViewModel {
     }
 
     /// Dead-air ranges grouped by track; each track ripples its own spans.
-    func allDeadAir() -> [(trackIndex: Int, ranges: [FrameRange])] {
+    func allDeadAir(
+        settings: SilenceRemovalSettings? = nil
+    ) -> [(trackIndex: Int, ranges: [FrameRange])] {
+        let effectiveSettings = settings ?? silenceRemovalSettings
         var out: [(Int, [FrameRange])] = []
         for (ti, track) in timeline.tracks.enumerated() where track.type == .audio {
-            let ranges = track.clips.flatMap { deadAirRanges(for: $0) }
+            let ranges = track.clips.flatMap { deadAirRanges(for: $0, settings: effectiveSettings) }
             if !ranges.isEmpty { out.append((ti, ranges)) }
         }
         return out
@@ -84,13 +91,16 @@ extension EditorViewModel {
 
     /// Ripples dead air per-track, updating ranges between passes. Stops if a track refuses.
     @discardableResult
-    func removeAllDeadAir() -> (sections: Int, removedFrames: Int, refusal: String?)? {
-        undo.perform("Remove Dead Air") {
+    func removeAllDeadAir(
+        settings: SilenceRemovalSettings? = nil
+    ) -> (sections: Int, removedFrames: Int, refusal: String?)? {
+        let effectiveSettings = settings ?? silenceRemovalSettings
+        return undo.perform("Remove Dead Air") { () -> (sections: Int, removedFrames: Int, refusal: String?)? in
             var sections = 0
             var removedFrames = 0
             var refusal: String?
             for _ in timeline.tracks.indices {
-                guard let next = allDeadAir().first else { break }
+                guard let next = allDeadAir(settings: effectiveSettings).first else { break }
                 switch rippleDeleteRangesOnTrack(trackIndex: next.trackIndex, ranges: next.ranges) {
                 case .ok(let report):
                     sections += next.ranges.count

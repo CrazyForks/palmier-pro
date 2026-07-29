@@ -64,3 +64,66 @@ struct RemoveWordsParamTests {
         }
     }
 }
+
+@Suite("remove_silence — param validation")
+@MainActor
+struct RemoveSilenceParamTests {
+    @Test func omittedValuesUseCurrentSettings() throws {
+        let current = try #require(SilenceRemovalSettings(
+            minimumPauseSeconds: 1.25,
+            speechPaddingSeconds: 0.2
+        ))
+
+        let parsed = try ToolExecutor.parseSilenceRemovalSettings([:], defaults: current)
+
+        #expect(parsed == current)
+    }
+
+    @Test func acceptsPartialOneShotOverride() throws {
+        let current = try #require(SilenceRemovalSettings(
+            minimumPauseSeconds: 0.5,
+            speechPaddingSeconds: 0.15
+        ))
+
+        let parsed = try ToolExecutor.parseSilenceRemovalSettings(
+            ["minimumPauseSeconds": 1.0],
+            defaults: current
+        )
+
+        #expect(parsed.minimumPauseSeconds == 1.0)
+        #expect(parsed.speechPaddingSeconds == 0.15)
+    }
+
+    @Test func rejectsInvalidValuesAndUnknownKeys() {
+        #expect(throws: ToolError.self) {
+            _ = try ToolExecutor.parseSilenceRemovalSettings(
+                ["minimumPauseSeconds": 0.1],
+                defaults: .default
+            )
+        }
+        #expect(throws: ToolError.self) {
+            _ = try ToolExecutor.parseSilenceRemovalSettings(
+                ["speechPaddingSeconds": "lots"],
+                defaults: .default
+            )
+        }
+        #expect(throws: ToolError.self) {
+            _ = try ToolExecutor.parseSilenceRemovalSettings(
+                ["persist": true],
+                defaults: .default
+            )
+        }
+    }
+
+    @Test func overrideDoesNotChangeEditorSettings() async {
+        let harness = ToolHarness()
+        let before = harness.editor.silenceRemovalSettings
+
+        _ = await harness.runRaw(
+            "remove_silence",
+            args: ["minimumPauseSeconds": 1.0, "speechPaddingSeconds": 0.25]
+        )
+
+        #expect(harness.editor.silenceRemovalSettings == before)
+    }
+}

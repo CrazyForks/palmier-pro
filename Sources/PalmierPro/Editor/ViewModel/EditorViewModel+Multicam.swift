@@ -562,7 +562,10 @@ extension EditorViewModel {
 
     // MARK: - Dead air (remove_silence)
 
-    func multicamDeadAirMask(for clip: Clip) -> [Bool]? {
+    func multicamDeadAirMask(
+        for clip: Clip,
+        settings: SilenceRemovalSettings
+    ) -> [Bool]? {
         guard clip.mediaType == .audio, let group = multicamGroup(of: clip) else { return nil }
         let mics = group.mics
         guard !mics.isEmpty else { return nil }
@@ -571,7 +574,7 @@ extension EditorViewModel {
         for mic in mics {
             guard let mask = mediaVisualCache.deadAirMask(
                 for: mic.mediaRef,
-                settings: silenceRemovalSettings
+                settings: settings
             ), !mask.isEmpty else { return nil }
             let shift = Int((mic.sync.offsetSeconds / cellSeconds).rounded())
             var shifted = [Bool](repeating: true, count: max(0, mask.count + shift))
