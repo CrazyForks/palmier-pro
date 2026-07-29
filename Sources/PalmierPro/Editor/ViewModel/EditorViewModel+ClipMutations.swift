@@ -386,14 +386,25 @@ extension EditorViewModel {
     }
 
     func revertClipProperty(clipId: String) {
-        guard let original = dragBefore.removeValue(forKey: clipId),
-              let loc = findClip(id: clipId) else { return }
-        timeline.tracks[loc.trackIndex].clips[loc.clipIndex] = original
-        if original.mediaType == .text {
-            videoEngine?.refreshVisuals()
-        } else {
-            notifyTimelineChanged()
+        revertClipProperties(clipIds: [clipId])
+    }
+
+    func revertClipProperties(clipIds: [String]) {
+        var touchedText = false
+        var touchedVisual = false
+        let locations = clipLocations(for: clipIds)
+        for clipId in clipIds {
+            guard let original = dragBefore.removeValue(forKey: clipId),
+                  let loc = locations[clipId] else { continue }
+            timeline.tracks[loc.trackIndex].clips[loc.clipIndex] = original
+            if original.mediaType == .text {
+                touchedText = true
+            } else {
+                touchedVisual = true
+            }
         }
+        if touchedText { videoEngine?.refreshVisuals() }
+        if touchedVisual { notifyTimelineChanged() }
     }
 
     func debouncedCommitClipProperties(

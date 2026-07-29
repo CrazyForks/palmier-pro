@@ -571,6 +571,25 @@ struct ClipPropertyCommitTests {
         #expect(undoManager.canUndo == false)
     }
 
+    @Test func bulkClipPropertyRevertRestoresMixedTextStylesAcrossTracks() {
+        var a = Fixtures.clip(id: "a", mediaRef: "text", mediaType: .text, start: 0, duration: 30)
+        var b = Fixtures.clip(id: "b", mediaRef: "text", mediaType: .text, start: 0, duration: 30)
+        a.textStyle = TextStyle(fontName: "Helvetica", fontSize: 48)
+        b.textStyle = TextStyle(fontName: "Avenir", fontSize: 64)
+        let e = editor([
+            Fixtures.videoTrack(clips: [a]),
+            Fixtures.videoTrack(clips: [b]),
+        ])
+
+        e.applyTextStyles(clipIds: ["a", "b"], fitToContent: true) {
+            $0.fontName = "Courier"
+        }
+        e.revertClipProperties(clipIds: ["b", "missing", "a"])
+
+        #expect(e.clipFor(id: "a") == a)
+        #expect(e.clipFor(id: "b") == b)
+    }
+
     @Test func cancelDebouncedCommitPreventsPendingHighlightWrite() async throws {
         var clip = Fixtures.clip(id: "caption", mediaRef: "text", mediaType: .text, start: 0, duration: 30)
         clip.textAnimation = TextAnimation(preset: .highlightPop, highlight: .init(r: 1, g: 0, b: 0, a: 1))
