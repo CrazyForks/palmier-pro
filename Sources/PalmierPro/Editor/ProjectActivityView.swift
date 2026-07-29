@@ -143,6 +143,7 @@ struct ProjectActivityView: View {
                 entries = update
                 isLoading = false
             }
+            guard !Task.isCancelled else { return }
             if isLoading {
                 isLoading = false
                 unavailableMessage = "Activity unavailable"
