@@ -544,6 +544,9 @@ struct ClipPropertyCommitTests {
         undoManager.undo()
         #expect(e.timeline.tracks[0].clips.allSatisfy { $0.textAnimation == nil })
         #expect(undoManager.canUndo == false)
+        undoManager.redo()
+        #expect(e.timeline.tracks[0].clips.allSatisfy { $0.textAnimation?.preset == .wordPop })
+        #expect(undoManager.canRedo == false)
     }
 
     @Test func bulkClipPropertyPreviewCommitAndUndoResolveAcrossTracks() {

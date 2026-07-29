@@ -328,8 +328,9 @@ extension EditorViewModel {
         actionName: String
     ) {
         registerTimelineUndo(actionName) { vm in
+            let locations = vm.clipLocations(for: undoTarget.map(\.id))
             for entry in undoTarget {
-                if let loc = vm.findClip(id: entry.id) {
+                if let loc = locations[entry.id] {
                     vm.timeline.tracks[loc.trackIndex].clips[loc.clipIndex] = entry.clip
                 }
             }
