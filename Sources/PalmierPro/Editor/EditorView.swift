@@ -405,6 +405,7 @@ final class EditorSplitViewController: PaddedDividerSplitViewController {
         guard view.bounds.width > 0, let work = pendingPositioning else { return }
         pendingPositioning = nil
         work()
+        updateTourFrame()
     }
 }
 
