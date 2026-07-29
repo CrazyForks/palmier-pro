@@ -143,6 +143,10 @@ struct ProjectActivityView: View {
                 entries = update
                 isLoading = false
             }
+            if isLoading {
+                isLoading = false
+                unavailableMessage = "Activity unavailable"
+            }
         } catch {
             guard !Task.isCancelled else { return }
             Log.generation.warning("project activity failed: \(error.localizedDescription)")
@@ -156,6 +160,10 @@ struct ProjectActivityButton: View {
     @Environment(EditorViewModel.self) var editor
     @State private var isPresented = false
 
+    private var projectId: String? {
+        editor.projectId ?? editor.projectURL.flatMap { ProjectRegistry.shared.id(for: $0)?.uuidString }
+    }
+
     var body: some View {
         Button(action: { isPresented.toggle() }) {
             Image(systemName: "clock.arrow.circlepath")
@@ -167,7 +175,7 @@ struct ProjectActivityButton: View {
         .buttonStyle(.plain)
         .help("Project Activity")
         .popover(isPresented: $isPresented, arrowEdge: .bottom) {
-            ProjectActivityView(projectId: editor.projectId)
+            ProjectActivityView(projectId: projectId)
         }
     }
 }
