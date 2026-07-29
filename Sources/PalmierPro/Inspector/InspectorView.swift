@@ -64,6 +64,7 @@ struct InspectorView: View {
     @State var collapsedAdjustSubgroups: Set<String> = [
         "Detail", "Blur", "Motion Blur", "Vignette", "Film Grain", "Glow", "Chroma Key",
     ]
+    @State private var customAspectRatioContext: CustomAspectRatioContext?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -87,6 +88,9 @@ struct InspectorView: View {
             if newTab != .video { editor.cropEditingActive = false }
             if oldTab == .mask { editor.cancelMaskPointSelection() }
             if oldTab == .mask, let clipId = editor.maskPreviewClipId { editor.hideMaskPreview(clipId: clipId) }
+        }
+        .sheet(item: $customAspectRatioContext) { context in
+            CustomAspectRatioSheet(context: context)
         }
     }
 
@@ -150,7 +154,7 @@ struct InspectorView: View {
                 metadataSection(title: "Settings") {
                     menuMetadataRow(label: "Resolution", value: "\(editor.timeline.width) × \(editor.timeline.height)") { qualityMenuItems }
                     menuMetadataRow(label: "Frame Rate", value: "\(editor.timeline.fps) fps") { fpsMenuItems }
-                    menuMetadataRow(label: "Aspect Ratio", value: formatAspectRatio(width: editor.timeline.width, height: editor.timeline.height)) { aspectMenuItems }
+                    menuMetadataRow(label: "Aspect Ratio", value: CanvasAspectRatio.displayLabel(width: editor.timeline.width, height: editor.timeline.height)) { aspectMenuItems }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -191,11 +195,6 @@ struct InspectorView: View {
         .frame(height: AppTheme.IconSize.md)
     }
 
-    private func formatAspectRatio(width: Int, height: Int) -> String {
-        let gcd = gcd(width, height)
-        return "\(width / gcd):\(height / gcd)"
-    }
-
     private func menuMetadataRow<MenuContent: View>(
         label: String,
         value: String,
@@ -228,11 +227,19 @@ struct InspectorView: View {
                 HStack {
                     Text(preset.label)
                     Spacer()
-                    if editor.timeline.width == preset.width && editor.timeline.height == preset.height {
+                    if preset.matches(width: editor.timeline.width, height: editor.timeline.height) {
                         Image(systemName: "checkmark")
                     }
                 }
             }
+        }
+        Divider()
+        Button("Custom…") {
+            customAspectRatioContext = CustomAspectRatioContext(
+                timelineID: editor.activeTimelineId,
+                width: editor.timeline.width,
+                height: editor.timeline.height
+            )
         }
     }
 
@@ -1027,8 +1034,10 @@ struct InspectorView: View {
     @ViewBuilder
     private func assetDetailsContent(_ asset: MediaAsset) -> some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.zero) {
                 assetIdentityHeader(asset)
+                    .padding(.horizontal, AppTheme.Spacing.lg)
+                    .padding(.bottom, AppTheme.Spacing.xl)
 
                 fileSection(asset)
 
@@ -1057,10 +1066,11 @@ struct InspectorView: View {
 
                     if !gen.prompt.isEmpty {
                         promptSection(prompt: gen.prompt)
+                            .padding(.horizontal, AppTheme.Spacing.lg)
                     }
                 }
             }
-            .padding(.horizontal, AppTheme.Spacing.lg)
+            .padding(.top, AppTheme.Spacing.xs)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
@@ -1071,6 +1081,12 @@ struct InspectorView: View {
             plainMetadataRow(label: "Type", value: asset.type.trackLabel)
             if asset.type != .audio, let width = asset.sourceWidth, let height = asset.sourceHeight {
                 plainMetadataRow(label: "Dimensions", value: "\(width) × \(height)")
+            }
+            if let fps = asset.sourceFPS, fps > 0 {
+                plainMetadataRow(
+                    label: "FPS",
+                    value: "\(fps.formatted(.number.precision(.fractionLength(0...3)))) fps"
+                )
             }
             if asset.duration > 0 && asset.type != .image {
                 plainMetadataRow(label: "Duration", value: formatDuration(asset.duration))

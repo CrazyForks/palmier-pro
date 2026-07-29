@@ -25,7 +25,7 @@ extension ToolExecutor {
     }
 
     func generate(_ editor: EditorViewModel, _ args: [String: Any], type: ClipType) throws -> ToolResult {
-        let prompt = try args.requireString("prompt")
+        let prompt = args["prompt"] == nil ? "" : try args.requireString("prompt")
         guard AccountService.shared.isSignedIn else {
             throw ToolError("Generation requires signing in to Palmier. Tell the user to sign in.")
         }
@@ -66,28 +66,54 @@ extension ToolExecutor {
         let sourceAsset = try asset(sourceRef, editor: editor, label: "Source video")
         let trimmed = try trimmedSource(args, editor: editor, source: sourceAsset)
 
-        var imageRefs: [MediaAsset] = []
-        for id in args.stringArray("referenceImageMediaRefs") {
-            imageRefs.append(try asset(id, editor: editor, label: "Reference image"))
-        }
+        let imageRefs = try referenceAssets(
+            args, key: "referenceImageMediaRefs", label: "Reference image", editor: editor)
+        let videoRefs = try referenceAssets(
+            args, key: "referenceVideoMediaRefs", label: "Reference video", editor: editor)
+        let audioRefs = try referenceAssets(
+            args, key: "referenceAudioMediaRefs", label: "Reference audio", editor: editor)
 
-        if let err = model.validate(duration: 0, aspectRatio: "", resolution: nil) {
+        let aspectRatio = args.string("aspectRatio") ?? model.aspectRatios.first ?? ""
+        let resolution = args.string("resolution") ?? model.resolutions?.first
+        if let err = model.validate(
+            duration: 0,
+            aspectRatio: aspectRatio,
+            resolution: resolution
+        ) {
             throw ToolError(err)
         }
-        let inputAssets = VideoGenerationSubmission.InputAssets(sourceVideo: sourceAsset, imageRefs: imageRefs)
+        let inputAssets = VideoGenerationSubmission.InputAssets(
+            sourceVideo: sourceAsset,
+            imageRefs: imageRefs,
+            videoRefs: videoRefs,
+            audioRefs: audioRefs
+        )
         if let err = inputAssets.validate(for: model) {
             throw ToolError(err)
         }
 
+        let sourceVideoDuration = trimmed?.durationSeconds ?? sourceAsset.resolvedDuration
+        if let error = model.validateSourceDuration(sourceVideoDuration) {
+            throw ToolError(error)
+        }
+        guard let duration = model.billingDurationSeconds(
+            sourceVideoDuration: sourceVideoDuration,
+            sourceAudioDuration: audioRefs.first?.resolvedDuration
+        ) else {
+            throw ToolError(model.isLipSync
+                ? "Replacement audio has an invalid duration."
+                : "Source video has an invalid duration.")
+        }
         let genInput = GenerationInput(
-            prompt: prompt, model: model.id, duration: Int(sourceAsset.duration.rounded()),
-            aspectRatio: "", resolution: nil
+            prompt: prompt, model: model.id,
+            duration: duration,
+            aspectRatio: aspectRatio, resolution: resolution
         )
         let placeholderId = VideoGenerationSubmission.make(
             genInput: genInput,
             model: model,
             inputAssets: inputAssets,
-            placeholderDuration: trimmed?.durationSeconds ?? (sourceAsset.duration > 0 ? sourceAsset.duration : 5),
+            placeholderDuration: sourceVideoDuration,
             trimmedSourceOverride: trimmed,
             name: args.string("name"),
             folderId: sourceAsset.folderId,
@@ -122,14 +148,12 @@ extension ToolExecutor {
             frameSlots.append(try asset(endRef, editor: editor, label: "End frame"))
         }
 
-        func refs(_ argName: String, label: String) throws -> [MediaAsset] {
-            try args.stringArray(argName).map { id in
-                try asset(id, editor: editor, label: label)
-            }
-        }
-        let imageRefs = try refs("referenceImageMediaRefs", label: "Image reference")
-        let videoRefs = try refs("referenceVideoMediaRefs", label: "Video reference")
-        let audioRefs = try refs("referenceAudioMediaRefs", label: "Audio reference")
+        let imageRefs = try referenceAssets(
+            args, key: "referenceImageMediaRefs", label: "Image reference", editor: editor)
+        let videoRefs = try referenceAssets(
+            args, key: "referenceVideoMediaRefs", label: "Video reference", editor: editor)
+        let audioRefs = try referenceAssets(
+            args, key: "referenceAudioMediaRefs", label: "Audio reference", editor: editor)
         let inputAssets = VideoGenerationSubmission.InputAssets(
             frames: frameSlots,
             imageRefs: imageRefs,
@@ -170,6 +194,17 @@ extension ToolExecutor {
             ? ", refs: \(imageRefCount)img/\(videoRefCount)vid/\(audioRefCount)aud"
             : ""
         return .ok("Generation started. Placeholder asset ID: \(placeholderId). Model: \(model.displayName), duration: \(duration)s, aspect: \(aspectRatio)\(refSummary)")
+    }
+
+    private func referenceAssets(
+        _ args: [String: Any],
+        key: String,
+        label: String,
+        editor: EditorViewModel
+    ) throws -> [MediaAsset] {
+        try args.stringArray(key).map { id in
+            try asset(id, editor: editor, label: label)
+        }
     }
 
     private func generateImage(
@@ -234,6 +269,17 @@ extension ToolExecutor {
         try requirePlan(for: model.id, paidOnly: model.paidOnly)
 
         let prompt = (args.string("prompt") ?? "").trimmingCharacters(in: .whitespaces)
+        let inputAssets = AudioGenerationSubmission.InputAssets(
+            imageRefs: try args.stringArray("referenceImageMediaRefs").map {
+                try asset($0, editor: editor, label: "Image reference")
+            },
+            audioRefs: try args.stringArray("referenceAudioMediaRefs").map {
+                try asset($0, editor: editor, label: "Audio reference")
+            }
+        )
+        if let error = inputAssets.validate(for: model) {
+            throw ToolError(error)
+        }
         let acceptsVideo = model.inputs.contains(.video)
         let sourceMediaRef = args.string("sourceMediaRef")
             ?? args.string("videoSourceMediaRef")
@@ -305,7 +351,9 @@ extension ToolExecutor {
             videoURL: videoURL,
             sourceURL: nil,
             targetLanguage: model.targetLanguages != nil
-                ? args.string("targetLanguage") : nil
+                ? args.string("targetLanguage") : nil,
+            multilingual: model.supportsMultilingual
+                ? (args.bool("multilingual") ?? false) : nil
         )
         if let err = model.validate(params: params) {
             throw ToolError(err)
@@ -321,21 +369,35 @@ extension ToolExecutor {
             lyrics: params.lyrics,
             styleInstructions: params.styleInstructions,
             instrumental: model.supportsInstrumental ? instrumental : nil,
-            targetLanguage: params.targetLanguage
+            targetLanguage: params.targetLanguage,
+            multilingual: params.multilingual
         )
+        if let sourceAsset {
+            genInput.audioInput = sourceAsset.type == .video
+                ? AudioModelConfig.Input.video.rawValue
+                : AudioModelConfig.Input.audio.rawValue
+        } else {
+            genInput.audioInput = videoURL == nil
+                ? AudioModelConfig.Input.text.rawValue
+                : AudioModelConfig.Input.video.rawValue
+        }
         if let sourceAsset {
             genInput.setAudioSourceAsset(sourceAsset)
         }
 
-        let references = sourceAsset.map { [$0] } ?? []
-        let folderId = try resolveFolder(args, editor: editor, fallbackReferences: references)
+        let sourceReferences = sourceAsset.map { [$0] } ?? []
+        let folderId = try resolveFolder(
+            args,
+            editor: editor,
+            fallbackReferences: sourceReferences + inputAssets.references
+        )
         let submission = AudioGenerationSubmission.make(
             genInput: genInput,
             model: model,
             params: params,
             name: args.string("name"),
             folderId: folderId,
-            references: references
+            references: model.supportsReferences ? inputAssets.references : sourceReferences
         )
 
         if let startFrame = placementStartFrame, let sourceSpan = spanSeconds {
@@ -373,6 +435,12 @@ extension ToolExecutor {
         guard asset.type == .video || asset.type == .image else {
             throw ToolError("Upscale supports video and image assets only (got \(asset.type.rawValue))")
         }
+        guard asset.sourceWidth != nil, asset.sourceHeight != nil else {
+            throw ToolError("Source dimensions are not available yet. Poll get_media until the asset is ready.")
+        }
+        guard asset.type != .video || asset.sourceFPS != nil else {
+            throw ToolError("Source FPS is not available yet. Poll get_media until the asset is ready.")
+        }
         guard AccountService.shared.isSignedIn else {
             throw ToolError("Upscale requires signing in to Palmier. Tell the user to sign in.")
         }
@@ -388,21 +456,70 @@ extension ToolExecutor {
                 throw ToolError("Model '\(requested)' does not support \(asset.type.rawValue). Available: \(ids)")
             }
             try requirePlan(for: match.id, paidOnly: match.paidOnly)
+            guard match.supports(source: asset) else {
+                throw ToolError("Model '\(requested)' is not compatible with this source's resolution or frame rate.")
+            }
             model = match
         } else {
-            guard let first = available.first(where: { modelAvailable(paidOnly: $0.paidOnly) }) else {
-                throw ToolError("No upscaler available for \(asset.type.rawValue) on the current plan.")
+            guard let first = available.first(where: {
+                modelAvailable(paidOnly: $0.paidOnly) && $0.supports(source: asset)
+            }) else {
+                throw ToolError("No compatible upscaler is available for this \(asset.type.rawValue) on the current plan.")
             }
             model = first
         }
 
+        let settings = try resolvedUpscaleSettings(args["settings"], model: model, source: asset)
         let trimmed = try trimmedSource(args, editor: editor, source: asset)
         guard let placeholderId = EditSubmitter.submitUpscale(
-            asset: asset, model: model, editor: editor, trimmedSource: trimmed
+            asset: asset, model: model, editor: editor, settings: settings, trimmedSource: trimmed
         ) else {
             throw ToolError("Failed to start upscale")
         }
         return .ok("Upscale started. Placeholder asset ID: \(placeholderId). Model: \(model.displayName), source: \(asset.name)\(trimmed != nil ? " (trimmed range)" : "")")
+    }
+
+    private func resolvedUpscaleSettings(
+        _ raw: Any?, model: UpscaleModelConfig, source: MediaAsset
+    ) throws -> UpscaleSettings {
+        let supplied: [String: Any]
+        if let raw {
+            guard let dictionary = raw as? [String: Any] else {
+                throw ToolError("settings must be an object")
+            }
+            supplied = dictionary
+        } else {
+            supplied = [:]
+        }
+
+        var resolved = model.normalizedSettings(model.defaultSettings, source: source)
+        for (id, rawValue) in supplied {
+            if let setting = model.selectSettings.first(where: { $0.id == id }) {
+                let options = model.availableOptions(for: setting, source: source)
+                guard let value = rawValue as? String,
+                      options.contains(where: { $0.value == value }) else {
+                    throw ToolError("Unsupported \(id). Available: \(options.map(\.value).joined(separator: ", "))")
+                }
+                resolved.selections[id] = value
+            } else if let setting = model.numericSettings.first(where: { $0.id == id }) {
+                guard let value = ["value": rawValue].double("value"), value.isFinite,
+                      (setting.minimum...setting.maximum).contains(value) else {
+                    throw ToolError("\(id) must be between \(setting.minimum) and \(setting.maximum)")
+                }
+                resolved.numbers[id] = value
+            } else if model.toggleSettings.contains(where: { $0.id == id }) {
+                guard isJSONBoolean(rawValue), let value = rawValue as? Bool else {
+                    throw ToolError("\(id) must be true or false")
+                }
+                resolved.toggles[id] = value
+            } else {
+                let valid = (model.selectSettings.map(\.id)
+                    + model.numericSettings.map(\.id)
+                    + model.toggleSettings.map(\.id)).joined(separator: ", ")
+                throw ToolError("Unknown upscale setting '\(id)'. Available: \(valid)")
+            }
+        }
+        return resolved
     }
 
     private func trimmedSource(
@@ -468,6 +585,7 @@ extension ToolExecutor {
             "supportsFirstFrame": m.supportsFirstFrame,
             "supportsLastFrame": m.supportsLastFrame,
             "supportsReferences": m.supportsReferences,
+            "supportsPrompt": m.supportsPrompt,
         ]
         if includeType { info["type"] = "video" }
         if let r = m.resolutions { info["resolutions"] = r }
@@ -481,6 +599,10 @@ extension ToolExecutor {
             if m.framesAndReferencesExclusive { info["framesAndReferencesExclusive"] = true }
             info["referenceTagNoun"] = m.referenceTagNoun
         }
+        if m.requiresSourceVideo { info["requiresSourceVideo"] = true }
+        if let seconds = m.maxSourceVideoSeconds { info["maxSourceVideoSeconds"] = seconds }
+        if m.requiresReferenceImage { info["requiresReferenceImage"] = true }
+        if m.requiresReferenceAudio { info["requiresReferenceAudio"] = true }
         return info
     }
 
@@ -503,6 +625,7 @@ extension ToolExecutor {
             "category": m.category.rawValue,
             "inputs": m.inputs.map(\.rawValue),
             "minPromptLength": m.minPromptLength,
+            "supportsMultilingual": m.supportsMultilingual,
             "supportsLyrics": m.supportsLyrics,
             "supportsInstrumental": m.supportsInstrumental,
             "supportsStyleInstructions": m.supportsStyleInstructions,
@@ -513,6 +636,17 @@ extension ToolExecutor {
         }
         if let defaultVoice = m.defaultVoice { info["defaultVoice"] = defaultVoice }
         if let durations = m.durations { info["durations"] = durations }
+        if m.maxReferenceImages > 0 { info["maxReferenceImages"] = m.maxReferenceImages }
+        if m.maxReferenceAudios > 0 { info["maxReferenceAudios"] = m.maxReferenceAudios }
+        if let maxReferenceAudioSeconds = m.maxReferenceAudioSeconds {
+            info["maxReferenceAudioSeconds"] = maxReferenceAudioSeconds
+        }
+        if let referenceAudioExtensions = m.referenceAudioExtensions {
+            info["referenceAudioExtensions"] = Array(referenceAudioExtensions).sorted()
+        }
+        if m.referenceImagesAndAudiosExclusive {
+            info["referenceImagesAndAudiosExclusive"] = true
+        }
         if m.acceptsSourceMedia {
             info["minSeconds"] = m.minSeconds
             info["maxSeconds"] = m.maxSeconds
@@ -524,11 +658,41 @@ extension ToolExecutor {
     }
 
     nonisolated static func upscaleModelInfo(_ m: UpscaleModelConfig) -> [String: Any] {
-        [
+        var info: [String: Any] = [
             "id": m.id, "displayName": m.displayName,
             "type": "upscale",
             "speed": m.speed,
             "supportedTypes": m.supportedTypes.map(\.rawValue).sorted(),
         ]
+        if let description = m.description { info["description"] = description }
+        if let factor = m.caps.maximumUpscaleFactor { info["maximumUpscaleFactor"] = factor }
+
+        let selects: [[String: Any]] = m.selectSettings.map { setting in
+            let options: [[String: Any]] = setting.options.map { option in
+                var value: [String: Any] = ["value": option.value, "label": option.label]
+                if let description = option.description { value["description"] = description }
+                if let group = option.group { value["group"] = group }
+                if let description = option.groupDescription { value["groupDescription"] = description }
+                return value
+            }
+            return [
+                "id": setting.id, "label": setting.label, "type": "select",
+                "default": setting.defaultValue, "options": options,
+            ]
+        }
+        let numbers: [[String: Any]] = m.numericSettings.map {
+            [
+                "id": $0.id, "label": $0.label, "type": "number",
+                "minimum": $0.minimum, "maximum": $0.maximum, "step": $0.step,
+            ]
+        }
+        let toggles: [[String: Any]] = m.toggleSettings.map {
+            [
+                "id": $0.id, "label": $0.label, "type": "boolean",
+                "default": $0.defaultValue,
+            ]
+        }
+        info["settings"] = selects + numbers + toggles
+        return info
     }
 }
