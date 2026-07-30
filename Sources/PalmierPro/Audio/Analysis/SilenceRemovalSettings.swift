@@ -34,13 +34,10 @@ enum SilenceRemovalPlanner {
         cellDuration: Double = VoiceActivity.chunkDuration
     ) -> [Bool] {
         guard !quietNonSpeechMask.isEmpty, cellDuration.isFinite, cellDuration > 0 else { return [] }
-        let maximumMinimumCells = quietNonSpeechMask.count == Int.max
-            ? Int.max
-            : quietNonSpeechMask.count + 1
         let minimumCells = cellCount(
             for: settings.minimumPauseSeconds,
             cellDuration: cellDuration,
-            maximum: maximumMinimumCells
+            maximum: quietNonSpeechMask.count + 1
         )
         let paddingCells = cellCount(
             for: settings.speechPaddingSeconds,
@@ -79,7 +76,9 @@ enum SilenceRemovalPlanner {
         cellDuration: Double = VoiceActivity.chunkDuration
     ) -> [Range<Double>] {
         let cellFrames = cellDuration * Double(max(1, framesPerSecond))
-        guard cellFrames.isFinite, cellFrames > 0 else { return [] }
+        guard cellFrames.isFinite, cellFrames > 0,
+              visibleSourceRange.lowerBound.isFinite,
+              visibleSourceRange.upperBound.isFinite else { return [] }
         let visibleCells = (visibleSourceRange.lowerBound / cellFrames)..<(visibleSourceRange.upperBound / cellFrames)
         return visibleRemovableCellRanges(
             from: removableMask,

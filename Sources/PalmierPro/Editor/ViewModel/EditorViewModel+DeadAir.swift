@@ -3,19 +3,17 @@ import AppKit
 enum DeadAirMaskResolver {
     static func mask(
         for clip: Clip,
-        in group: MulticamSource?,
-        maskForMedia: (String) -> [Bool]?
+        in group: MulticamSource,
+        settings: SilenceRemovalSettings,
+        quietMaskForMedia: (String) -> [Bool]?
     ) -> [Bool]? {
-        guard let group,
-              let member = group.member(mediaRef: clip.mediaRef) else {
-            return maskForMedia(clip.mediaRef)
-        }
-        guard clip.mediaType == .audio, !group.mics.isEmpty else { return nil }
+        guard let member = group.member(mediaRef: clip.mediaRef),
+              clip.mediaType == .audio, !group.mics.isEmpty else { return nil }
 
         let cellSeconds = VoiceActivity.chunkDuration
         var masks: [[Bool]] = []
         for mic in group.mics {
-            guard let mask = maskForMedia(mic.mediaRef), !mask.isEmpty else { return nil }
+            guard let mask = quietMaskForMedia(mic.mediaRef), !mask.isEmpty else { return nil }
             let shift = Int((mic.sync.offsetSeconds / cellSeconds).rounded())
             var shifted = [Bool](repeating: true, count: max(0, mask.count + shift))
             for (i, dead) in mask.enumerated() where i + shift >= 0 && i + shift < shifted.count {
@@ -28,10 +26,20 @@ enum DeadAirMaskResolver {
             masks.allSatisfy { i >= $0.count || $0[i] }
         }
         let shift = Int((member.sync.offsetSeconds / cellSeconds).rounded())
-        if shift > 0 { return Array(groupMask.dropFirst(shift)) }
-        if shift < 0 { return [Bool](repeating: false, count: -shift) + groupMask }
-        return groupMask
+        let memberMask: [Bool]
+        if shift > 0 {
+            memberMask = Array(groupMask.dropFirst(shift))
+        } else if shift < 0 {
+            memberMask = [Bool](repeating: false, count: -shift) + groupMask
+        } else {
+            memberMask = groupMask
+        }
+        return SilenceRemovalPlanner.removableMask(from: memberMask, settings: settings)
     }
+}
+
+struct DeadAirSelectionError: Error, Equatable, Sendable {
+    let message: String
 }
 
 /// Dead-air removal: maps SpeechMaskStore spans onto timeline ranges and ripple-deletes them.
@@ -76,7 +84,9 @@ extension EditorViewModel {
         let effectiveSettings = settings ?? silenceRemovalSettings
         var out: [(Int, [FrameRange])] = []
         for (ti, track) in timeline.tracks.enumerated() where track.type == .audio {
-            let ranges = track.clips.flatMap { deadAirRanges(for: $0, settings: effectiveSettings) }
+            let ranges = RippleEngine.mergeRanges(
+                track.clips.flatMap { deadAirRanges(for: $0, settings: effectiveSettings) }
+            )
             if !ranges.isEmpty { out.append((ti, ranges)) }
         }
         return out
@@ -97,41 +107,46 @@ extension EditorViewModel {
     func removeDeadAir(
         clipIds: [String],
         settings: SilenceRemovalSettings
-    ) -> (sections: Int, removedFrames: Int, refusal: String?)? {
+    ) throws -> (sections: Int, removedFrames: Int, refusal: String?)? {
         let targets = clipIds.compactMap { id -> (trackIndex: Int, clip: Clip)? in
             guard let loc = findClip(id: id) else { return nil }
             return (loc.trackIndex, timeline.tracks[loc.trackIndex].clips[loc.clipIndex])
         }
-        guard targets.count == clipIds.count, !targets.isEmpty else { return nil }
+        guard targets.count == clipIds.count, !targets.isEmpty else {
+            throw DeadAirSelectionError(message: "Selected clips could not be resolved.")
+        }
+        let audioTargets = targets.filter { $0.clip.mediaType == .audio }
+        guard !audioTargets.isEmpty else {
+            throw DeadAirSelectionError(message: "Selected clips must include at least one audio clip.")
+        }
 
         let trackIndices = Set(targets.map(\.trackIndex))
-        let anchorTrackIndex: Int
-        let anchorClips: [Clip]
-        if trackIndices.count == 1, let onlyTrack = trackIndices.first {
-            anchorTrackIndex = onlyTrack
-            anchorClips = targets.map(\.clip)
-        } else {
+        if trackIndices.count > 1 {
             let linkGroups = targets.compactMap { $0.clip.linkGroupId }
             guard linkGroups.count == targets.count, Set(linkGroups).count == 1 else {
-                return (0, 0, "Selected clips must share one track or belong to one linked A/V unit.")
+                throw DeadAirSelectionError(
+                    message: "Selected clips must share one track or belong to one linked A/V unit."
+                )
             }
-            anchorTrackIndex = trackIndices
-                .filter { timeline.tracks[$0].type == .audio }
-                .min() ?? trackIndices.min()!
-            anchorClips = targets.filter { $0.trackIndex == anchorTrackIndex }.map(\.clip)
+        }
+        let audioTrackIndices = Set(audioTargets.map(\.trackIndex))
+        guard audioTrackIndices.count == 1, let anchorTrackIndex = audioTrackIndices.first else {
+            throw DeadAirSelectionError(message: "Selected audio clips must come from one track.")
         }
 
         let ranges = RippleEngine.mergeRanges(
-            anchorClips.flatMap { deadAirRanges(for: $0, settings: settings) }
+            audioTargets.flatMap { deadAirRanges(for: $0.clip, settings: settings) }
         )
         guard !ranges.isEmpty else { return nil }
-        switch rippleDeleteRangesOnTrack(trackIndex: anchorTrackIndex, ranges: ranges) {
-        case .ok(let report):
-            return (ranges.count, report.removedFrames, nil)
-        case .refused(let reason):
-            NSSound.beep()
-            Log.editor.notice("remove dead air blocked: \(reason)")
-            return (0, 0, reason)
+        return undo.perform("Remove Dead Air") {
+            switch rippleDeleteRangesOnTrack(trackIndex: anchorTrackIndex, ranges: ranges) {
+            case .ok(let report):
+                return (ranges.count, report.removedFrames, nil)
+            case .refused(let reason):
+                NSSound.beep()
+                Log.editor.notice("remove dead air blocked: \(reason)")
+                return (0, 0, reason)
+            }
         }
     }
 
@@ -167,11 +182,18 @@ extension EditorViewModel {
         for clip: Clip,
         settings: SilenceRemovalSettings
     ) -> [Range<Double>] {
-        guard let mask = DeadAirMaskResolver.mask(
-            for: clip,
-            in: multicamGroup(of: clip),
-            maskForMedia: { mediaVisualCache.deadAirMask(for: $0, settings: settings) }
-        ), !mask.isEmpty else { return [] }
+        let mask: [Bool]?
+        if let group = multicamGroup(of: clip) {
+            mask = DeadAirMaskResolver.mask(
+                for: clip,
+                in: group,
+                settings: settings,
+                quietMaskForMedia: { mediaVisualCache.quietNonSpeechMask(for: $0) }
+            )
+        } else {
+            mask = mediaVisualCache.deadAirMask(for: clip.mediaRef, settings: settings)
+        }
+        guard let mask, !mask.isEmpty else { return [] }
         let visibleStart = Double(clip.trimStartFrame)
         let visibleEnd = Double(clip.trimStartFrame + clip.sourceFramesConsumed)
         return SilenceRemovalPlanner.visibleRemovableRanges(

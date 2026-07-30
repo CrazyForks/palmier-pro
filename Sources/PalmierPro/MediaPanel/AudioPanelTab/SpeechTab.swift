@@ -3,11 +3,6 @@ import SwiftUI
 struct SpeechTab: View {
     @Environment(EditorViewModel.self) private var editor
 
-    private enum SilenceDurationControl {
-        case minimumPause
-        case speechPadding
-    }
-
     var body: some View {
         ZStack {
             ScrollView {
@@ -131,7 +126,13 @@ struct SpeechTab: View {
                     editor.setMinimumSilenceDuration(SilenceRemovalSettings.default.minimumPauseSeconds)
                 }
             ) {
-                durationControl(.minimumPause)
+                durationField(
+                    label: "Minimum Pause",
+                    value: editor.silenceRemovalSettings.minimumPauseSeconds,
+                    range: SilenceRemovalSettings.minimumPauseRange,
+                    step: 0.05,
+                    set: editor.setMinimumSilenceDuration
+                )
             }
             InspectorRow(
                 label: "Speech Padding",
@@ -141,43 +142,36 @@ struct SpeechTab: View {
                     editor.setSpeechPaddingDuration(SilenceRemovalSettings.default.speechPaddingSeconds)
                 }
             ) {
-                durationControl(.speechPadding)
+                durationField(
+                    label: "Speech Padding",
+                    value: editor.silenceRemovalSettings.speechPaddingSeconds,
+                    range: SilenceRemovalSettings.speechPaddingRange,
+                    step: 0.025,
+                    set: editor.setSpeechPaddingDuration
+                )
             }
         }
     }
 
-    private func durationControl(_ control: SilenceDurationControl) -> some View {
-        let label = control == .minimumPause ? "Minimum Pause" : "Speech Padding"
-        let value = control == .minimumPause
-            ? editor.silenceRemovalSettings.minimumPauseSeconds
-            : editor.silenceRemovalSettings.speechPaddingSeconds
-        let range = control == .minimumPause
-            ? SilenceRemovalSettings.minimumPauseRange
-            : SilenceRemovalSettings.speechPaddingRange
-        let step = control == .minimumPause ? 0.05 : 0.025
-        return ScrubbableNumberField(
+    private func durationField(
+        label: String,
+        value: Double,
+        range: ClosedRange<Double>,
+        step: Double,
+        set: @escaping (Double) -> Void
+    ) -> some View {
+        ScrubbableNumberField(
             value: value,
             range: range,
             displayMultiplier: 1_000,
             format: "%.0f",
             valueSuffix: " ms",
             dragSensitivity: 10,
-            dragValueAdjustment: { candidate in
-                min(range.upperBound, max(range.lowerBound, (candidate / step).rounded() * step))
-            },
-            onChanged: { setDuration($0, for: control) },
-            onCommit: { setDuration($0, for: control) }
+            dragValueAdjustment: { ($0 / step).rounded() * step },
+            onChanged: set,
+            onCommit: set
         )
         .accessibilityLabel(label)
-    }
-
-    private func setDuration(_ seconds: Double, for control: SilenceDurationControl) {
-        switch control {
-        case .minimumPause:
-            editor.setMinimumSilenceDuration(seconds)
-        case .speechPadding:
-            editor.setSpeechPaddingDuration(seconds)
-        }
     }
 
     private var removeSilenceRow: some View {

@@ -105,6 +105,10 @@ struct MulticamTests {
     }
 
     @Test func silenceMaskRequiresEveryMicToBeSilent() {
+        let settings = SilenceRemovalSettings(
+            minimumPauseSeconds: 0.25,
+            speechPaddingSeconds: 0
+        )!
         var group = MulticamSource(name: "Podcast", members: [
             .init(mediaRef: "host", kind: .mic, angleLabel: "host",
                   sync: .init(offsetSeconds: VoiceActivity.chunkDuration, confidence: 1)),
@@ -125,10 +129,53 @@ struct MulticamTests {
         let mask = DeadAirMaskResolver.mask(
             for: clip,
             in: group,
-            maskForMedia: { masks[$0] }
+            settings: settings,
+            quietMaskForMedia: { masks[$0] }
         )
 
         #expect(mask == [Bool](repeating: false, count: 9) + [Bool](repeating: true, count: 31))
+    }
+
+    @Test func silenceMaskAppliesMinimumPauseAfterMicIntersection() {
+        let settings = SilenceRemovalSettings(
+            minimumPauseSeconds: 1,
+            speechPaddingSeconds: 0
+        )!
+        var group = MulticamSource(name: "Podcast", members: [
+            .init(mediaRef: "host", kind: .mic, angleLabel: "host",
+                  sync: .init(offsetSeconds: 0, confidence: 1)),
+            .init(mediaRef: "guest", kind: .mic, angleLabel: "guest",
+                  sync: .init(offsetSeconds: 0, confidence: 1)),
+        ])
+        group.masterMemberId = group.members[0].id
+
+        var clip = Fixtures.clip(
+            mediaRef: "host", mediaType: .audio, start: 0, duration: 10
+        )
+        clip.multicamGroupId = group.id
+        let masks = [
+            "host": [Bool](repeating: true, count: 41)
+                + [Bool](repeating: false, count: 39),
+            "guest": [Bool](repeating: false, count: 30)
+                + [Bool](repeating: true, count: 41)
+                + [Bool](repeating: false, count: 9),
+        ]
+
+        #expect(SilenceRemovalPlanner.removableMask(
+            from: masks["host"]!, settings: settings
+        ).contains(true))
+        #expect(SilenceRemovalPlanner.removableMask(
+            from: masks["guest"]!, settings: settings
+        ).contains(true))
+
+        let mask = DeadAirMaskResolver.mask(
+            for: clip,
+            in: group,
+            settings: settings,
+            quietMaskForMedia: { masks[$0] }
+        )
+
+        #expect(mask?.contains(true) == false)
     }
 
     @Test func lagSearchKeepsHalfOverlap() {

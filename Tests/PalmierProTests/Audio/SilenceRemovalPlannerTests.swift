@@ -107,4 +107,13 @@ struct SilenceRemovalPlannerTests {
 
         #expect(mask == [false, false])
     }
+
+    @Test func rejectsNonFiniteVisibleSourceBounds() {
+        #expect(SilenceRemovalPlanner.visibleRemovableRanges(
+            from: [true],
+            visibleSourceRange: 0..<Double.infinity,
+            framesPerSecond: 30,
+            settings: .default
+        ).isEmpty)
+    }
 }

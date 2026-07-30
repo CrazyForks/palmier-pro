@@ -150,12 +150,17 @@ extension ToolExecutor {
             clipIds = nil
         }
         let snapshot = timelineSnapshot(editor)
-        let result = editor.undo.perform("Remove Silence (Agent)") {
-            if let clipIds {
-                editor.removeDeadAir(clipIds: clipIds, settings: settings)
-            } else {
-                editor.removeAllDeadAir(settings: settings)
+        let result: (sections: Int, removedFrames: Int, refusal: String?)?
+        do {
+            result = try editor.undo.perform("Remove Silence (Agent)") {
+                if let clipIds {
+                    try editor.removeDeadAir(clipIds: clipIds, settings: settings)
+                } else {
+                    editor.removeAllDeadAir(settings: settings)
+                }
             }
+        } catch let error as DeadAirSelectionError {
+            throw ToolError("remove_silence: \(error.message)")
         }
         guard let result else {
             let scope = clipIds == nil ? "on the timeline" : "in the selected clips"

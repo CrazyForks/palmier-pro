@@ -79,6 +79,16 @@ final class SpeechMaskStore {
     // Marks a span as dead air if its median level is `speechGap` below the file's speech level, using normalized waveform values.
     private nonisolated static let speechGap: Float = 0.24      // 12 dB
     private nonisolated static let noSpeechFloor: Float = 0.56  // absolute fallback ≈ -28 dB
+    /// Quiet, non-speech cells before minimum-pause and speech-padding policy is applied.
+    nonisolated func quietNonSpeechMask(
+        for mediaRef: String,
+        samples: [Float]?
+    ) -> [Bool]? {
+        MainActor.assumeIsolated {
+            quietNonSpeechMaskIsolated(for: mediaRef, samples: samples)
+        }
+    }
+
     /// Derived lazily once the speech mask and waveform samples both exist.
     nonisolated func deadAirMask(
         for mediaRef: String,
@@ -87,17 +97,26 @@ final class SpeechMaskStore {
     ) -> [Bool]? {
         MainActor.assumeIsolated {
             if let cached = deadAirMasks[mediaRef], cached.settings == settings { return cached.mask }
-            guard let speech = speechMasks[mediaRef], !speech.isEmpty,
-                  let samples, !samples.isEmpty else { return nil }
-            let quietNonSpeech = quietNonSpeechMasks[mediaRef] ?? Self.buildQuietNonSpeechMask(
-                speech: speech,
+            guard let quietNonSpeech = quietNonSpeechMaskIsolated(
+                for: mediaRef,
                 samples: samples
-            )
-            quietNonSpeechMasks[mediaRef] = quietNonSpeech
+            ) else { return nil }
             let mask = SilenceRemovalPlanner.removableMask(from: quietNonSpeech, settings: settings)
             deadAirMasks[mediaRef] = (settings, mask)
             return mask
         }
+    }
+
+    private func quietNonSpeechMaskIsolated(
+        for mediaRef: String,
+        samples: [Float]?
+    ) -> [Bool]? {
+        if let cached = quietNonSpeechMasks[mediaRef] { return cached }
+        guard let speech = speechMasks[mediaRef], !speech.isEmpty,
+              let samples, !samples.isEmpty else { return nil }
+        let mask = Self.buildQuietNonSpeechMask(speech: speech, samples: samples)
+        quietNonSpeechMasks[mediaRef] = mask
+        return mask
     }
 
     private nonisolated static func buildQuietNonSpeechMask(speech: [Bool], samples: [Float]) -> [Bool] {

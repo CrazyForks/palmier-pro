@@ -180,5 +180,54 @@ struct RemoveSilenceParamTests {
 
         #expect(result.isError)
         #expect(ToolHarness.textOf(result).contains("must share one track"))
+        #expect(!ToolHarness.textOf(result).contains("Ripple delete refused"))
+    }
+
+    @Test func rejectsScopeWithoutAnAudioClip() async {
+        let timeline = Fixtures.timeline(tracks: [
+            Fixtures.videoTrack(clips: [
+                Fixtures.clip(id: "v1", mediaType: .video, start: 0, duration: 100),
+            ]),
+        ])
+        let harness = ToolHarness(timeline: timeline)
+
+        let result = await harness.runRaw(
+            "remove_silence",
+            args: ["clipIds": ["v1"]]
+        )
+        let message = ToolHarness.textOf(result)
+
+        #expect(result.isError)
+        #expect(message.contains("must include at least one audio clip"))
+        #expect(!message.contains("No dead air"))
+        #expect(!message.contains("Ripple delete refused"))
+    }
+
+    @Test func rejectsLinkedAudioClipsAcrossTracks() async {
+        var first = Fixtures.clip(
+            id: "a1", mediaType: .audio, start: 0, duration: 100
+        )
+        var second = Fixtures.clip(
+            id: "a2", mediaType: .audio, start: 0, duration: 100
+        )
+        first.linkGroupId = "linked"
+        second.linkGroupId = "linked"
+        let timeline = Fixtures.timeline(tracks: [
+            Fixtures.audioTrack(clips: [first]),
+            Fixtures.audioTrack(clips: [second]),
+        ])
+        let harness = ToolHarness(timeline: timeline)
+
+        let result = await harness.runRaw(
+            "remove_silence",
+            args: ["clipIds": ["a1", "a2"]]
+        )
+        let message = ToolHarness.textOf(result)
+
+        #expect(result.isError)
+        #expect(message.contains("audio clips must come from one track"))
+        #expect(!message.contains("Ripple delete refused"))
+        #expect(harness.editor.timeline.tracks[0].clips == [first])
+        #expect(harness.editor.timeline.tracks[1].clips == [second])
     }
 }

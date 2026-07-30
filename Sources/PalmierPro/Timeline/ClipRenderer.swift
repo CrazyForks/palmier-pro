@@ -359,6 +359,7 @@ enum ClipRenderer {
 
         var bars: [CGRect] = []
         bars.reserveCapacity(lastBar - firstBar)
+        var deadAirRangeIndex = 0
         for i in firstBar..<lastBar {
             // Peak-detect (min, since 0=loud) over the bar's range so zero crossings don't flatten loud audio.
             let sStart = sampleStart + i * visCount / barCount
@@ -394,7 +395,12 @@ enum ClipRenderer {
             if !deadAirRanges.isEmpty {
                 let m0 = visibleSourceStart + Double(i) * (visibleSourceEnd - visibleSourceStart) / Double(barCount)
                 let m1 = visibleSourceStart + Double(i + 1) * (visibleSourceEnd - visibleSourceStart) / Double(barCount)
-                if deadAirRanges.contains(where: { $0.overlaps(m0..<m1) }) {
+                while deadAirRangeIndex < deadAirRanges.count,
+                      deadAirRanges[deadAirRangeIndex].upperBound <= m0 {
+                    deadAirRangeIndex += 1
+                }
+                if deadAirRangeIndex < deadAirRanges.count,
+                   deadAirRanges[deadAirRangeIndex].lowerBound < m1 {
                     washes.append(CGRect(x: drawRect.minX + CGFloat(i), y: drawRect.minY, width: 1, height: drawRect.height))
                 }
             }
