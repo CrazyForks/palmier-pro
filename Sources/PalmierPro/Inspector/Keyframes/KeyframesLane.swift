@@ -262,6 +262,7 @@ struct KeyframesLaneRow: View {
 struct KeyframesPanel: View {
     let clip: Clip
     @Environment(EditorViewModel.self) private var editor
+    private let timelineColors = TimelineClipColorStore.shared
     @State private var snapX: CGFloat?
 
     private static let videoRows: [(AnimatableProperty, String)] = [
@@ -279,7 +280,10 @@ struct KeyframesPanel: View {
         clip.mediaType == .audio ? Self.audioRows : Self.videoRows
     }
 
-    private var tint: Color { Color(nsColor: clip.sourceClipType.themeColor) }
+    private var tint: Color {
+        _ = timelineColors.revision
+        return Color(nsColor: clip.sourceClipType.themeColor)
+    }
     private var span: Int { max(1, clip.endFrame - clip.startFrame) }
 
     var body: some View {
