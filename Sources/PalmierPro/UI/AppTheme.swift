@@ -3,13 +3,31 @@ import SwiftUI
 
 enum AppTheme {
 
+    private static func adaptive(light: NSColor, dark: NSColor) -> NSColor {
+        NSColor(name: nil) { appearance in
+            appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? dark : light
+        }
+    }
+
     // MARK: - Backgrounds
 
     enum Background {
-        static let base = NSColor(red: 10/255, green: 10/255, blue: 10/255, alpha: 1)
-        static let surface = NSColor(red: 22/255, green: 22/255, blue: 22/255, alpha: 1)
-        static let raised = NSColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 1)
-        static let prominent = NSColor(red: 44/255, green: 44/255, blue: 44/255, alpha: 1)
+        static let base = AppTheme.adaptive(
+            light: NSColor(red: 0.88, green: 0.88, blue: 0.88, alpha: 1),
+            dark: NSColor(red: 10/255, green: 10/255, blue: 10/255, alpha: 1)
+        )
+        static let surface = AppTheme.adaptive(
+            light: NSColor(red: 0.93, green: 0.93, blue: 0.93, alpha: 1),
+            dark: NSColor(red: 22/255, green: 22/255, blue: 22/255, alpha: 1)
+        )
+        static let raised = AppTheme.adaptive(
+            light: NSColor(red: 0.96, green: 0.96, blue: 0.96, alpha: 1),
+            dark: NSColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 1)
+        )
+        static let prominent = AppTheme.adaptive(
+            light: NSColor(red: 0.975, green: 0.975, blue: 0.975, alpha: 1),
+            dark: NSColor(red: 44/255, green: 44/255, blue: 44/255, alpha: 1)
+        )
 
         /// Alias — empty media slot is a raised plate.
         static let placeholder = raised
@@ -26,13 +44,23 @@ enum AppTheme {
     // MARK: - Borders
 
     enum Border {
-        static let primary = NSColor.white.withAlphaComponent(0.16)
-        static let subtle = NSColor.white.withAlphaComponent(0.12)
-        static let divider = NSColor.white.withAlphaComponent(0.44)
+        static let primary = AppTheme.adaptive(
+            light: NSColor.black.withAlphaComponent(0.24),
+            dark: NSColor.white.withAlphaComponent(0.16)
+        )
+        static let subtle = AppTheme.adaptive(
+            light: NSColor.black.withAlphaComponent(0.18),
+            dark: NSColor.white.withAlphaComponent(0.12)
+        )
+        static let divider = AppTheme.adaptive(
+            light: NSColor.black.withAlphaComponent(0.44),
+            dark: NSColor.white.withAlphaComponent(0.44)
+        )
         static let timelineClip = NSColor.black
 
         static var primaryColor: Color { Color(primary) }
         static var subtleColor: Color { Color(subtle) }
+        static var dividerColor: Color { Color(divider) }
     }
 
     // MARK: - Border widths
@@ -47,11 +75,17 @@ enum AppTheme {
     // MARK: - Accent
 
     enum Accent {
-        static let timecodeNSColor = NSColor(red: 0.95, green: 0.6, blue: 0.2, alpha: 1)
+        static let timecodeNSColor = AppTheme.adaptive(
+            light: NSColor(red: 0.58, green: 0.29, blue: 0.02, alpha: 1),
+            dark: NSColor(red: 0.95, green: 0.6, blue: 0.2, alpha: 1)
+        )
         static let timecodeColor = Color(timecodeNSColor)
 
-        /// Warm off-white
-        static let primary = Color(red: 0.961, green: 0.937, blue: 0.894)
+        static let primaryNSColor = AppTheme.adaptive(
+            light: NSColor(red: 0.18, green: 0.16, blue: 0.13, alpha: 1),
+            dark: NSColor(red: 0.961, green: 0.937, blue: 0.894, alpha: 1)
+        )
+        static let primary = Color(primaryNSColor)
 
         static let link = Color(nsColor: .linkColor)
 
@@ -115,32 +149,39 @@ enum AppTheme {
         static let pointDiameter: CGFloat = 9
         /// Invisible grab target around each point — much larger than the dot so it's easy to hit.
         static let pointHitDiameter: CGFloat = 30
-        static let lumaColor = Color(red: 1, green: 1, blue: 1)
+        static var lumaColor: Color { AppTheme.Text.primaryColor }
         static let redColor = Color(red: 1, green: 0.22, blue: 0.18)
         static let greenColor = Color(red: 0.32, green: 0.82, blue: 0.36)
         static let blueColor = Color(red: 0.32, green: 0.56, blue: 1)
     }
 
-    /// Monochrome silver shimmer
-    static let aiGradient = LinearGradient(
-        stops: [
-            .init(color: Color(white: 1.00), location: 0.00),
-            .init(color: Color(white: 0.78), location: 0.45),
-            .init(color: Color(white: 0.60), location: 0.55),
-            .init(color: Color(white: 1.00), location: 1.00),
-        ],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
+    static var aiGradient: LinearGradient {
+        LinearGradient(
+            stops: [
+                .init(color: Text.primaryColor, location: 0.00),
+                .init(color: Text.secondaryColor, location: 0.45),
+                .init(color: Text.tertiaryColor, location: 0.55),
+                .init(color: Text.primaryColor, location: 1.00),
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
 
     // MARK: - Status
 
     enum Status {
-        static let error = NSColor(red: 0xE5/255.0, green: 0x4F/255.0, blue: 0x4F/255.0, alpha: 1)
+        static let error = AppTheme.adaptive(
+            light: NSColor(red: 0.70, green: 0.14, blue: 0.09, alpha: 1),
+            dark: NSColor(red: 0xE5/255.0, green: 0x4F/255.0, blue: 0x4F/255.0, alpha: 1)
+        )
 
         static var errorColor: Color { Color(error) }
 
-        static let success = NSColor(red: 0x4F/255.0, green: 0xB8/255.0, blue: 0x5F/255.0, alpha: 1)
+        static let success = AppTheme.adaptive(
+            light: NSColor(red: 0.09, green: 0.45, blue: 0.28, alpha: 1),
+            dark: NSColor(red: 0x4F/255.0, green: 0xB8/255.0, blue: 0x5F/255.0, alpha: 1)
+        )
 
         static var successColor: Color { Color(success) }
 
@@ -152,15 +193,64 @@ enum AppTheme {
     // MARK: - Text
 
     enum Text {
-        static let primary = NSColor.white.withAlphaComponent(1.0)
-        static let secondary = NSColor.white.withAlphaComponent(0.80)
-        static let tertiary = NSColor.white.withAlphaComponent(0.62)
-        static let muted = NSColor.white.withAlphaComponent(0.34)
+        static let primary = AppTheme.adaptive(
+            light: NSColor.black.withAlphaComponent(0.94),
+            dark: NSColor.white
+        )
+        static let secondary = AppTheme.adaptive(
+            light: NSColor.black.withAlphaComponent(0.78),
+            dark: NSColor.white.withAlphaComponent(0.80)
+        )
+        static let tertiary = AppTheme.adaptive(
+            light: NSColor.black.withAlphaComponent(0.64),
+            dark: NSColor.white.withAlphaComponent(0.62)
+        )
+        static let muted = AppTheme.adaptive(
+            light: NSColor.black.withAlphaComponent(0.44),
+            dark: NSColor.white.withAlphaComponent(0.34)
+        )
 
         static var primaryColor: Color { Color(primary) }
         static var secondaryColor: Color { Color(secondary) }
         static var tertiaryColor: Color { Color(tertiary) }
         static var mutedColor: Color { Color(muted) }
+    }
+
+    // MARK: - Interaction fills
+
+    enum Interaction {
+        static func fill(_ opacity: Double) -> Color {
+            AppTheme.Text.primaryColor.opacity(opacity)
+        }
+    }
+
+    // MARK: - Media overlays
+
+    enum MediaOverlay {
+        static let background = NSColor.black
+        static let primary = NSColor.white
+        static let secondary = NSColor.white.withAlphaComponent(0.80)
+        static let tertiary = NSColor.white.withAlphaComponent(0.62)
+        static let muted = NSColor.white.withAlphaComponent(0.34)
+        static let error = NSColor(red: 0xE5/255.0, green: 0x4F/255.0, blue: 0x4F/255.0, alpha: 1)
+
+        static var backgroundColor: Color { Color(background) }
+        static var primaryColor: Color { Color(primary) }
+        static var secondaryColor: Color { Color(secondary) }
+        static var tertiaryColor: Color { Color(tertiary) }
+        static var mutedColor: Color { Color(muted) }
+        static var errorColor: Color { Color(error) }
+
+        static let aiGradient = LinearGradient(
+            stops: [
+                .init(color: Color(white: 1.00), location: 0.00),
+                .init(color: Color(white: 0.78), location: 0.45),
+                .init(color: Color(white: 0.60), location: 0.55),
+                .init(color: Color(white: 1.00), location: 1.00),
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
     }
 
     // MARK: - Opacity

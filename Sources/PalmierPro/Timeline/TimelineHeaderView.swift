@@ -6,11 +6,11 @@ final class TimelineHeaderView: NSView {
 
     var requestCanvasRedraw: (() -> Void)?
 
-    private static let headerBg = AppTheme.Background.surface.cgColor
-    private static let labelAttrs: [NSAttributedString.Key: Any] = [
+    private static var headerBg: CGColor { AppTheme.Background.surface.cgColor }
+    private static var labelAttrs: [NSAttributedString.Key: Any] { [
         .font: NSFont.systemFont(ofSize: AppTheme.FontSize.sm, weight: .medium),
         .foregroundColor: AppTheme.Text.secondary,
-    ]
+    ] }
 
     /// Rects for mute/hide/sync-lock buttons, indexed by track. Used for hit testing.
     var muteButtonRects: [Int: NSRect] = [:]
@@ -22,13 +22,19 @@ final class TimelineHeaderView: NSView {
         self.editor = editor
         super.init(frame: .zero)
         wantsLayer = true
-        layer?.backgroundColor = Self.headerBg
+        updateAppearanceColors()
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError() }
 
     override var isFlipped: Bool { true }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateAppearanceColors()
+        needsDisplay = true
+    }
 
     override func draw(_ dirtyRect: NSRect) {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
@@ -146,6 +152,12 @@ final class TimelineHeaderView: NSView {
             return true
         }
         tinted.draw(in: drawRect, from: .zero, operation: .sourceOver, fraction: 1.0)
+    }
+
+    private func updateAppearanceColors() {
+        effectiveAppearance.performAsCurrentDrawingAppearance {
+            layer?.backgroundColor = Self.headerBg
+        }
     }
 
     // MARK: - Input handling (mute/hide/resize)

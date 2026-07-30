@@ -28,9 +28,7 @@ struct TimelineContainerView: NSViewRepresentable {
         scrollView.autoresizingMask = [.width, .height]
         container.addSubview(scrollView)
 
-        let border = NSView()
-        border.wantsLayer = true
-        border.layer?.backgroundColor = AppTheme.Border.primary.cgColor
+        let border = TimelineDividerView()
         border.frame = NSRect(x: Layout.trackHeaderWidth - 1, y: 0, width: 1, height: 0)
         border.autoresizingMask = [.height]
         container.addSubview(border)
@@ -141,6 +139,28 @@ struct TimelineContainerView: NSViewRepresentable {
 
         deinit {
             NotificationCenter.default.removeObserver(self)
+        }
+    }
+}
+
+private final class TimelineDividerView: NSView {
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        wantsLayer = true
+        updateAppearanceColors()
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateAppearanceColors()
+    }
+
+    private func updateAppearanceColors() {
+        effectiveAppearance.performAsCurrentDrawingAppearance {
+            layer?.backgroundColor = AppTheme.Border.primary.cgColor
         }
     }
 }

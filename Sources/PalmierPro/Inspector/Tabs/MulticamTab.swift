@@ -18,7 +18,7 @@ struct MulticamTab: View {
         HStack(spacing: AppTheme.Spacing.sm) {
             Text(member.kind.rawValue.capitalized)
                 .font(.system(size: AppTheme.FontSize.xxs, weight: AppTheme.FontWeight.semibold))
-                .foregroundStyle(.black.opacity(AppTheme.Opacity.prominent))
+                .foregroundStyle(AppTheme.MediaOverlay.backgroundColor.opacity(AppTheme.Opacity.prominent))
                 .padding(.horizontal, AppTheme.Spacing.xs)
                 .padding(.vertical, AppTheme.Spacing.xxs)
                 .background(Color(kindColor(member.kind)), in: RoundedRectangle(cornerRadius: AppTheme.Radius.xs))
