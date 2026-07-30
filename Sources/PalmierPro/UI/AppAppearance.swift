@@ -28,7 +28,7 @@ enum AppAppearance: String, CaseIterable, Identifiable, Sendable {
     }
 
     static func stored(in defaults: UserDefaults) -> AppAppearance {
-        defaults.string(forKey: defaultsKey).flatMap(AppAppearance.init(rawValue:)) ?? .system
+        defaults.string(forKey: defaultsKey).flatMap(AppAppearance.init(rawValue:)) ?? .dark
     }
 }
 

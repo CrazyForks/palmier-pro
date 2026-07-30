@@ -6,15 +6,15 @@ import Testing
 @Suite("App appearance")
 @MainActor
 struct AppAppearanceTests {
-    @Test func missingOrInvalidPreferenceUsesSystemAppearance() throws {
+    @Test func missingOrInvalidPreferenceUsesDarkAppearance() throws {
         let suiteName = "AppAppearanceTests-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
 
-        #expect(AppAppearance.stored(in: defaults) == .system)
+        #expect(AppAppearance.stored(in: defaults) == .dark)
 
         defaults.set("sepia", forKey: AppAppearance.defaultsKey)
-        #expect(AppAppearance.stored(in: defaults) == .system)
+        #expect(AppAppearance.stored(in: defaults) == .dark)
     }
 
     @Test func storedPreferenceRoundTrips() throws {
