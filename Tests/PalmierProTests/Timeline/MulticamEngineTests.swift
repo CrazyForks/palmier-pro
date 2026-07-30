@@ -104,6 +104,33 @@ struct MulticamTests {
         #expect(clip.linkGroupId != "L1")
     }
 
+    @Test func silenceMaskRequiresEveryMicToBeSilent() {
+        var group = MulticamSource(name: "Podcast", members: [
+            .init(mediaRef: "host", kind: .mic, angleLabel: "host",
+                  sync: .init(offsetSeconds: VoiceActivity.chunkDuration, confidence: 1)),
+            .init(mediaRef: "guest", kind: .mic, angleLabel: "guest",
+                  sync: .init(offsetSeconds: 0, confidence: 1)),
+        ])
+        group.masterMemberId = group.members[0].id
+
+        var clip = Fixtures.clip(
+            mediaRef: "host", mediaType: .audio, start: 0, duration: 10
+        )
+        clip.multicamGroupId = group.id
+        let masks = [
+            "host": [Bool](repeating: true, count: 40),
+            "guest": [Bool](repeating: false, count: 10)
+                + [Bool](repeating: true, count: 30),
+        ]
+        let mask = DeadAirMaskResolver.mask(
+            for: clip,
+            in: group,
+            maskForMedia: { masks[$0] }
+        )
+
+        #expect(mask == [Bool](repeating: false, count: 9) + [Bool](repeating: true, count: 31))
+    }
+
     @Test func lagSearchKeepsHalfOverlap() {
         // 3:35 files (~21500 hops) with a 240s window: without the clamp, ±220s lags
         // with seconds of overlap were legal — the false-peak that doubled a group's length.

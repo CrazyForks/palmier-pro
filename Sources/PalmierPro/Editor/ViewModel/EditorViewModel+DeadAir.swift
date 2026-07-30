@@ -1,5 +1,39 @@
 import AppKit
 
+enum DeadAirMaskResolver {
+    static func mask(
+        for clip: Clip,
+        in group: MulticamSource?,
+        maskForMedia: (String) -> [Bool]?
+    ) -> [Bool]? {
+        guard let group,
+              let member = group.member(mediaRef: clip.mediaRef) else {
+            return maskForMedia(clip.mediaRef)
+        }
+        guard clip.mediaType == .audio, !group.mics.isEmpty else { return nil }
+
+        let cellSeconds = VoiceActivity.chunkDuration
+        var masks: [[Bool]] = []
+        for mic in group.mics {
+            guard let mask = maskForMedia(mic.mediaRef), !mask.isEmpty else { return nil }
+            let shift = Int((mic.sync.offsetSeconds / cellSeconds).rounded())
+            var shifted = [Bool](repeating: true, count: max(0, mask.count + shift))
+            for (i, dead) in mask.enumerated() where i + shift >= 0 && i + shift < shifted.count {
+                shifted[i + shift] = dead
+            }
+            masks.append(shifted)
+        }
+
+        let groupMask = (0..<(masks.map(\.count).max() ?? 0)).map { i in
+            masks.allSatisfy { i >= $0.count || $0[i] }
+        }
+        let shift = Int((member.sync.offsetSeconds / cellSeconds).rounded())
+        if shift > 0 { return Array(groupMask.dropFirst(shift)) }
+        if shift < 0 { return [Bool](repeating: false, count: -shift) + groupMask }
+        return groupMask
+    }
+}
+
 /// Dead-air removal: maps SpeechMaskStore spans onto timeline ranges and ripple-deletes them.
 extension EditorViewModel {
 
@@ -19,23 +53,9 @@ extension EditorViewModel {
         silenceRemovalSettings = settings
     }
 
-    private func deadAirMask(for clip: Clip, settings: SilenceRemovalSettings) -> [Bool]? {
-        guard let member = multicamGroup(of: clip)?.member(mediaRef: clip.mediaRef) else {
-            return mediaVisualCache.deadAirMask(for: clip.mediaRef, settings: settings)
-        }
-        guard let groupMask = multicamDeadAirMask(for: clip, settings: settings) else { return nil }
-        let shift = Int((member.sync.offsetSeconds / VoiceActivity.chunkDuration).rounded())
-        if shift > 0 { return Array(groupMask.dropFirst(shift)) }
-        if shift < 0 { return [Bool](repeating: false, count: -shift) + groupMask }
-        return groupMask
-    }
-
     /// The dead-air span under `timelineFrame` in `clip`, as a timeline range. Nil when the frame isn't dead air.
     func deadAirSpanRange(clip: Clip, atTimelineFrame frame: Int) -> FrameRange? {
-        let sourceFrame = Double(clip.trimStartFrame) + Double(frame - clip.startFrame) * clip.speed
-        guard let sourceRange = deadAirSourceRanges(for: clip, settings: silenceRemovalSettings)
-            .first(where: { $0.contains(sourceFrame) }) else { return nil }
-        return timelineRange(clip: clip, sourceStart: sourceRange.lowerBound, sourceEnd: sourceRange.upperBound)
+        deadAirRanges(for: clip).first { $0.start <= frame && frame < $0.end }
     }
 
     /// Every dead-air span visible within `clip`, as timeline ranges.
@@ -143,11 +163,15 @@ extension EditorViewModel {
         }
     }
 
-    private func deadAirSourceRanges(
+    func deadAirSourceRanges(
         for clip: Clip,
         settings: SilenceRemovalSettings
     ) -> [Range<Double>] {
-        guard let mask = deadAirMask(for: clip, settings: settings), !mask.isEmpty else { return [] }
+        guard let mask = DeadAirMaskResolver.mask(
+            for: clip,
+            in: multicamGroup(of: clip),
+            maskForMedia: { mediaVisualCache.deadAirMask(for: $0, settings: settings) }
+        ), !mask.isEmpty else { return [] }
         let visibleStart = Double(clip.trimStartFrame)
         let visibleEnd = Double(clip.trimStartFrame + clip.sourceFramesConsumed)
         return SilenceRemovalPlanner.visibleRemovableRanges(
