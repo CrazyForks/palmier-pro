@@ -37,18 +37,24 @@ struct TimelineClipColorTests {
         #expect(!palette.hasOverrides)
     }
 
-    @Test func storePublishesChanges() throws {
+    @Test func storeNotifiesTimelineAfterChanges() async throws {
         let (defaults, suiteName) = try makeDefaults()
         defer { defaults.removePersistentDomain(forName: suiteName) }
         let store = TimelineClipColorStore(palette: TimelineClipColorPalette(defaults: defaults))
 
-        store.set(Color(red: 0.8, green: 0.7, blue: 0.6), for: .text)
-        #expect(store.revision == 1)
-        #expect(store.hasOverrides)
+        await confirmation("Timeline redraw is requested", expectedCount: 2) { notified in
+            let observer = NotificationCenter.default.addObserver(
+                forName: .timelineClipColorsDidChange,
+                object: nil,
+                queue: nil
+            ) { _ in
+                notified()
+            }
+            defer { NotificationCenter.default.removeObserver(observer) }
 
-        store.resetAll()
-        #expect(store.revision == 2)
-        #expect(!store.hasOverrides)
+            store.set(Color(red: 0.8, green: 0.7, blue: 0.6), for: .text)
+            store.resetAll()
+        }
     }
 
     @Test func colorAccessTracksPaletteChanges() async throws {

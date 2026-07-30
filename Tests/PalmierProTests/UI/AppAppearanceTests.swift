@@ -17,16 +17,14 @@ struct AppAppearanceTests {
         #expect(AppAppearance.stored(in: defaults) == .dark)
     }
 
-    @Test func storedPreferenceRoundTrips() throws {
+    @Test(arguments: AppAppearance.allCases)
+    func storedPreferenceRoundTrips(_ appearance: AppAppearance) throws {
         let suiteName = "AppAppearanceTests-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
 
-        defaults.set(AppAppearance.light.rawValue, forKey: AppAppearance.defaultsKey)
-        #expect(AppAppearance.stored(in: defaults) == .light)
-
-        defaults.set(AppAppearance.dark.rawValue, forKey: AppAppearance.defaultsKey)
-        #expect(AppAppearance.stored(in: defaults) == .dark)
+        defaults.set(appearance.rawValue, forKey: AppAppearance.defaultsKey)
+        #expect(AppAppearance.stored(in: defaults) == appearance)
     }
 
     @Test func semanticPaletteInvertsBetweenAppearances() throws {
