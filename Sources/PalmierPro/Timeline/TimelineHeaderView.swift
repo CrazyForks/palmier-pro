@@ -7,10 +7,8 @@ final class TimelineHeaderView: NSView {
     var requestCanvasRedraw: (() -> Void)?
 
     private static var headerBg: CGColor { AppTheme.Background.surface.cgColor }
-    private static var labelAttrs: [NSAttributedString.Key: Any] { [
-        .font: NSFont.systemFont(ofSize: AppTheme.FontSize.sm, weight: .medium),
-        .foregroundColor: AppTheme.Text.secondary,
-    ] }
+    private static let labelFont = NSFont.systemFont(ofSize: AppTheme.FontSize.sm, weight: .medium)
+    private var labelAttrs: [NSAttributedString.Key: Any] = [:]
 
     /// Rects for mute/hide/sync-lock buttons, indexed by track. Used for hit testing.
     var muteButtonRects: [Int: NSRect] = [:]
@@ -83,11 +81,10 @@ final class TimelineHeaderView: NSView {
             dragHandleRects[i] = gripRect.insetBy(dx: -4, dy: -4)
 
             // Track label
-            let str = NSAttributedString(string: editor.timelineTrackDisplayLabel(at: i), attributes: Self.labelAttrs)
+            let str = NSAttributedString(string: editor.timelineTrackDisplayLabel(at: i), attributes: labelAttrs)
             let labelSize = str.size()
             let labelY = y + (h - labelSize.height) / 2
             str.draw(at: NSPoint(x: gripX + iconSize + 6, y: labelY))
-
 
             let iconY = y + (h - iconSize) / 2
             let rightmostX = headerWidth - iconSize - 6
@@ -157,6 +154,10 @@ final class TimelineHeaderView: NSView {
     private func updateAppearanceColors() {
         effectiveAppearance.performAsCurrentDrawingAppearance {
             layer?.backgroundColor = Self.headerBg
+            labelAttrs = [
+                .font: Self.labelFont,
+                .foregroundColor: AppTheme.Text.secondary.usingColorSpace(.sRGB) ?? AppTheme.Text.secondary,
+            ]
         }
     }
 

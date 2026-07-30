@@ -157,7 +157,7 @@ enum ClipRenderer {
         }
 
         if isSelected {
-            context.setStrokeColor(AppTheme.MediaOverlay.primary.cgColor)
+            context.setStrokeColor(AppTheme.Border.timelineClipSelected.cgColor)
             context.setLineWidth(AppTheme.BorderWidth.medium)
             context.addPath(path)
             context.strokePath()
@@ -244,8 +244,8 @@ enum ClipRenderer {
         }
     }
 
-    private static let beatTickColor = NSColor.systemOrange.withAlphaComponent(0.7).cgColor
-    private static let downbeatTickColor = NSColor.systemOrange.cgColor
+    private static var beatTickColor: CGColor { NSColor.systemOrange.withAlphaComponent(0.7).cgColor }
+    private static var downbeatTickColor: CGColor { NSColor.systemOrange.cgColor }
     private static let beatTickBackingColor = AppTheme.MediaOverlay.background.withAlphaComponent(0.55).cgColor
     private static let beatTickWidth: CGFloat = 1
     private static let beatTickHeight: CGFloat = 7

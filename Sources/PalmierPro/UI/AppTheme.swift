@@ -56,7 +56,8 @@ enum AppTheme {
             light: NSColor.black.withAlphaComponent(0.44),
             dark: NSColor.white.withAlphaComponent(0.44)
         )
-        static let timelineClip = NSColor.black
+        static let timelineClip = AppTheme.adaptive(light: .white, dark: .black)
+        static let timelineClipSelected = AppTheme.adaptive(light: .black, dark: .white)
 
         static var primaryColor: Color { Color(primary) }
         static var subtleColor: Color { Color(subtle) }

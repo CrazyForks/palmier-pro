@@ -80,7 +80,7 @@ final class TimelineView: NSView {
 
     private func updateAppearanceColors() {
         effectiveAppearance.performAsCurrentDrawingAppearance {
-            layer?.backgroundColor = AppTheme.Background.surface.cgColor
+            layer?.backgroundColor = Self.trackBg
         }
     }
 

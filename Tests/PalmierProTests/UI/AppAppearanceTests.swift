@@ -38,6 +38,33 @@ struct AppAppearanceTests {
         #expect(brightness(AppTheme.Accent.primaryNSColor, in: light) < brightness(AppTheme.Accent.primaryNSColor, in: dark))
     }
 
+    @Test func mediaOverlayPaletteIsAppearanceInvariant() throws {
+        let light = try #require(NSAppearance(named: .aqua))
+        let dark = try #require(NSAppearance(named: .darkAqua))
+        let colors = [
+            AppTheme.MediaOverlay.background,
+            AppTheme.MediaOverlay.primary,
+            AppTheme.MediaOverlay.secondary,
+            AppTheme.MediaOverlay.tertiary,
+            AppTheme.MediaOverlay.muted,
+            AppTheme.MediaOverlay.error,
+        ]
+
+        for color in colors {
+            expectSameColor(resolved(color, in: light), resolved(color, in: dark))
+        }
+    }
+
+    @Test func clipSelectionBorderInvertsBetweenAppearances() throws {
+        let light = try #require(NSAppearance(named: .aqua))
+        let dark = try #require(NSAppearance(named: .darkAqua))
+
+        expectSameColor(resolved(AppTheme.Border.timelineClip, in: light), resolved(.white, in: light))
+        expectSameColor(resolved(AppTheme.Border.timelineClipSelected, in: light), resolved(.black, in: light))
+        expectSameColor(resolved(AppTheme.Border.timelineClip, in: dark), resolved(.black, in: dark))
+        expectSameColor(resolved(AppTheme.Border.timelineClipSelected, in: dark), resolved(.white, in: dark))
+    }
+
     @Test func lightPaletteMaintainsReadableContrast() throws {
         let light = try #require(NSAppearance(named: .aqua))
 
@@ -62,6 +89,17 @@ struct AppAppearanceTests {
             resolved = color.usingColorSpace(.sRGB) ?? color
         }
         return resolved
+    }
+
+    private func expectSameColor(
+        _ lhs: NSColor,
+        _ rhs: NSColor,
+        sourceLocation: SourceLocation = #_sourceLocation
+    ) {
+        #expect(abs(lhs.redComponent - rhs.redComponent) < 0.001, sourceLocation: sourceLocation)
+        #expect(abs(lhs.greenComponent - rhs.greenComponent) < 0.001, sourceLocation: sourceLocation)
+        #expect(abs(lhs.blueComponent - rhs.blueComponent) < 0.001, sourceLocation: sourceLocation)
+        #expect(abs(lhs.alphaComponent - rhs.alphaComponent) < 0.001, sourceLocation: sourceLocation)
     }
 
     private func contrastRatio(_ foreground: NSColor, over background: NSColor, in appearance: NSAppearance) -> CGFloat {
