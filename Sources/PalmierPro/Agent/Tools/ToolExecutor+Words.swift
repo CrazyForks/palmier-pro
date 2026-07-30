@@ -25,10 +25,18 @@ extension ToolExecutor {
             aggressiveness = a
         } else { aggressiveness = .balanced }
 
-        let context = try await transcriptionContext(args, path: "remove_words", preferLast: true) {
-            await editor.captionCloudCreditCost(for: .init(autoDetect: true, provider: .cloud))
+        let session: TranscriptSession
+        if let lastTranscriptSession {
+            session = lastTranscriptSession
+        } else {
+            let scope = TranscriptionScope.automatic
+            let cloudRequest = scope.captionRequest(in: editor, provider: .cloud)
+            let context = try await transcriptionContext(args, path: "remove_words") {
+                await editor.captionCloudCreditCost(for: cloudRequest)
+            }
+            session = TranscriptSession(context: context, scope: scope)
         }
-        let transcript = try await timelineTranscript(editor, context: context)
+        let transcript = try await timelineTranscript(editor, session: session)
         let allWords = transcript.words
         guard !allWords.isEmpty else { throw ToolError("No transcribable speech on the timeline.") }
 
@@ -113,7 +121,7 @@ extension ToolExecutor {
         var extra: [String: Any] = [
             "removedWords": removedTexts.count, "removedFrames": report.removedFrames,
             "cutAggressiveness": aggressiveness.rawValue,
-            "transcriptionSource": context.provider.rawValue,
+            "transcriptionSource": session.context.provider.rawValue,
         ]
         let preview = removedTexts.prefix(24).joined(separator: " ")
         if !preview.isEmpty { extra["removedText"] = removedTexts.count > 24 ? preview + " …" : preview }

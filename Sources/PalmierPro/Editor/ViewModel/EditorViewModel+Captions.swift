@@ -81,7 +81,7 @@ extension EditorViewModel {
             let selectedIds = Set(ids)
             pool = clips.filter { selectedIds.contains($0.id) }
         }
-        return captionTargets(in: pool)
+        return captionTargets(in: pool, allowAnyMulticamMic: !ids.isEmpty)
     }
 
     func captionTargets(trackIds: Set<String>) -> [Clip] {
@@ -91,16 +91,17 @@ extension EditorViewModel {
             .filter { trackIds.contains($0.id) }
             .flatMap(\.clips)
             .filter { !($0.mediaType == .video && $0.linkGroupId.map(audioGroups.contains) == true) }
-        return captionTargets(in: pool)
+        return captionTargets(in: pool, allowAnyMulticamMic: true)
     }
 
-    private func captionTargets(in pool: [Clip]) -> [Clip] {
+    private func captionTargets(in pool: [Clip], allowAnyMulticamMic: Bool = false) -> [Clip] {
         let linkGroupsWithAudio = Set(pool.filter { $0.mediaType == .audio }.compactMap(\.linkGroupId))
         return pool
             .filter { clip in
                 guard captionCanTranscribe(clip) else { return false }
                 if let group = multicamGroup(of: clip) {
-                    return clip.mediaType == .audio && clip.mediaRef == group.master?.mediaRef
+                    return clip.mediaType == .audio
+                        && (allowAnyMulticamMic || clip.mediaRef == group.master?.mediaRef)
                 }
                 guard clip.mediaType == .video, let groupId = clip.linkGroupId else { return true }
                 return !linkGroupsWithAudio.contains(groupId)
