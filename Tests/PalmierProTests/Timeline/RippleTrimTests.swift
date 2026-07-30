@@ -165,6 +165,42 @@ struct RippleTrimTests {
         #expect(plan?.blockedAtFrame == nil)
     }
 
+    @Test func reportsSourceCapWhenAnExtendRunsOutOfHandles() {
+        // Only 10 frames of tail headroom, so a 40-frame extend lands 10 and says why.
+        let track = Fixtures.videoTrack(clips: [
+            Fixtures.clip(id: "c1", start: 0, duration: 100, trimEnd: 10),
+            Fixtures.clip(id: "c2", start: 100, duration: 50),
+        ])
+        let e = editor([track])
+        guard case .ok(let report) = e.rippleTrim(clipId: "c1", edge: .right, deltaFrames: 40, propagateToLinked: false) else {
+            Issue.record("expected an applied trim")
+            return
+        }
+        #expect(report.durationDelta == 10)
+        #expect(report.limit == .sourceMedia)
+        #expect(spans(e.timeline.tracks[0]) == [[0, 110], [110, 160]])
+    }
+
+    @Test func fullyBlockedShrinkMakesNoEditAndNoUndoStep() {
+        // b0 ends exactly where b1 starts, so the sync-locked follower has no room to slide left.
+        let a = Fixtures.videoTrack(clips: [Fixtures.clip(id: "c1", start: 0, duration: 100)])
+        let b = Fixtures.videoTrack(clips: [
+            Fixtures.clip(id: "b0", start: 60, duration: 40),
+            Fixtures.clip(id: "b1", start: 100, duration: 50),
+        ])
+        let e = editor([a, b])
+        let undoManager = UndoManager()
+        e.undo.attach(undoManager)
+        guard case .ok(let report) = e.rippleTrim(clipId: "c1", edge: .right, deltaFrames: -20, propagateToLinked: false) else {
+            Issue.record("expected a reported no-op, not a refusal")
+            return
+        }
+        #expect(report.durationDelta == 0)
+        #expect(report.limit == .syncLockedTrack(atFrame: 100))
+        #expect(spans(e.timeline.tracks[0]) == [[0, 100]])
+        #expect(undoManager.canUndo == false)
+    }
+
     @Test func unlinkedTrimLeavesPartnerTrackAlone() {
         // propagateToLinked off: only the lead's track ripples.
         var v1 = Fixtures.clip(id: "v1", start: 0, duration: 100, trimEnd: 50)

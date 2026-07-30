@@ -14,6 +14,29 @@ enum RippleRangesOutcome: Sendable {
     case refused(String)
 }
 
+/// What capped a ripple trim short of the requested length.
+enum RippleTrimLimit: Equatable, Sendable {
+    /// No unused source media past the trimmed edge on one of the trimmed clips.
+    case sourceMedia
+    /// The trimmed clips have no length left to give.
+    case clipLength
+    /// A sync-locked track's clips are butted up at `atFrame` and can't slide further.
+    case syncLockedTrack(atFrame: Int)
+}
+
+struct RippleTrimReport: Sendable {
+    /// Applied change in the trimmed clips' timeline length; positive lengthens. 0 means nothing moved.
+    let durationDelta: Int
+    let resizedClipIds: [String]
+    let shiftedClipIds: [String]
+    let limit: RippleTrimLimit?
+}
+
+enum RippleTrimOutcome: Sendable {
+    case ok(RippleTrimReport)
+    case refused(String)
+}
+
 /// Ripple editing syncs trims, deletes, and inserts across tracks.
 extension EditorViewModel {
 
@@ -98,16 +121,33 @@ extension EditorViewModel {
         return (max(0, first - prevEnd), prevEnd)
     }
 
-    /// Ripple trim: resize a clip from the dragged edge and shift every clip after it
+    /// Ripple trim from the timeline UI: refusals surface as a toast, a blocked drag is a no-op.
     func rippleTrimClip(clipId: String, edge: TrimEdge, deltaFrames: Int, propagateToLinked: Bool) {
-        if let leadLoc = findClip(id: clipId) {
-            let targets = rippleTrimTargets(clipId: clipId, edge: edge, propagateToLinked: propagateToLinked)
-            if let reason = rippleTrimRefusal(leadLoc: leadLoc, edge: edge, targetIds: Set(targets.map(\.id))) {
-                refuseRipple(reason: reason)
-                return
-            }
+        if case .refused(let reason) = rippleTrim(
+            clipId: clipId, edge: edge, deltaFrames: deltaFrames, propagateToLinked: propagateToLinked
+        ) {
+            refuseRipple(reason: reason)
         }
-        guard let plan = planRippleTrim(clipId: clipId, edge: edge, deltaFrames: deltaFrames, propagateToLinked: propagateToLinked) else { return }
+    }
+
+    /// Ripple trim: resize a clip from the dragged edge and shift every clip after it.
+    /// `deltaFrames` follows the drag: rightward for both edges, so a positive value
+    /// lengthens the tail and shortens the head.
+    @discardableResult
+    func rippleTrim(clipId: String, edge: TrimEdge, deltaFrames: Int, propagateToLinked: Bool) -> RippleTrimOutcome {
+        guard let leadLoc = findClip(id: clipId) else { return .refused("Clip not found: \(clipId)") }
+        let targets = rippleTrimTargets(clipId: clipId, edge: edge, propagateToLinked: propagateToLinked)
+        if let reason = rippleTrimRefusal(leadLoc: leadLoc, edge: edge, targetIds: Set(targets.map(\.id))) {
+            return .refused(reason)
+        }
+
+        let plan = planRippleTrim(clipId: clipId, edge: edge, deltaFrames: deltaFrames, propagateToLinked: propagateToLinked)
+        let requested = edge == .right ? deltaFrames : -deltaFrames
+        let applied = plan?.durationDelta ?? 0
+        let limit = Self.rippleTrimLimit(requested: requested, applied: applied, blockedAtFrame: plan?.blockedAtFrame)
+        guard let plan, applied != 0 else {
+            return .ok(RippleTrimReport(durationDelta: 0, resizedClipIds: [], shiftedClipIds: [], limit: limit))
+        }
 
         let touched = plan.targetIds.union(plan.shifts.map(\.clipId))
         withTimelineSwap(actionName: "Ripple Trim") {
@@ -122,6 +162,20 @@ extension EditorViewModel {
                 sortClips(trackIndex: ti)
             }
         }
+        return .ok(RippleTrimReport(
+            durationDelta: applied,
+            resizedClipIds: plan.resizes.map(\.clipId),
+            shiftedClipIds: plan.shifts.map(\.clipId),
+            limit: limit
+        ))
+    }
+
+    /// A shrink that stopped early ran into a sync-locked wall or the clips' own length;
+    /// an extend that stopped early ran out of source media.
+    private static func rippleTrimLimit(requested: Int, applied: Int, blockedAtFrame: Int?) -> RippleTrimLimit? {
+        guard applied != requested else { return nil }
+        if let blockedAtFrame { return .syncLockedTrack(atFrame: blockedAtFrame) }
+        return requested > 0 ? .sourceMedia : .clipLength
     }
 
     func rippleTrimTargets(clipId: String, edge: TrimEdge, propagateToLinked: Bool) -> [Clip] {
