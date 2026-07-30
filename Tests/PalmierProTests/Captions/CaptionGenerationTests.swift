@@ -181,7 +181,7 @@ private func mediaAsset(_ id: String, hasAudio: Bool = true) -> MediaAsset {
         #expect(e.captionTargets(trackIds: ["audio-track"]).map(\.id) == ["audio"])
     }
 
-    @Test func explicitSelectionCanChooseNonMasterMulticamMic() {
+    @Test func explicitSelectionsCanChooseNonMasterMulticamMic() {
         var masterClip = Fixtures.clip(id: "master", mediaRef: "lapel", mediaType: .audio, start: 0, duration: 100)
         var roomClip = Fixtures.clip(id: "room", mediaRef: "room", mediaType: .audio, start: 0, duration: 100)
         masterClip.multicamGroupId = "group"
@@ -212,6 +212,8 @@ private func mediaAsset(_ id: String, hasAudio: Bool = true) -> MediaAsset {
 
         #expect(e.captionTargets(ids: []).map(\.id) == ["master"])
         #expect(e.captionTargets(ids: ["room"]).map(\.id) == ["room"])
+        #expect(e.captionTargets(ids: ["master", "room"]).map(\.id) == ["master", "room"])
+        #expect(e.transcriptionTargets(clipIds: ["room"]).map(\.id) == ["room"])
         #expect(e.captionTargets(trackIds: ["room-track"]).map(\.id) == ["room"])
     }
 

@@ -110,6 +110,23 @@ struct GetTranscriptParamTests {
         #expect(ToolHarness.textOf(result).contains("either clipId or trackIndex"))
     }
 
+    @Test func linkedVideoClipScopeRequiresAudioPartner() async {
+        let groupId = "linked"
+        var video = Fixtures.clip(id: "video", mediaRef: "media", mediaType: .video, start: 0, duration: 30)
+        var audio = Fixtures.clip(id: "audio", mediaRef: "media", mediaType: .audio, start: 0, duration: 30)
+        video.linkGroupId = groupId
+        audio.linkGroupId = groupId
+        let h = ToolHarness(timeline: Fixtures.timeline(tracks: [
+            Fixtures.videoTrack(clips: [video]),
+            Fixtures.audioTrack(clips: [audio]),
+        ]))
+
+        let result = await h.runRaw("get_transcript", args: ["clipId": "video"])
+
+        #expect(result.isError)
+        #expect(ToolHarness.textOf(result).contains("linked audio clip"))
+    }
+
     @Test func transcriptSessionReplacesPriorTrackScope() async {
         let clip = Fixtures.clip(id: "voice", mediaType: .audio, start: 0, duration: 30)
         let h = ToolHarness(timeline: Fixtures.timeline(tracks: [
@@ -119,10 +136,12 @@ struct GetTranscriptParamTests {
         let selected = await h.runRaw("get_transcript", args: ["trackIndex": 0])
         #expect(!selected.isError)
         #expect(h.executor.lastTranscriptSession?.scope == .track(id: "voice-track"))
+        #expect(h.executor.lastTranscriptSession?.timelineId == h.editor.activeTimelineId)
 
         let automatic = await h.runRaw("get_transcript")
         #expect(!automatic.isError)
         #expect(h.executor.lastTranscriptSession?.scope == .automatic)
+        #expect(h.executor.lastTranscriptSession?.timelineId == h.editor.activeTimelineId)
     }
 
     @Test func transcriptAndCaptionSchemasExposeTrackIndex() throws {

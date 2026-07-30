@@ -16,7 +16,7 @@ enum TranscriptionScope: Equatable {
         case .automatic:
             editor.captionTargets(ids: [])
         case .clips(let ids):
-            editor.captionTargets(ids: ids)
+            editor.transcriptionTargets(clipIds: ids)
         case .track(let id):
             editor.captionTargets(trackIds: [id])
         }
@@ -39,9 +39,46 @@ enum TranscriptionScope: Equatable {
     }
 }
 
+struct TranscriptTargetSnapshot: Equatable {
+    let clipId: String
+    let mediaRef: String
+    let startFrame: Int
+    let durationFrames: Int
+    let trimStartFrame: Int
+    let speed: Double
+
+    init(_ clip: Clip) {
+        clipId = clip.id
+        mediaRef = clip.mediaRef
+        startFrame = clip.startFrame
+        durationFrames = clip.durationFrames
+        trimStartFrame = clip.trimStartFrame
+        speed = clip.speed
+    }
+}
+
 struct TranscriptSession {
     let context: TranscriptionToolContext
     let scope: TranscriptionScope
+    let timelineId: String
+    let timelineFPS: Int
+    let targetSnapshot: [TranscriptTargetSnapshot]
+
+    @MainActor
+    init(context: TranscriptionToolContext, scope: TranscriptionScope, editor: EditorViewModel) {
+        self.context = context
+        self.scope = scope
+        timelineId = editor.activeTimelineId
+        timelineFPS = editor.timeline.fps
+        targetSnapshot = scope.targets(in: editor).map(TranscriptTargetSnapshot.init)
+    }
+
+    @MainActor
+    func hasSameWordMapping(in editor: EditorViewModel) -> Bool {
+        timelineId == editor.activeTimelineId
+            && timelineFPS == editor.timeline.fps
+            && targetSnapshot == scope.targets(in: editor).map(TranscriptTargetSnapshot.init)
+    }
 }
 
 struct TimelineWord {
@@ -284,7 +321,6 @@ extension ToolExecutor {
     func getTranscript(_ editor: EditorViewModel, _ args: [String: Any]) async throws -> ToolResult {
         try validateUnknownKeys(args, allowed: Self.getTranscriptAllowedKeys, path: "get_transcript")
         let clipFilter = args.string("clipId")
-        let scope = try resolveTranscriptionScope(editor, args, path: "get_transcript")
         let windowStart = args.int("startFrame")
         let windowEnd = args.int("endFrame")
         if let start = windowStart, let end = windowEnd, start >= end {
@@ -296,11 +332,12 @@ extension ToolExecutor {
             throw ToolError("granularity must be 'words' or 'segments' (got '\(granularity)')")
         }
 
+        let scope = try resolveTranscriptionScope(editor, args, path: "get_transcript")
         let cloudRequest = scope.captionRequest(in: editor, provider: .cloud)
         let context = try await transcriptionContext(args, path: "get_transcript") {
             await editor.captionCloudCreditCost(for: cloudRequest)
         }
-        let session = TranscriptSession(context: context, scope: scope)
+        let session = TranscriptSession(context: context, scope: scope, editor: editor)
         let transcript = try await timelineTranscript(editor, session: session)
         lastTranscriptSession = session
 

@@ -6,9 +6,11 @@ import Testing
 @MainActor
 struct MCPTranscriptionTrackTests {
     @Test func discoveryAndTrackValidationCrossMCPBoundary() async throws {
-        let clip = Fixtures.clip(id: "voice", mediaType: .audio, start: 0, duration: 30)
+        let first = Fixtures.clip(id: "first", mediaType: .audio, start: 0, duration: 30)
+        let second = Fixtures.clip(id: "second", mediaType: .audio, start: 0, duration: 30)
         let harness = ToolHarness(timeline: Fixtures.timeline(tracks: [
-            Fixtures.audioTrack(id: "voice-track", clips: [clip]),
+            Fixtures.audioTrack(id: "first-track", clips: [first]),
+            Fixtures.audioTrack(id: "second-track", clips: [second]),
         ]))
         let server = Server(
             name: "transcription-track-test",
@@ -31,9 +33,11 @@ struct MCPTranscriptionTrackTests {
 
             let transcript = try await client.callTool(
                 name: "get_transcript",
-                arguments: ["trackIndex": .int(0)]
+                arguments: ["trackIndex": .int(1)]
             )
             #expect(transcript.isError != true)
+            #expect(harness.executor.lastTranscriptSession?.scope == .track(id: "second-track"))
+            #expect(harness.executor.lastTranscriptSession?.timelineId == harness.editor.activeTimelineId)
 
             for name in ["get_transcript", "add_captions"] {
                 let invalid = try await client.callTool(

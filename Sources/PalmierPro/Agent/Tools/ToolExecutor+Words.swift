@@ -26,15 +26,21 @@ extension ToolExecutor {
         } else { aggressiveness = .balanced }
 
         let session: TranscriptSession
-        if let lastTranscriptSession {
-            session = lastTranscriptSession
+        if let remembered = lastTranscriptSession, remembered.timelineId == editor.activeTimelineId {
+            if rawWords != nil, !remembered.hasSameWordMapping(in: editor) {
+                throw ToolError("The timeline sources from the previous get_transcript have changed. Call get_transcript again before remove_words.")
+            }
+            session = remembered
         } else {
+            if rawWords != nil, lastTranscriptSession != nil {
+                throw ToolError("The previous get_transcript belongs to a different timeline. Call get_transcript again before remove_words.")
+            }
             let scope = TranscriptionScope.automatic
             let cloudRequest = scope.captionRequest(in: editor, provider: .cloud)
             let context = try await transcriptionContext(args, path: "remove_words") {
                 await editor.captionCloudCreditCost(for: cloudRequest)
             }
-            session = TranscriptSession(context: context, scope: scope)
+            session = TranscriptSession(context: context, scope: scope, editor: editor)
         }
         let transcript = try await timelineTranscript(editor, session: session)
         let allWords = transcript.words
