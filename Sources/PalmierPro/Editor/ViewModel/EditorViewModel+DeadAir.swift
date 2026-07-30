@@ -32,16 +32,10 @@ extension EditorViewModel {
 
     /// The dead-air span under `timelineFrame` in `clip`, as a timeline range. Nil when the frame isn't dead air.
     func deadAirSpanRange(clip: Clip, atTimelineFrame frame: Int) -> FrameRange? {
-        guard let mask = deadAirMask(for: clip, settings: silenceRemovalSettings), !mask.isEmpty else { return nil }
-        let cellFrames = VoiceActivity.chunkDuration * Double(max(1, timeline.fps))
         let sourceFrame = Double(clip.trimStartFrame) + Double(frame - clip.startFrame) * clip.speed
-        let cell = Int(sourceFrame / cellFrames)
-        guard mask.indices.contains(cell), mask[cell] else { return nil }
-        var lo = cell
-        while lo > 0 && mask[lo - 1] { lo -= 1 }
-        var hi = cell + 1
-        while hi < mask.count && mask[hi] { hi += 1 }
-        return timelineRange(clip: clip, sourceStart: Double(lo) * cellFrames, sourceEnd: Double(hi) * cellFrames)
+        guard let sourceRange = deadAirSourceRanges(for: clip, settings: silenceRemovalSettings)
+            .first(where: { $0.contains(sourceFrame) }) else { return nil }
+        return timelineRange(clip: clip, sourceStart: sourceRange.lowerBound, sourceEnd: sourceRange.upperBound)
     }
 
     /// Every dead-air span visible within `clip`, as timeline ranges.
@@ -50,20 +44,9 @@ extension EditorViewModel {
         settings: SilenceRemovalSettings? = nil
     ) -> [FrameRange] {
         let effectiveSettings = settings ?? silenceRemovalSettings
-        guard let mask = deadAirMask(for: clip, settings: effectiveSettings), !mask.isEmpty else { return [] }
-        let cellFrames = VoiceActivity.chunkDuration * Double(max(1, timeline.fps))
-        var ranges: [FrameRange] = []
-        var i = 0
-        while i < mask.count {
-            guard mask[i] else { i += 1; continue }
-            var j = i
-            while j < mask.count && mask[j] { j += 1 }
-            if let r = timelineRange(clip: clip, sourceStart: Double(i) * cellFrames, sourceEnd: Double(j) * cellFrames) {
-                ranges.append(r)
-            }
-            i = j
+        return deadAirSourceRanges(for: clip, settings: effectiveSettings).compactMap {
+            timelineRange(clip: clip, sourceStart: $0.lowerBound, sourceEnd: $0.upperBound)
         }
-        return ranges
     }
 
     /// Dead-air ranges grouped by track; each track ripples its own spans.
@@ -158,6 +141,21 @@ extension EditorViewModel {
             guard sections > 0 || refusal != nil else { return nil }
             return (sections, removedFrames, refusal)
         }
+    }
+
+    private func deadAirSourceRanges(
+        for clip: Clip,
+        settings: SilenceRemovalSettings
+    ) -> [Range<Double>] {
+        guard let mask = deadAirMask(for: clip, settings: settings), !mask.isEmpty else { return [] }
+        let visibleStart = Double(clip.trimStartFrame)
+        let visibleEnd = Double(clip.trimStartFrame + clip.sourceFramesConsumed)
+        return SilenceRemovalPlanner.visibleRemovableRanges(
+            from: mask,
+            visibleSourceRange: visibleStart..<visibleEnd,
+            framesPerSecond: timeline.fps,
+            settings: settings
+        )
     }
 
     private func timelineRange(clip: Clip, sourceStart: Double, sourceEnd: Double) -> FrameRange? {

@@ -129,8 +129,9 @@ enum ClipRenderer {
                 cache?.deadAirMask(for: clip.mediaRef, settings: $0)
             }
             drawWaveform(samples: samples, deadAirMask: mask,
+                         silenceRemovalSettings: silenceRemovalSettings,
                          speakerMask: speakerColors.isEmpty ? nil : cache?.speakerMask(for: clip.mediaRef),
-                         clip: clip, type: colorType, in: audioRect, context: context)
+                         clip: clip, type: colorType, fps: fps, in: audioRect, context: context)
         }
 
         let showsFadeControls = showsFadeControls(isSelected: isSelected, isHovered: isHovered, in: rect)
@@ -310,9 +311,11 @@ enum ClipRenderer {
     private static func drawWaveform(
         samples: [Float],
         deadAirMask: [Bool]?,
+        silenceRemovalSettings: SilenceRemovalSettings?,
         speakerMask: [Int]? = nil,
         clip: Clip,
         type: ClipType,
+        fps: Int,
         in drawRect: NSRect,
         context: CGContext
     ) {
@@ -351,11 +354,20 @@ enum ClipRenderer {
         let needsPerBarVolume = (clip.volumeTrack?.isActive ?? false) || clip.fadeInFrames > 0 || clip.fadeOutFrames > 0
         let staticShift = CGFloat(VolumeScale.dbFromLinear(clip.volume)) / dbRange
 
-        // Dead-air shading maps the mask through the same source fractions as samples.
-        let maskCount = deadAirMask?.count ?? 0
-        let maskStart = max(0, min(maskCount, Int(startFrac * Double(maskCount))))
-        let maskEnd = max(maskStart, min(maskCount, Int(endFrac * Double(maskCount))))
-        let maskVisCount = maskEnd - maskStart
+        // Dead-air shading uses the same clip-visible ranges as removal.
+        let visibleSourceStart = Double(clip.trimStartFrame)
+        let visibleSourceEnd = Double(clip.trimStartFrame + clip.sourceFramesConsumed)
+        let deadAirRanges: [Range<Double>]
+        if let deadAirMask, let silenceRemovalSettings, visibleSourceStart < visibleSourceEnd {
+            deadAirRanges = SilenceRemovalPlanner.visibleRemovableRanges(
+                from: deadAirMask,
+                visibleSourceRange: visibleSourceStart..<visibleSourceEnd,
+                framesPerSecond: fps,
+                settings: silenceRemovalSettings
+            )
+        } else {
+            deadAirRanges = []
+        }
         var washes: [CGRect] = []
         let spkCount = speakerMask?.count ?? 0
         let spkStart = max(0, min(spkCount, Int(startFrac * Double(spkCount))))
@@ -397,10 +409,10 @@ enum ClipRenderer {
                 bars.append(bar)
             }
 
-            if let deadAirMask, maskVisCount > 0 {
-                let m0 = maskStart + i * maskVisCount / barCount
-                let m1 = min(maskEnd, max(m0 + 1, maskStart + (i + 1) * maskVisCount / barCount))
-                if deadAirMask[m0..<m1].contains(true) {
+            if !deadAirRanges.isEmpty {
+                let m0 = visibleSourceStart + Double(i) * (visibleSourceEnd - visibleSourceStart) / Double(barCount)
+                let m1 = visibleSourceStart + Double(i + 1) * (visibleSourceEnd - visibleSourceStart) / Double(barCount)
+                if deadAirRanges.contains(where: { $0.overlaps(m0..<m1) }) {
                     washes.append(CGRect(x: drawRect.minX + CGFloat(i), y: drawRect.minY, width: 1, height: drawRect.height))
                 }
             }

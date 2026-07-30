@@ -48,6 +48,50 @@ struct SilenceRemovalPlannerTests {
         #expect(mask == [true, true, true, false, false, false, false, false, true, true, true])
     }
 
+    @Test func removesPaddingAtTrimmedClipEdgesOnly() {
+        let settings = SilenceRemovalSettings(
+            minimumPauseSeconds: 0.5,
+            speechPaddingSeconds: 0.2
+        )!
+        let mask = [false, false, true, true, true, true, false, false]
+
+        #expect(SilenceRemovalPlanner.visibleRemovableRanges(
+            from: mask,
+            visibleSourceRange: 0.0..<9.0,
+            framesPerSecond: 10,
+            settings: settings,
+            cellDuration: 0.1
+        ) == [0.0..<6.0])
+        #expect(SilenceRemovalPlanner.visibleRemovableRanges(
+            from: mask,
+            visibleSourceRange: -1.0..<8.0,
+            framesPerSecond: 10,
+            settings: settings,
+            cellDuration: 0.1
+        ) == [2.0..<8.0])
+        #expect(SilenceRemovalPlanner.visibleRemovableRanges(
+            from: mask,
+            visibleSourceRange: -1.0..<9.0,
+            framesPerSecond: 10,
+            settings: settings,
+            cellDuration: 0.1
+        ) == [2.0..<6.0])
+        #expect(SilenceRemovalPlanner.visibleRemovableRanges(
+            from: mask,
+            visibleSourceRange: 0.0..<1.0,
+            framesPerSecond: 10,
+            settings: settings,
+            cellDuration: 0.1
+        ) == [0.0..<1.0])
+        #expect(SilenceRemovalPlanner.visibleRemovableRanges(
+            from: mask,
+            visibleSourceRange: 7.0..<8.0,
+            framesPerSecond: 10,
+            settings: settings,
+            cellDuration: 0.1
+        ) == [7.0..<8.0])
+    }
+
     @Test func rejectsInvalidSettings() {
         #expect(SilenceRemovalSettings(minimumPauseSeconds: .nan, speechPaddingSeconds: 0.15) == nil)
         #expect(SilenceRemovalSettings(minimumPauseSeconds: 0.1, speechPaddingSeconds: 0.15) == nil)
