@@ -102,6 +102,21 @@ fileprivate struct RippleDeleteRangesInput: DecodableToolArgs {
     static let allowedKeys: Set<String> = ["clipId", "trackIndex", "ranges", "units", "ignoreSyncLockedTracks"]
 }
 
+fileprivate struct RippleTrimClipInput: DecodableToolArgs {
+    let clipId: String
+    let edge: String
+    let deltaFrames: Int?
+    let toFrame: Int?
+    static let allowedKeys: Set<String> = ["clipId", "edge", "deltaFrames", "toFrame"]
+}
+
+/// Edge naming for the ripple trim tool: filmmaking head/tail, mapped to the model's drag edges.
+fileprivate enum RippleTrimEdge: String {
+    case head, tail
+
+    var trimEdge: EditorViewModel.TrimEdge { self == .head ? .left : .right }
+}
+
 fileprivate struct SetKeyframesInput: DecodableToolArgs {
     let clipId: String
     let property: String
@@ -542,7 +557,7 @@ extension ToolExecutor {
 
         if clipIds.contains(where: { editor.clipFor(id: $0)?.multicamGroupId != nil }),
            input.trimStartFrame != nil || input.trimEndFrame != nil || input.durationFrames != nil || input.speed != nil {
-            throw ToolError("Timing fields would slip a multicam clip out of sync — switch angles with change_cam; split/delete and property fields (volumeDb, opacity, edgeRounding, edgeSoftness, transform) stay editable.")
+            throw ToolError("Timing fields would slip a multicam clip out of sync — lengthen or shorten a shared head/tail edge with ripple_trim_clip, switch angles with change_cam; split/delete and property fields (volumeDb, opacity, edgeRounding, edgeSoftness, transform) stay editable.")
         }
 
         if input.fadeInFrames != nil || input.fadeOutFrames != nil {
@@ -965,6 +980,108 @@ extension ToolExecutor {
                 touched: report.resultingFragments.map(\.clipId),
                 extra: extra
             )
+        }
+    }
+
+    // MARK: ripple_trim_clip
+
+    /// A day of frames at 240 fps — past any real trim, and keeps the frame math clear of Int's edges.
+    private static let rippleTrimFrameLimit = 240 * 60 * 60 * 24
+
+    func rippleTrimClip(_ editor: EditorViewModel, _ args: [String: Any]) throws -> ToolResult {
+        let input: RippleTrimClipInput = try decodeToolArgs(args, path: "ripple_trim_clip")
+        guard let edge = RippleTrimEdge(rawValue: input.edge) else {
+            throw ToolError("edge must be 'head' or 'tail' (got '\(input.edge)')")
+        }
+        guard (input.deltaFrames != nil) != (input.toFrame != nil) else {
+            throw ToolError("Provide exactly one of 'deltaFrames' (signed frames; positive lengthens the \(edge.rawValue)) or 'toFrame' (the project frame the edge lands on).")
+        }
+        guard let loc = editor.findClip(id: input.clipId) else {
+            throw ToolError("Clip not found: \(input.clipId)")
+        }
+        let clip = editor.timeline.tracks[loc.trackIndex].clips[loc.clipIndex]
+        let requested = try Self.rippleTrimRequest(input, edge: edge, clip: clip)
+
+        let snapshot = timelineSnapshot(editor)
+        guard requested != 0 else {
+            return mutationResult(
+                editor, since: snapshot, touched: [clip.id],
+                extra: ["changed": false, "edge": edge.rawValue, "requestedDeltaFrames": 0, "appliedDeltaFrames": 0],
+                notes: ["Clip \(clip.id) already \(edge == .tail ? "ends" : "begins") at that frame — no edit."]
+            )
+        }
+
+        // The model's delta follows the drag (rightward on both edges); the tool's lengthens.
+        let outcome = editor.undo.perform("Ripple Trim (Agent)") {
+            editor.rippleTrim(
+                clipId: clip.id,
+                edge: edge.trimEdge,
+                deltaFrames: edge == .tail ? requested : -requested,
+                propagateToLinked: true
+            )
+        }
+        switch outcome {
+        case .refused(let reason):
+            throw ToolError(reason)
+        case .ok(let report):
+            let cap = report.limit.map { Self.rippleTrimCapReason($0, edge: edge, clipId: clip.id) }
+            guard report.durationDelta != 0 else {
+                throw ToolError("Ripple trim of clip \(clip.id) didn't move: \(cap ?? "nothing to trim at its \(edge.rawValue)").")
+            }
+            return mutationResult(
+                editor, since: snapshot,
+                touched: report.resizedClipIds,
+                extra: [
+                    "changed": true,
+                    "edge": edge.rawValue,
+                    "requestedDeltaFrames": requested,
+                    "appliedDeltaFrames": report.durationDelta,
+                ],
+                notes: cap.map { ["Capped at \(report.durationDelta) of the \(requested) frames requested — \($0)."] } ?? []
+            )
+        }
+    }
+
+    /// Signed frames the clip should gain at `edge`; negative shortens it.
+    private static func rippleTrimRequest(_ input: RippleTrimClipInput, edge: RippleTrimEdge, clip: Clip) throws -> Int {
+        let limit = rippleTrimFrameLimit
+        if let delta = input.deltaFrames {
+            guard delta != 0 else {
+                throw ToolError("deltaFrames must be non-zero — positive lengthens the clip's \(edge.rawValue), negative shortens it.")
+            }
+            guard delta.magnitude <= UInt(limit) else {
+                throw ToolError("deltaFrames \(delta) is out of range — a ripple trim is bounded to ±\(limit) frames.")
+            }
+            return delta
+        }
+        let toFrame = input.toFrame ?? 0
+        guard toFrame >= 0, toFrame <= limit else {
+            throw ToolError("toFrame must be between 0 and \(limit) (got \(toFrame)).")
+        }
+        switch edge {
+        case .tail:
+            guard toFrame > clip.startFrame else {
+                throw ToolError("toFrame \(toFrame) must be past clip \(clip.id)'s start frame \(clip.startFrame) — a tail can't cross its own head. The clip currently ends at \(clip.endFrame).")
+            }
+            return toFrame - clip.endFrame
+        case .head:
+            guard toFrame >= clip.startFrame, toFrame < clip.endFrame else {
+                throw ToolError("toFrame \(toFrame) must fall inside clip \(clip.id) (frames \(clip.startFrame)..\(clip.endFrame)): a head ripple keeps startFrame anchored, so toFrame names the project frame whose content becomes the clip's first frame. Extend a head with a positive deltaFrames instead.")
+            }
+            return clip.startFrame - toFrame
+        }
+    }
+
+    private static func rippleTrimCapReason(
+        _ limit: RippleTrimLimit, edge: RippleTrimEdge, clipId: String
+    ) -> String {
+        switch limit {
+        case .sourceMedia:
+            return "clip \(clipId) (or a clip trimmed with it) has no unused source media left at its \(edge.rawValue)"
+        case .clipLength:
+            return "the trimmed clips have no length left to give (a clip can't go below one frame)"
+        case .syncLockedTrack(let frame):
+            return "a sync-locked track's clips are butted up at frame \(frame), so nothing further can slide left — pass those clips' track through manage_tracks syncLocked:false, or cut time with ripple_delete_ranges instead"
         }
     }
 

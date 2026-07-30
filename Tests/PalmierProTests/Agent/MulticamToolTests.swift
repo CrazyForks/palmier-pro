@@ -161,6 +161,39 @@ struct MulticamToolTests {
         #expect(property.isError == false)
     }
 
+    /// The timing edit a group does accept: an edge shared by its clips trims as one.
+    @Test func rippleTrimExtendsTheWholeGroupAtASharedSeam() async throws {
+        let h = harness()
+        let groupId = try await createGroup(h)
+        // Cutting time out leaves the program and mic seams aligned at frame 600.
+        _ = try await h.runOK("ripple_delete_ranges", args: ["trackIndex": 0, "ranges": [[600, 700]]])
+        let clips = h.editor.multicamClips(of: groupId).map(\.clip)
+        let leftProgram = try #require(clips.first { $0.mediaType == .video && $0.endFrame == 600 })
+        let rightProgram = try #require(clips.first { $0.mediaType == .video && $0.startFrame == 600 })
+        let leftMic = try #require(clips.first { $0.mediaType == .audio && $0.endFrame == 600 })
+
+        _ = try await h.runOK("ripple_trim_clip", args: [
+            "clipId": leftProgram.id, "edge": "tail", "deltaFrames": 40,
+        ])
+        #expect(h.editor.clipFor(id: leftProgram.id)?.endFrame == 640)
+        #expect(h.editor.clipFor(id: leftMic.id)?.endFrame == 640)
+        #expect(h.editor.clipFor(id: rightProgram.id)?.startFrame == 640)
+    }
+
+    @Test func rippleTrimRefusedThroughTheMiddleOfAGroup() async throws {
+        let h = harness()
+        let groupId = try await createGroup(h)
+        let program = try #require(h.editor.multicamClips(of: groupId).map(\.clip).first { $0.mediaType == .video })
+        _ = h.editor.splitClip(clipId: program.id, atFrame: 600)
+        let left = try #require(h.editor.multicamClips(of: groupId).map(\.clip).first { $0.endFrame == 600 })
+
+        // The mic still runs through 600, so shrinking there would desync it.
+        let r = await h.runRaw("ripple_trim_clip", args: ["clipId": left.id, "edge": "tail", "deltaFrames": -60])
+        #expect(r.isError == true)
+        #expect(ToolHarness.textOf(r).localizedCaseInsensitiveContains("multicam"))
+        #expect(h.editor.clipFor(id: left.id)?.endFrame == 600)
+    }
+
     @Test func syncClipsRefusedOnGroupClips() async throws {
         let h = harness()
         let groupId = try await createGroup(h)

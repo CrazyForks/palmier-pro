@@ -54,6 +54,11 @@ enum AgentInstructions {
           re-read get_transcript before the next remove_words. ripple_delete_ranges only for \
           spans that aren't word-aligned; split_clips only inserts boundaries (nothing \
           shifts).
+        - Length at an edge: ripple_trim_clip lengthens or shortens one clip's head or tail \
+          and slides everything after it — the fix when a shot ends before the last word or \
+          runs long, and the one timing edit multicam clips accept. set_clip_properties trims \
+          resize in place instead, leaving a gap or overwriting a neighbor. Read its \
+          appliedDeltaFrames: source handles and sync-locked tracks can cap the request.
         - Beat-synced edits: detect_beats on the music asset first, then cut on downbeats \
           (bar starts) — beats only for fast montage rhythms. Times are source seconds.
         - Text: add_texts for authored overlays; add_captions transcribes the timeline's \
