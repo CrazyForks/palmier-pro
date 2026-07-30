@@ -272,13 +272,34 @@ enum AppTheme {
     // MARK: - Track type colors
 
     enum TrackColor {
-        static let video = NSColor(red: 0x1D/255.0, green: 0x58/255.0, blue: 0x78/255.0, alpha: 1)
-        static let audio = NSColor(red: 0x2E/255.0, green: 0x77/255.0, blue: 0x65/255.0, alpha: 1)
-        static let image = NSColor(red: 0x71/255.0, green: 0x54/255.0, blue: 0x86/255.0, alpha: 1)
-        static let text = NSColor(red: 0x71/255.0, green: 0x54/255.0, blue: 0x86/255.0, alpha: 1)
-        static let lottie = NSColor(red: 0xA0/255.0, green: 0x78/255.0, blue: 0x22/255.0, alpha: 1)
-        static let sequence = NSColor(red: 0xB9/255.0, green: 0xB2/255.0, blue: 0x9A/255.0, alpha: 1)
+        static var video: NSColor { TimelineClipColorPalette.shared.color(for: .video) }
+        static var audio: NSColor { TimelineClipColorPalette.shared.color(for: .audio) }
+        static var image: NSColor { TimelineClipColorPalette.shared.color(for: .image) }
+        static var text: NSColor { TimelineClipColorPalette.shared.color(for: .text) }
+        static var lottie: NSColor { TimelineClipColorPalette.shared.color(for: .animation) }
+        static var sequence: NSColor { TimelineClipColorPalette.shared.color(for: .sequence) }
         static let multicam = NSColor.systemRed
+
+        static func readableForeground(on background: NSColor) -> NSColor {
+            guard let background = background.usingColorSpace(.sRGB) else { return .white }
+            let luminance = relativeLuminance(
+                red: background.redComponent,
+                green: background.greenComponent,
+                blue: background.blueComponent
+            )
+            let blackContrast = (luminance + 0.05) / 0.05
+            let whiteContrast = 1.05 / (luminance + 0.05)
+            return blackContrast >= whiteContrast ? .black : .white
+        }
+
+        private static func relativeLuminance(red: CGFloat, green: CGFloat, blue: CGFloat) -> CGFloat {
+            func linear(_ component: CGFloat) -> CGFloat {
+                component <= 0.04045
+                    ? component / 12.92
+                    : pow((component + 0.055) / 1.055, 2.4)
+            }
+            return linear(red) * 0.2126 + linear(green) * 0.7152 + linear(blue) * 0.0722
+        }
     }
 
     // MARK: - Corner radii
@@ -518,5 +539,9 @@ extension ClipType {
         case .lottie: AppTheme.TrackColor.lottie
         case .sequence: AppTheme.TrackColor.sequence
         }
+    }
+
+    var themeForegroundColor: NSColor {
+        AppTheme.TrackColor.readableForeground(on: themeColor)
     }
 }

@@ -52,6 +52,12 @@ struct TimelineContainerView: NSViewRepresentable {
             name: NSView.frameDidChangeNotification,
             object: scrollView.contentView
         )
+        NotificationCenter.default.addObserver(
+            context.coordinator,
+            selector: #selector(Coordinator.timelineClipColorsDidChange),
+            name: .timelineClipColorsDidChange,
+            object: nil
+        )
 
         return container
     }
@@ -135,6 +141,15 @@ struct TimelineContainerView: NSViewRepresentable {
         @MainActor @objc func clipViewFrameChanged(_ notification: Notification) {
             timelineView?.updateContentSize()
             timelineView?.updatePlayheadLayer()
+        }
+
+        @MainActor @objc func timelineClipColorsDidChange(_ notification: Notification) {
+            if let timelineView {
+                timelineView.setNeedsDisplay(timelineView.visibleRect)
+            }
+            if let headerView {
+                headerView.setNeedsDisplay(headerView.visibleRect)
+            }
         }
 
         deinit {

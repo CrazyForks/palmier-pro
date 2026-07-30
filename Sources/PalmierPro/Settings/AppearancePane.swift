@@ -4,16 +4,24 @@ struct AppearancePane: View {
     @Bindable private var appearance = AppAppearanceStore.shared
 
     var body: some View {
-        HStack(alignment: .top, spacing: AppTheme.Spacing.mdLg) {
-            ForEach(AppAppearance.allCases) { option in
-                AppearanceOptionCard(
-                    option: option,
-                    isSelected: appearance.selection == option,
-                    action: { appearance.selection = option }
-                )
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.xxl) {
+            SettingsGroup(title: "Theme") {
+                HStack(alignment: .top, spacing: AppTheme.Spacing.mdLg) {
+                    ForEach(AppAppearance.allCases) { option in
+                        AppearanceOptionCard(
+                            option: option,
+                            isSelected: appearance.selection == option,
+                            action: { appearance.selection = option }
+                        )
+                    }
+                }
+                .frame(maxWidth: .infinity)
+            }
+
+            SettingsSection(title: "Timeline colors") {
+                TimelineColorsPane()
             }
         }
-        .frame(maxWidth: .infinity)
     }
 }
 

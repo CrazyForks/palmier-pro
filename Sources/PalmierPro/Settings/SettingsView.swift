@@ -141,9 +141,7 @@ private struct SettingsDetail: View {
                                     PrivacyPane()
                                 }
                             case .appearance:
-                                SettingsGroup(title: "Theme") {
-                                    AppearancePane()
-                                }
+                                AppearancePane()
                             case .models:
                                 ModelsPane()
                             case .agent:
