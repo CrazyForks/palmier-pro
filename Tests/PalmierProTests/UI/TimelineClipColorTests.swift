@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import Observation
 import SwiftUI
 import Testing
 @testable import PalmierPro
@@ -48,6 +49,22 @@ struct TimelineClipColorTests {
         store.resetAll()
         #expect(store.revision == 2)
         #expect(!store.hasOverrides)
+    }
+
+    @Test func colorAccessTracksPaletteChanges() async throws {
+        let (defaults, suiteName) = try makeDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let store = TimelineClipColorStore(palette: TimelineClipColorPalette(defaults: defaults))
+
+        await confirmation("Color access is invalidated") { invalidated in
+            withObservationTracking {
+                _ = store.color(for: .text)
+            } onChange: {
+                invalidated()
+            }
+
+            store.set(Color(red: 0.8, green: 0.7, blue: 0.6), for: .text)
+        }
     }
 
     @Test func foregroundChoosesTheHigherContrastColor() {

@@ -4,8 +4,6 @@ struct TimelineColorsPane: View {
     @Bindable private var colors = TimelineClipColorStore.shared
 
     var body: some View {
-        let _ = colors.revision
-
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
             VStack(spacing: 0) {
                 ForEach(Array(TimelineClipColor.allCases.enumerated()), id: \.element) { index, kind in

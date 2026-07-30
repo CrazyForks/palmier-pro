@@ -128,10 +128,12 @@ final class TimelineClipColorStore {
     }
 
     func color(for kind: TimelineClipColor) -> Color {
-        Color(palette.color(for: kind))
+        _ = revision
+        return Color(palette.color(for: kind))
     }
 
     func hex(for kind: TimelineClipColor) -> String {
+        _ = revision
         guard let color = palette.color(for: kind).usingColorSpace(.sRGB) else { return "" }
         return String(
             format: "#%02X%02X%02X",
