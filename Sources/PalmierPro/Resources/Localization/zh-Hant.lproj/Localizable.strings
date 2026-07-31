@@ -25,17 +25,21 @@
 "%@, %@ skills" = "%@，%@ 個技能";
 "%@. %@ remaining after this generation." = "%@。本次產生後剩餘 %@。";
 "%@: %@." = "%@：%@。";
-"%lld %@ items are ready in Palmier Pro." = "%lld 個%@專案已在 Palmier Pro 中就緒。";
+"%lld Lottie animations are ready in Palmier Pro." = "%lld 個 Lottie 動畫已在 Palmier Pro 中準備就緒。";
+"%lld audio clips are ready in Palmier Pro." = "%lld 個音訊片段已在 Palmier Pro 中準備就緒。";
 "%lld by timecode, %lld by audio" = "%lld 個按時間碼，%lld 個按音訊";
 "%lld clips" = "%lld 個片段";
 "%lld couldn't align" = "%lld 個無法對齊";
 "%lld credits estimated. Actual billing may differ." = "預計 %lld 積分。實際計費可能有所不同。";
 "%lld credits needed. Only %@ remaining." = "需要 %lld 積分。僅剩 %@。";
 "%lld credits. %@ credits remaining after this generation." = "%lld 積分。本次產生後剩餘 %@ 積分。";
+"%lld images are ready in Palmier Pro." = "%lld 張影像已在 Palmier Pro 中準備就緒。";
 "%lld items" = "%lld 個專案";
 "%lld media files are missing and will be skipped." = "%lld 個媒體檔案缺失，將被跳過。";
 "%lld sections" = "%lld 個部分";
 "%lld selected" = "已選擇 %lld 個";
+"%lld text clips are ready in Palmier Pro." = "%lld 個文字片段已在 Palmier Pro 中準備就緒。";
+"%lld videos are ready in Palmier Pro." = "%lld 個影片已在 Palmier Pro 中準備就緒。";
 "%lldk credits" = "%lldk 積分";
 "(image payload)" = "（圖像載荷）";
 "/ month" = "/ 月";
@@ -46,12 +50,10 @@
 "= %@ credits" = "= %@ 積分";
 "= 1 credit" = "= 1 積分";
 "A video editor built for AI. Generate, and edit all in one place." = "為 AI 打造的影片編輯器。在一處完成產生和編輯。";
-"AI" = "AI";
 "AI Audio" = "AI 音訊";
 "AI Chat" = "AI 對話";
 "AI Edit" = "AI 編輯";
 "AI Enhance" = "AI 增強";
-"AI Features" = "AI 功能";
 "AI Generated" = "AI 產生";
 "AI agent" = "AI Agent";
 "AI is unavailable" = "AI 不可用";
@@ -81,7 +83,6 @@
 "Added to %@" = "已添加到 %@";
 "Adjust" = "調整";
 "Adjust Range" = "調整範圍";
-"Agent" = "Agent";
 "Agent Mode" = "Agent 模式";
 "Agent Panel" = "Agent 面板";
 "Alignment" = "對齊";
@@ -101,7 +102,7 @@
 "Ask, or type @ to reference media" = "提問，或輸入 @ 引用媒體";
 "Aspect" = "長寬比";
 "Aspect Ratio" = "長寬比";
-"Aspect ratio %@" = "長寬比 %@";
+"Aspect ratio: %@" = "長寬比：%@";
 "Audio" = "音訊";
 "Audio Ref" = "音訊參考";
 "Audio extraction failed: %@" = "音訊提取失敗：%@";
@@ -127,8 +128,8 @@
 "Can't import \"%@\" — not a Lottie animation." = "無法匯入“%@”。它不是 Lottie 動畫。";
 "Can't import \"%@\" — unsupported file type." = "無法匯入“%@”。不支援此檔案類型。";
 "Can't paste \"%@\" here — it would nest this timeline inside itself." = "無法在此貼上“%@”。這會將時間軸嵌套到自身中。";
-"Can't relink — \"%@\" is %@, not %@." = "無法重新連結。“%@”是%@，不是%@。";
-"Can't swap — pick %@ media to replace this clip." = "無法替換。請選擇%@媒體來替換此片段。";
+"Can't relink \"%@\". Required media type: %@. Selected media type: %@." = "無法重新連結「%@」。所需媒體類型：%@。所選媒體類型：%@。";
+"Can't swap this clip. Required media type: %@." = "無法替換此片段。所需媒體類型：%@。";
 "Can't unlock sync on a multicam track — \"%@\" stays aligned through it." = "無法解鎖多機位軌道的同步。“%@”需要透過該軌道保持對齊。";
 "Cancel" = "取消";
 "Cancel Export" = "取消匯出";
@@ -169,8 +170,6 @@
 "Choose…" = "選擇…";
 "Chroma Key" = "色度鍵";
 "Clarity" = "清晰度";
-"Claude Code" = "Claude Code";
-"Claude Desktop" = "Claude Desktop";
 "Clean Up Voice…" = "清理人聲…";
 "Clear Filters" = "清除篩選條件";
 "Clear Finished" = "清除已完成專案";
@@ -192,7 +191,6 @@
 "Cloud" = "雲端";
 "Cloud auto-detects languages, produces more accurate transcripts, can identify speakers, and uses 25 credits/hr when a transcript is not cached." = "雲端可自動檢測語言、產生更準確的轉錄並識別說話者。轉錄未快取時，每小時使用 25 積分。";
 "Codec" = "編解碼器";
-"Codex" = "Codex";
 "Collapse" = "折疊";
 "Color" = "顏色";
 "Color Burn" = "顏色加深";
@@ -234,11 +232,9 @@
 "Credits cover AI generation and chat." = "積分可用於 AI 產生和對話。";
 "Crop" = "裁剪";
 "Crop applies to one clip at a time" = "每次只能裁剪一個片段";
-"Cursor" = "Cursor";
 "Curves" = "曲線";
 "Custom" = "自定義";
 "Custom Aspect Ratio" = "自定義長寬比";
-"Custom Aspect Ratio: You can set a custom aspect ratio for your timeline" = "自定義長寬比：現在可以為時間軸設定自定義長寬比";
 "Custom…" = "自定義…";
 "Cut" = "剪下";
 "Dark" = "深色";
@@ -312,7 +308,7 @@
 "Effects" = "效果";
 "Email (optional)" = "電子郵件（可選）";
 "Empty" = "空";
-"Enable %@" = "啓用 %@";
+"Enable: %@" = "啟用：%@";
 "Enhance" = "增強";
 "Enhance resolution or frame rate with AI" = "使用 AI 提升解析度或影格率";
 "Enter Full Screen" = "進入全螢幕";
@@ -416,7 +412,6 @@
 "Import Media…" = "匯入媒體…";
 "Import footage" = "匯入素材";
 "Import your footage here, or drag and drop, or copy-paste, into the media panel." = "在此匯入素材，也可以將其拖放或複製貼上到媒體面板。";
-"Improved" = "已改進";
 "Include screenshot" = "包含螢幕截圖";
 "Index" = "索引";
 "Indexes imported media for on-device search." = "為匯入的媒體建立索引，以供裝置端搜尋。";
@@ -466,7 +461,6 @@
 "Linear" = "線性";
 "Link" = "連結";
 "Lip Sync" = "口型同步";
-"Lip Sync: Select a video and audio and lip sync them with Veed Lip Sync model" = "口型同步：選擇影片和音訊，然後使用 Veed Lip Sync 模型同步口型";
 "Lip Sync…" = "口型同步…";
 "Lip Sync… (Paid)" = "口型同步…（付費）";
 "Loading community skills" = "正在載入社區技能";
@@ -480,11 +474,9 @@
 "Local runs with Apple's SpeechAnalyzer." = "本機轉錄使用 Apple SpeechAnalyzer。";
 "Local runs with Apple's SpeechAnalyzer. Cloud uses credits and a more accurate model with more capabilities." = "本機轉錄使用 Apple SpeechAnalyzer。雲端會使用積分，並提供更準確、功能更多的模型。";
 "Log in for 250 free credits" = "登入即可獲得 250 免費積分";
-"Lottie" = "Lottie";
 "Luma" = "亮度";
 "Luminosity" = "明度";
 "Lyrics (optional). [Verse] and [Chorus] tags supported." = "歌詞（可選）。支援 [Verse] 和 [Chorus] 標籤。";
-"MCP" = "MCP";
 "MCP Instructions" = "MCP 說明";
 "MCP Server" = "MCP 服務器";
 "MCP Setup" = "MCP 設定";
@@ -502,7 +494,6 @@
 "Match Timeline" = "匹配時間軸";
 "Match mouth movement to replacement audio" = "讓嘴部動作與替換音訊匹配";
 "Matches voices across clips, transcribing untranscribed timeline clips first (uses credits). Transcripts and voice fingerprints are cached, so re-runs are fast." = "匹配不同片段中的聲音，並先轉錄時間軸上尚未轉錄的片段（使用積分）。轉錄和聲音指紋會被快取，因此再次運行速度很快。";
-"Max" = "Max";
 "Max plan" = "Max 方案";
 "Max words" = "最多字詞數";
 "Maximize Focused Panel" = "最大化聚焦面板";
@@ -523,7 +514,6 @@
 "Modified" = "修改日期";
 "Mood" = "氛圍";
 "More" = "更多";
-"More controls in silence removal: You can control the silence threshold and padding via UI or agent" = "更多靜音移除控制：現在可以透過 UI 或 Agent 控制靜音閾值和留白";
 "More skill actions" = "更多技能操作";
 "Motion Blur" = "動態模糊";
 "Move Clip to New Track" = "將片段移到新軌道";
@@ -603,7 +593,6 @@
 "Overlay" = "疊加";
 "Overline" = "上划線";
 "Padding" = "留白";
-"Palmier Pro" = "Palmier Pro";
 "Palmier Project" = "Palmier 專案";
 "Palmier couldn't load this clip's source file. It may be missing, on an ejected drive, or unreadable." = "Palmier 無法載入此片段的來源檔案。檔案可能缺失、位於已推出的磁碟上或無法讀取。";
 "Palmier couldn't load this source file. It may be missing, on an ejected drive, or unreadable." = "Palmier 無法載入此來源檔案。檔案可能缺失、位於已推出的磁碟上或無法讀取。";
@@ -631,7 +620,6 @@
 "Presence" = "臨場感";
 "Preview" = "預覽";
 "Privacy & Diagnostics" = "隱私與診斷";
-"Pro" = "Pro";
 "Pro plan" = "Pro 方案";
 "Project" = "專案";
 "Project Activity" = "專案活動";
@@ -656,7 +644,6 @@
 "Refresh" = "刷新";
 "Refresh Community Skills" = "刷新社區技能";
 "Refresh to check for available skills." = "刷新以檢查可用技能。";
-"Refund logs in generation history: You can now see the refund transaction details in the generation history" = "產生歷史中的退款記錄：現在可以在產生歷史中檢視退款交易詳情";
 "Regenerate with the same parameters" = "使用相同參數重新產生";
 "Relink Folder…" = "重新連結資料夾…";
 "Relinked %lld of %lld offline clips." = "已重新連結 %lld/%lld 個離線片段。";
@@ -686,7 +673,7 @@
 "Report a Problem" = "報告問題";
 "Requires a paid plan" = "需要付費方案";
 "Rerun" = "重新運行";
-"Reset %@" = "還原 %@";
+"Reset: %@" = "還原：%@";
 "Reset All" = "全部還原";
 "Reset Clipping Indicators" = "還原削波指示器";
 "Resets %@" = "還原 %@";
@@ -828,7 +815,6 @@
 "Synchronized 1 clip" = "已同步 1 個片段";
 "Synchronizing…" = "正在同步…";
 "System" = "系統";
-"System Language" = "系統語言";
 "Take a screenshot of the preview and use it as a reference for generation. Particularly useful for creating AI transitions." = "截取預覽畫面並將其用作產生參考。這對建立 AI 轉場尤其有用。";
 "Target Language" = "目標語言";
 "Temperature" = "色溫";
@@ -919,7 +905,6 @@
 "Vibrance" = "鮮艷度";
 "Video" = "影片";
 "Video Ref" = "影片參考";
-"Video Reframing: Select a clip/video, and use LTX 2.3 Reframe video model to change the aspect ratio" = "影片畫面重構：選擇片段或影片，然後使用 LTX 2.3 Reframe 影片模型更改長寬比";
 "Video has no audio track" = "影片沒有音訊軌道";
 "Video to Music" = "影片產生音樂";
 "View" = "顯示";
@@ -949,10 +934,13 @@
 "Word Slide" = "字詞滑入";
 "Working on %@" = "正在處理 %@";
 "Workspace layout" = "工作區配置";
-"Y" = "Y";
 "You're all set" = "一切就緒";
-"Your %@ is ready." = "你的%@已就緒。";
+"Your Lottie animation is ready." = "你的 Lottie 動畫已準備就緒。";
+"Your audio clip is ready." = "你的音訊片段已準備就緒。";
+"Your image is ready." = "你的影像已準備就緒。";
+"Your text clip is ready." = "你的文字片段已準備就緒。";
 "Your timeline: the top half is video, the bottom half is audio. This is where you edit. Right-click a clip for some cool AI features such as upscale, edit, or generate music." = "這是你的時間軸：上半部分是影片，下半部分是音訊。你將在這裡進行編輯。右鍵按一下片段可使用放大、編輯或產生音樂等 AI 功能。";
+"Your video is ready." = "你的影片已準備就緒。";
 "Zoom In" = "放大";
 "Zoom Out" = "縮小";
 "Zoom Preview to Cursor" = "將預覽縮放到游標位置";
