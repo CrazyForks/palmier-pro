@@ -157,6 +157,43 @@ enum CostEstimator {
         return L10n.string("\(credits) credits")
     }
 
+    @MainActor
+    static func localizedEstimate(_ credits: Int) -> String {
+        if credits == 1 {
+            return L10n.string("1 credit estimated. Actual billing may differ.")
+        }
+        return L10n.string("\(credits) credits estimated. Actual billing may differ.")
+    }
+
+    @MainActor
+    static func localizedInsufficientCredits(_ credits: Int, remaining: Int) -> String {
+        if credits == 1 {
+            return L10n.string("1 credit needed. Only \(remaining) remaining.")
+        }
+        return L10n.string("\(credits) credits needed. Only \(remaining) remaining.")
+    }
+
+    @MainActor
+    static func localizedRemainingCredits(_ credits: Int, remaining: Int) -> String {
+        if credits == 1 {
+            return L10n.string("1 credit. \(remaining) remaining after this generation.")
+        }
+        return L10n.string("\(credits) credits. \(remaining) remaining after this generation.")
+    }
+
+    @MainActor
+    static func localizedGenerateLabel(_ credits: Int) -> String {
+        if credits == 1 { return L10n.string("Generate · 1 credit") }
+        return L10n.string("Generate · \(credits) credits")
+    }
+
+    @MainActor
+    static func localizedUsedCredits(_ credits: Int) -> String {
+        if credits <= 0 { return L10n.string("0 credits used") }
+        if credits == 1 { return L10n.string("1 credit used") }
+        return L10n.string("\(credits) credits used")
+    }
+
     private static func resolvedRate(_ dict: [String: Double], key: String?) -> Double? {
         if let key, let v = dict[key] { return v }
         return dict[""]

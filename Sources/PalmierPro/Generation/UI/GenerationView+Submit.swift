@@ -100,12 +100,12 @@ extension GenerationView {
             return L10n.string("Estimated cost. Actual billing may differ slightly.")
         }
         guard let left = remainingCredits else {
-            return L10n.string("\(cost) credits estimated. Actual billing may differ.")
+            return CostEstimator.localizedEstimate(cost)
         }
         if cost > left {
-            return L10n.string("\(cost) credits needed. Only \(left) remaining.")
+            return CostEstimator.localizedInsufficientCredits(cost, remaining: left)
         }
-        return L10n.string("\(cost) credits. \(left - cost) credits remaining after this generation.")
+        return CostEstimator.localizedRemainingCredits(cost, remaining: left - cost)
     }
 
     var costEstimateLabel: some View {

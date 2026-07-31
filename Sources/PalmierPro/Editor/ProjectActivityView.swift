@@ -30,7 +30,7 @@ struct ProjectActivityView: View {
                     .foregroundStyle(AppTheme.Text.primaryColor)
                 Spacer()
                 if !entries.isEmpty {
-                    Text(L10n.string("\(total) credits used"))
+                    Text(CostEstimator.localizedUsedCredits(total))
                         .font(.system(size: AppTheme.FontSize.xs, weight: .medium))
                         .monospacedDigit()
                         .foregroundStyle(AppTheme.Text.tertiaryColor)

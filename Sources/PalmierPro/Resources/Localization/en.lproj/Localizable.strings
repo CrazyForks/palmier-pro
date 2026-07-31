@@ -26,7 +26,6 @@
 "%lld credits needed. Only %lld remaining." = "%lld credits needed. Only %lld remaining.";
 "%lld credits refunded" = "%lld credits refunded";
 "%lld credits used" = "%lld credits used";
-"%lld credits. %lld credits remaining after this generation." = "%lld credits. %lld credits remaining after this generation.";
 "%lld credits. %lld remaining after this generation." = "%lld credits. %lld remaining after this generation.";
 "%lld images are ready in Palmier Pro." = "%lld images are ready in Palmier Pro.";
 "%lld items" = "%lld items";
@@ -40,8 +39,13 @@
 "(image payload)" = "(image payload)";
 "/ month" = "/ month";
 "0 credits" = "0 credits";
+"0 credits used" = "0 credits used";
 "1 clip" = "1 clip";
 "1 credit" = "1 credit";
+"1 credit estimated. Actual billing may differ." = "1 credit estimated. Actual billing may differ.";
+"1 credit needed. Only %lld remaining." = "1 credit needed. Only %lld remaining.";
+"1 credit used" = "1 credit used";
+"1 credit. %lld remaining after this generation." = "1 credit. %lld remaining after this generation.";
 "1 item" = "1 item";
 "1 media file is missing and will be skipped." = "1 media file is missing and will be skipped.";
 "1 section" = "1 section";
@@ -387,6 +391,7 @@
 "Generate music that fits the video" = "Generate music that fits the video";
 "Generate video, image, or audio with different models and settings. Drag assets from the media panel above into the reference frame." = "Generate video, image, or audio with different models and settings. Drag assets from the media panel above into the reference frame.";
 "Generate · %lld credits" = "Generate · %lld credits";
+"Generate · 1 credit" = "Generate · 1 credit";
 "Generated" = "Generated";
 "Generating…" = "Generating…";
 "Generation Failed" = "Generation Failed";
