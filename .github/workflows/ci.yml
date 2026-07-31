@@ -28,5 +28,10 @@ jobs:
           key: spm-${{ runner.os }}-${{ hashFiles('Package.resolved') }}
           restore-keys: spm-${{ runner.os }}-
 
+      - name: Check localization
+        run: |
+          scripts/localization/sync.sh
+          git diff --exit-code -- Sources/PalmierPro/Resources/Localization/en.lproj/Localizable.strings
+
       - name: Test
         run: swift test

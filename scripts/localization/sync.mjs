@@ -1,0 +1,100 @@
+#!/usr/bin/env node
+
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const scriptPath = fileURLToPath(import.meta.url);
+const root = path.resolve(path.dirname(scriptPath), "../..");
+const sourceRoot = path.join(root, "Sources", "PalmierPro");
+const changelogPath = path.join(sourceRoot, "Resources", "Changelog", "changelog.json");
+
+function filesUnder(directory, suffix) {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const child = path.join(directory, entry.name);
+    return entry.isDirectory() ? filesUnder(child, suffix) : entry.name.endsWith(suffix) ? [child] : [];
+  });
+}
+
+function decodeSwiftLiteral(value) {
+  return value
+    .replaceAll("\\\"", "\"")
+    .replaceAll("\\n", "\n")
+    .replaceAll("\\t", "\t")
+    .replaceAll("\\\\", "\\");
+}
+
+export function sourceKeys() {
+  const keys = new Set();
+  const pattern = /L10n\.key\("((?:\\.|[^"\\])*)"\)/g;
+
+  for (const file of filesUnder(sourceRoot, ".swift")) {
+    const source = fs.readFileSync(file, "utf8");
+    for (const match of source.matchAll(pattern)) keys.add(decodeSwiftLiteral(match[1]));
+  }
+
+  const changelog = JSON.parse(fs.readFileSync(changelogPath, "utf8"));
+  for (const entry of changelog.entries ?? []) {
+    for (const section of entry.sections ?? []) {
+      if (section.heading) keys.add(section.heading);
+      for (const item of section.items ?? []) keys.add(item);
+    }
+  }
+
+  return [...keys].sort();
+}
+
+function argumentValues(name) {
+  const values = [];
+  for (let index = 2; index < process.argv.length; index += 1) {
+    if (process.argv[index] === name) {
+      const value = process.argv[index + 1];
+      if (!value) throw new Error(`${name} requires a value`);
+      values.push(value);
+      index += 1;
+    }
+  }
+  return values;
+}
+
+function escapeStringsValue(value) {
+  return value
+    .replaceAll("\\", "\\\\")
+    .replaceAll('"', '\\"')
+    .replaceAll("\n", "\\n")
+    .replaceAll("\r", "\\r")
+    .replaceAll("\t", "\\t");
+}
+
+function synchronize() {
+  const outputPaths = argumentValues("--output");
+  const stringsDataPaths = argumentValues("--stringsdata");
+  if (outputPaths.length !== 1) throw new Error("--output is required exactly once");
+  if (stringsDataPaths.length === 0) throw new Error("at least one --stringsdata is required");
+
+  const keys = new Set(sourceKeys());
+  for (const stringsDataPath of stringsDataPaths) {
+    const data = JSON.parse(fs.readFileSync(stringsDataPath, "utf8"));
+    for (const entry of data.tables?.Localizable ?? []) {
+      if (!entry.key) throw new Error(`${stringsDataPath} contains an empty localization key`);
+      keys.add(entry.key);
+    }
+  }
+
+  const entries = [...keys]
+    .sort()
+    .map((key) => `"${escapeStringsValue(key)}" = "${escapeStringsValue(key)}";`);
+  const output = [
+    "/* Generated from app-owned UI copy. Translate values only in other locales. */",
+    "",
+    ...entries,
+    "",
+  ].join("\n");
+
+  const outputPath = outputPaths[0];
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+  fs.writeFileSync(outputPath, output);
+  console.log(`Synchronized ${keys.size} source strings.`);
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === scriptPath) synchronize();
