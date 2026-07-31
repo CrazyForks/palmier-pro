@@ -7,7 +7,6 @@ import { fileURLToPath } from "node:url";
 const scriptPath = fileURLToPath(import.meta.url);
 const root = path.resolve(path.dirname(scriptPath), "../..");
 const sourceRoot = path.join(root, "Sources", "PalmierPro");
-const changelogPath = path.join(sourceRoot, "Resources", "Changelog", "changelog.json");
 
 function filesUnder(directory, suffix) {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -31,14 +30,6 @@ export function sourceKeys() {
   for (const file of filesUnder(sourceRoot, ".swift")) {
     const source = fs.readFileSync(file, "utf8");
     for (const match of source.matchAll(pattern)) keys.add(decodeSwiftLiteral(match[1]));
-  }
-
-  const changelog = JSON.parse(fs.readFileSync(changelogPath, "utf8"));
-  for (const entry of changelog.entries ?? []) {
-    for (const section of entry.sections ?? []) {
-      if (section.heading) keys.add(section.heading);
-      for (const item of section.items ?? []) keys.add(item);
-    }
   }
 
   return [...keys].sort();
@@ -75,7 +66,11 @@ function synchronize() {
   const keys = new Set(sourceKeys());
   for (const stringsDataPath of stringsDataPaths) {
     const data = JSON.parse(fs.readFileSync(stringsDataPath, "utf8"));
-    for (const entry of data.tables?.Localizable ?? []) {
+    const entries = data.tables?.Localizable ?? [];
+    if (entries.length === 0) {
+      throw new Error(`${stringsDataPath} contains no compiler-extracted localization keys`);
+    }
+    for (const entry of entries) {
       if (!entry.key) throw new Error(`${stringsDataPath} contains an empty localization key`);
       keys.add(entry.key);
     }

@@ -8,7 +8,7 @@ Use `L10n.string("Copy")` for fixed UI copy. Swift interpolation is supported an
 
 Use `L10n.key("Copy")` only when a model stores an app-owned UI label for a view to resolve later with `L10n.string(key:)`. This keeps the source key discoverable without storing localized text in domain state.
 
-Use `Text(verbatim:)` for user content, filenames, model/provider metadata, timecodes, identifiers, and other values that must not be translated. Do not localize Agent or MCP contracts, persisted values, stable identifiers, machine-readable errors, or analytics values.
+Use `Text(verbatim:)` for user content, filenames, release notes, model/provider metadata, timecodes, identifiers, and other values that must not be translated. Do not localize Agent or MCP contracts, persisted values, stable identifiers, machine-readable errors, or analytics values.
 
 After adding or removing UI copy, run:
 
@@ -16,7 +16,7 @@ After adding or removing UI copy, run:
 scripts/localization/sync.sh
 ```
 
-This extracts compiler-known Swift strings, adds registered model and changelog keys, regenerates `en.lproj/Localizable.strings`, and checks localization integrity. CI rejects a stale English inventory, common unclassified UI literals, incomplete locale coverage, unknown keys, and incompatible format placeholders.
+This extracts compiler-known Swift strings, adds registered model keys, regenerates `en.lproj/Localizable.strings`, and checks localization integrity. CI rejects a stale English inventory, common unclassified UI literals, malformed catalogs, and incompatible format placeholders. Missing or obsolete target-language entries produce warnings so feature and release PRs can use the English fallback.
 
 ## Adding a language
 
@@ -40,8 +40,11 @@ Validate the result with:
 
 ```bash
 node scripts/localization/check.mjs
+node scripts/localization/check.mjs --require-complete
 swift build
 ```
+
+The strict check is required for a language PR and rejects missing or obsolete entries.
 
 Manually launch the app, select the language in Settings > General, restart, and check menus, settings, editor panels, alerts, empty states, truncation, and Finder project-type text.
 

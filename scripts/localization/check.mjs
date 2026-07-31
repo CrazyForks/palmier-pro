@@ -13,6 +13,12 @@ const catalogRoot = path.join(sourceRoot, "Resources", "Localization");
 const sourceLocale = "en";
 const tableNames = ["Localizable", "InfoPlist"];
 const errors = [];
+const warnings = [];
+const requiresCompleteCoverage = process.argv.includes("--require-complete");
+
+function reportCoverageIssue(message) {
+  (requiresCompleteCoverage ? errors : warnings).push(message);
+}
 
 function filesUnder(directory, suffix) {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -102,7 +108,7 @@ for (const tableName of tableNames) {
 
     for (const key of sourceEntries.keys()) {
       if (!targetEntries.has(key)) {
-        errors.push(`${relative(targetFile)}: missing ${JSON.stringify(key)}`);
+        reportCoverageIssue(`${relative(targetFile)}: missing ${JSON.stringify(key)}`);
         continue;
       }
       const value = targetEntries.get(key);
@@ -115,7 +121,7 @@ for (const tableName of tableNames) {
 
     for (const key of targetEntries.keys()) {
       if (!sourceEntries.has(key)) {
-        errors.push(`${relative(targetFile)}: unknown key ${JSON.stringify(key)}`);
+        reportCoverageIssue(`${relative(targetFile)}: unknown key ${JSON.stringify(key)}`);
       }
     }
   }
@@ -245,6 +251,8 @@ for (const file of filesUnder(sourceRoot, ".swift")) {
   }
 }
 
+for (const warning of warnings) console.warn(`warning: ${warning}`);
+
 if (errors.length > 0) {
   for (const error of errors) console.error(`error: ${error}`);
   process.exit(1);
@@ -252,4 +260,5 @@ if (errors.length > 0) {
 
 const stringCount = [...sourceTables.values()].reduce((sum, entries) => sum + entries.size, 0);
 const localeSummary = targetLocales.join(", ") || "source language only";
-console.log(`Localization checks passed: ${stringCount} strings; ${localeSummary}.`);
+const warningSummary = warnings.length > 0 ? `; ${warnings.length} coverage warnings` : "";
+console.log(`Localization checks passed: ${stringCount} strings; ${localeSummary}${warningSummary}.`);
