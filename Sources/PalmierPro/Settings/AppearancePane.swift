@@ -6,14 +6,14 @@ struct AppearancePane: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xxl) {
-            SettingsGroup(title: "Theme") {
+            SettingsGroup(title: L10n.string("Theme")) {
                 HStack(alignment: .top, spacing: AppTheme.Spacing.mdLg) {
                     ForEach(AppAppearance.allCases) { option in
                         SettingsPreviewCard(
-                            label: option.label,
+                            label: L10n.string(key: option.label),
                             shortcutLabel: nil,
                             isSelected: appearance.selection == option,
-                            accessibilityLabel: "\(option.label) appearance",
+                            accessibilityLabel: L10n.string("\(L10n.string(key: option.label)) appearance"),
                             action: { appearance.selection = option }
                         ) {
                             AppearancePreview(option: option)
@@ -23,14 +23,14 @@ struct AppearancePane: View {
                 .frame(maxWidth: .infinity)
             }
 
-            SettingsGroup(title: "Workspace layout") {
+            SettingsGroup(title: L10n.string("Workspace layout")) {
                 HStack(alignment: .top, spacing: AppTheme.Spacing.mdLg) {
                     ForEach(LayoutPreset.allCases) { preset in
                         SettingsPreviewCard(
-                            label: preset.label,
+                            label: L10n.string(key: preset.label),
                             shortcutLabel: preset.shortcutLabel,
                             isSelected: workspaceLayout.selection == preset,
-                            accessibilityLabel: "\(preset.label) workspace layout",
+                            accessibilityLabel: L10n.string("\(L10n.string(key: preset.label)) workspace layout"),
                             action: { workspaceLayout.selection = preset }
                         ) {
                             WorkspaceLayoutPreview(preset: preset)
@@ -41,7 +41,7 @@ struct AppearancePane: View {
                 .frame(maxWidth: .infinity)
             }
 
-            SettingsSection(title: "Timeline colors") {
+            SettingsSection(title: L10n.string("Timeline colors")) {
                 TimelineColorsPane()
             }
         }
@@ -73,7 +73,7 @@ private struct SettingsPreviewCard<Preview: View>: View {
                     }
 
                 HStack(spacing: AppTheme.Spacing.xs) {
-                    Text(label)
+                    Text(L10n.string(key: label))
                         .foregroundStyle(isSelected ? AppTheme.Text.primaryColor : AppTheme.Text.tertiaryColor)
 
                     if let shortcutLabel {
@@ -88,7 +88,7 @@ private struct SettingsPreviewCard<Preview: View>: View {
         .buttonStyle(.plain)
         .onHover { isHovering = $0 }
         .accessibilityLabel(accessibilityLabel)
-        .accessibilityValue(isSelected ? "Selected" : "Not selected")
+        .accessibilityValue(isSelected ? L10n.string("Selected") : L10n.string("Not selected"))
     }
 
     private var borderColor: Color {

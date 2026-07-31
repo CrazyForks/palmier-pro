@@ -36,7 +36,7 @@ extension MediaTab {
                     resultsGrid { ForEach(nameMatches) { fileCard($0) } }
                 }
                 if visualHits.isEmpty, spokenHits.isEmpty, nameMatches.isEmpty {
-                    Text("No matches for “\(trimmedSearchQuery)”")
+                    Text(L10n.string("No matches for “\(trimmedSearchQuery)”"))
                         .font(.system(size: AppTheme.FontSize.sm))
                         .foregroundStyle(AppTheme.Text.tertiaryColor)
                         .frame(maxWidth: .infinity)
@@ -93,9 +93,9 @@ extension MediaTab {
                 }
                 Image(systemName: icon)
                     .font(.system(size: AppTheme.FontSize.xs))
-                Text(title)
+                Text(L10n.string(key: title))
                     .font(.system(size: AppTheme.FontSize.xs, weight: .semibold))
-                Text("\(count)")
+                Text(verbatim: "\(count)")
                     .font(.system(size: AppTheme.FontSize.xs).monospacedDigit())
                     .foregroundStyle(AppTheme.Text.tertiaryColor)
                 Spacer()
@@ -124,12 +124,12 @@ extension MediaTab {
                 .aspectRatio(16.0 / 9.0, contentMode: .fit)
                 .frame(maxWidth: .infinity)
                 .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.sm))
-            Text(asset?.name ?? "")
+            Text(verbatim: asset?.name ?? String())
                 .font(.system(size: AppTheme.FontSize.xs))
                 .foregroundStyle(AppTheme.Text.secondaryColor)
                 .lineLimit(1)
             if !isImage {
-                Text("\(timecode(range.lowerBound))–\(timecode(range.upperBound))")
+                Text(verbatim: "\(timecode(range.lowerBound))–\(timecode(range.upperBound))")
                     .font(.system(size: AppTheme.FontSize.xxs).monospacedDigit())
                     .foregroundStyle(AppTheme.Text.tertiaryColor)
             }
@@ -176,7 +176,7 @@ extension MediaTab {
                     .font(.system(size: AppTheme.FontSize.xs))
                     .foregroundStyle(AppTheme.Text.primaryColor)
                     .lineLimit(3)
-                Text("\(asset?.name ?? "") · \(timecode(hit.start))")
+                Text(verbatim: "\(asset?.name ?? "") · \(timecode(hit.start))")
                     .font(.system(size: AppTheme.FontSize.xxs))
                     .foregroundStyle(AppTheme.Text.tertiaryColor)
                     .lineLimit(1)

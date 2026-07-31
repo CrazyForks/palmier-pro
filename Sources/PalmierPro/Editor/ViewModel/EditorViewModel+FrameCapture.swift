@@ -175,8 +175,8 @@ extension EditorViewModel {
             do {
                 let receipt = try await captureFrameToMedia(source: source, folderId: folderId)
                 mediaPanelToast = MediaPanelToast(
-                    message: receipt.warning.map { "Captured \(receipt.asset.name). \($0)" }
-                        ?? "Captured \(receipt.asset.name).",
+                    message: receipt.warning.map { L10n.string("Captured \(receipt.asset.name). \($0)") }
+                        ?? L10n.string("Captured \(receipt.asset.name)."),
                     kind: receipt.warning == nil ? .success : .warning
                 )
             } catch is CancellationError {

@@ -39,16 +39,16 @@ struct MCPInstructionsPane: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xxl) {
-                Text("Connect an external agent to inspect and edit the open Palmier Pro project.")
+                Text(L10n.string("Connect an external agent to inspect and edit the open Palmier Pro project."))
                     .font(.system(size: AppTheme.FontSize.smMd, weight: AppTheme.FontWeight.regular))
                     .foregroundStyle(AppTheme.Text.secondaryColor)
                     .fixedSize(horizontal: false, vertical: true)
 
-                SettingsGroup(title: "Server URL") {
+                SettingsGroup(title: L10n.string("Server URL")) {
                     endpointRow
                 }
 
-                SettingsGroup(title: "Connect an agent") {
+                SettingsGroup(title: L10n.string("Connect an agent")) {
                     agentList
                 }
             }
@@ -59,15 +59,15 @@ struct MCPInstructionsPane: View {
         }
         .scrollEdgeEffectStyle(.soft, for: .top)
         .alert(
-            "Unable to open Claude Desktop",
+            L10n.string("Unable to open Claude Desktop"),
             isPresented: Binding(
                 get: { claudeInstallError != nil },
                 set: { if !$0 { claudeInstallError = nil } }
             )
         ) {
-            Button("Dismiss") { claudeInstallError = nil }
+            Button(L10n.string("Dismiss")) { claudeInstallError = nil }
         } message: {
-            Text(claudeInstallError ?? "Try again.")
+            Text(verbatim: claudeInstallError ?? L10n.string("Try again."))
         }
     }
 
@@ -95,12 +95,12 @@ struct MCPInstructionsPane: View {
     private var cursorSection: some View {
         agentSection(
             .cursor,
-            name: "Cursor",
-            description: "Install the Palmier Pro MCP server in Cursor.",
-            action: ("Install in Cursor", openCursor)
+            name: L10n.string("Cursor"),
+            description: L10n.string("Install the Palmier Pro MCP server in Cursor."),
+            action: (L10n.string("Install in Cursor"), openCursor)
         ) {
             ManualFallback(
-                intro: "Add this configuration to ~/.cursor/mcp.json.",
+                intro: L10n.string("Add this configuration to ~/.cursor/mcp.json."),
                 code: cursorJSONConfig
             )
         }
@@ -109,9 +109,9 @@ struct MCPInstructionsPane: View {
     private var claudeDesktopSection: some View {
         agentSection(
             .claude,
-            name: "Claude Desktop",
-            description: "Install the bundled Palmier Pro connector.",
-            action: ("Install in Claude Desktop", openClaudeDesktopBundle)
+            name: L10n.string("Claude Desktop"),
+            description: L10n.string("Install the bundled Palmier Pro connector."),
+            action: (L10n.string("Install in Claude Desktop"), openClaudeDesktopBundle)
         ) {
             EmptyView()
         }
@@ -120,8 +120,8 @@ struct MCPInstructionsPane: View {
     private var claudeCodeSection: some View {
         agentSection(
             .claude,
-            name: "Claude Code",
-            description: "Run this command once in Terminal."
+            name: L10n.string("Claude Code"),
+            description: L10n.string("Run this command once in Terminal.")
         ) {
             CodeBlockView(content: claudeCodeCommand)
         }
@@ -130,8 +130,8 @@ struct MCPInstructionsPane: View {
     private var codexSection: some View {
         agentSection(
             .codex,
-            name: "Codex",
-            description: "Run this command once in Terminal."
+            name: L10n.string("Codex"),
+            description: L10n.string("Run this command once in Terminal.")
         ) {
             CodeBlockView(content: codexCommand)
         }
@@ -258,7 +258,7 @@ private struct ManualFallback: View {
                     Image(systemName: "chevron.right")
                         .font(.system(size: AppTheme.FontSize.xxs, weight: AppTheme.FontWeight.regular))
                         .rotationEffect(.degrees(expanded ? 90 : 0))
-                    Text("Manual setup")
+                    Text(L10n.string("Manual setup"))
                         .font(.system(size: AppTheme.FontSize.sm, weight: AppTheme.FontWeight.regular))
                 }
                 .foregroundStyle(AppTheme.Text.secondaryColor)
@@ -300,7 +300,7 @@ private struct CopyButton: View {
                 .hoverHighlight()
         }
         .buttonStyle(.plain)
-        .help(copied ? "Copied" : "Copy")
+        .help(copied ? L10n.string("Copied") : L10n.string("Copy"))
     }
 
     private func copy() {

@@ -47,7 +47,7 @@ enum AppNotifications {
         guard canUseUserNotifications, isEnabled else { return }
 
         let content = UNMutableNotificationContent()
-        content.title = "Generation complete"
+        content.title = L10n.string("Generation complete")
         content.body = body(assetName: assetName, assetType: assetType, count: count)
         content.sound = .default
         var userInfo = ["assetId": assetId]
@@ -73,14 +73,18 @@ enum AppNotifications {
         guard canUseUserNotifications, isEnabled else { return }
 
         var detail = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        if detail.isEmpty { detail = "Export" }
+        if detail.isEmpty { detail = L10n.string("Export") }
         if let size { detail += " (\(Int(size.width))×\(Int(size.height)))" }
 
         let content = UNMutableNotificationContent()
-        content.title = "Export complete"
-        content.body = warningCount > 0
-            ? "\(detail) exported with \(warningCount) warning\(warningCount == 1 ? "" : "s")."
-            : "\(detail) is ready."
+        content.title = L10n.string("Export complete")
+        if warningCount == 1 {
+            content.body = L10n.string("\(detail) exported with 1 warning.")
+        } else if warningCount > 1 {
+            content.body = L10n.string("\(detail) exported with \(warningCount) warnings.")
+        } else {
+            content.body = L10n.string("\(detail) is ready.")
+        }
         content.sound = .default
         content.userInfo = ["exportPath": outputURL.path]
 
@@ -102,9 +106,10 @@ enum AppNotifications {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedReason = reason.trimmingCharacters(in: .whitespacesAndNewlines)
         let content = UNMutableNotificationContent()
-        content.title = "Export failed"
+        content.title = L10n.string("Export failed")
+        let displayName = trimmedName.isEmpty ? L10n.string("The export") : trimmedName
         content.body = trimmedReason.isEmpty
-            ? "\(trimmedName.isEmpty ? "The export" : trimmedName) could not be exported."
+            ? L10n.string("\(displayName) could not be exported.")
             : trimmedReason
         content.sound = .default
 
@@ -127,10 +132,12 @@ enum AppNotifications {
 
     private static func body(assetName: String, assetType: ClipType, count: Int) -> String {
         if count > 1 {
-            return "\(count) \(assetType.rawValue)s are ready in Palmier Pro."
+            return L10n.string("\(count) \(assetType.localizedTrackLabel.lowercased()) items are ready in Palmier Pro.")
         }
         let name = assetName.trimmingCharacters(in: .whitespacesAndNewlines)
-        return name.isEmpty ? "Your \(assetType.rawValue) is ready." : "\(name) is ready."
+        return name.isEmpty
+            ? L10n.string("Your \(assetType.localizedTrackLabel.lowercased()) is ready.")
+            : L10n.string("\(name) is ready.")
     }
 }
 

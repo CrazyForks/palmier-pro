@@ -24,12 +24,12 @@ struct ProjectActivityView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             HStack {
-                Text("Project Activity")
+                Text(L10n.string("Project Activity"))
                     .font(.system(size: AppTheme.FontSize.sm, weight: .medium))
                     .foregroundStyle(AppTheme.Text.primaryColor)
                 Spacer()
                 if !entries.isEmpty {
-                    Text("\(CostEstimator.format(total)) used")
+                    Text(L10n.string("\(CostEstimator.format(total)) used"))
                         .font(.system(size: AppTheme.FontSize.xs, weight: .medium))
                         .monospacedDigit()
                         .foregroundStyle(AppTheme.Text.tertiaryColor)
@@ -48,7 +48,7 @@ struct ProjectActivityView: View {
                         .foregroundStyle(AppTheme.Text.mutedColor)
                         .padding(.vertical, AppTheme.Spacing.sm)
                 } else if entries.isEmpty {
-                    Text("No generations yet")
+                    Text(L10n.string("No generations yet"))
                         .font(.system(size: AppTheme.FontSize.xs))
                         .foregroundStyle(AppTheme.Text.mutedColor)
                         .padding(.vertical, AppTheme.Spacing.sm)
@@ -174,7 +174,7 @@ struct ProjectActivityButton: View {
                 .hoverHighlight()
         }
         .buttonStyle(.plain)
-        .help("Project Activity")
+        .help(L10n.string("Project Activity"))
         .popover(isPresented: $isPresented, arrowEdge: .bottom) {
             ProjectActivityView(projectId: projectId)
         }
