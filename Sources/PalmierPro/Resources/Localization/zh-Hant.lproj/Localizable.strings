@@ -26,7 +26,6 @@
 "%lld credits needed. Only %lld remaining." = "需要 %lld 積分。僅剩 %lld。";
 "%lld credits refunded" = "已退還 %lld 積分";
 "%lld credits used" = "已使用 %lld 積分";
-"%lld credits. %lld credits remaining after this generation." = "%lld 積分。本次產生後剩餘 %lld 積分。";
 "%lld credits. %lld remaining after this generation." = "%lld 積分。本次產生後剩餘 %lld 積分。";
 "%lld images are ready in Palmier Pro." = "%lld 張影像已在 Palmier Pro 中準備就緒。";
 "%lld items" = "%lld 個專案";
@@ -40,8 +39,13 @@
 "(image payload)" = "（圖像載荷）";
 "/ month" = "/ 月";
 "0 credits" = "0 積分";
+"0 credits used" = "已使用 0 積分";
 "1 clip" = "1 個片段";
 "1 credit" = "1 積分";
+"1 credit estimated. Actual billing may differ." = "預計 1 積分。實際計費可能有所不同。";
+"1 credit needed. Only %lld remaining." = "需要 1 積分。僅剩 %lld。";
+"1 credit used" = "已使用 1 積分";
+"1 credit. %lld remaining after this generation." = "1 積分。本次產生後剩餘 %lld 積分。";
 "1 item" = "1 個專案";
 "1 media file is missing and will be skipped." = "1 個媒體檔案缺失，將被跳過。";
 "1 section" = "1 個部分";
@@ -387,6 +391,7 @@
 "Generate music that fits the video" = "產生與影片匹配的音樂";
 "Generate video, image, or audio with different models and settings. Drag assets from the media panel above into the reference frame." = "使用不同模型和設定產生影片、圖像或音訊。將素材從上方媒體面板拖入參考框。";
 "Generate · %lld credits" = "產生 · %lld 積分";
+"Generate · 1 credit" = "產生 · 1 積分";
 "Generated" = "已產生";
 "Generating…" = "正在產生…";
 "Generation Failed" = "產生失敗";

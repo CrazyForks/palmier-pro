@@ -26,7 +26,6 @@
 "%lld credits needed. Only %lld remaining." = "需要 %lld 积分。仅剩 %lld。";
 "%lld credits refunded" = "已退还 %lld 积分";
 "%lld credits used" = "已使用 %lld 积分";
-"%lld credits. %lld credits remaining after this generation." = "%lld 积分。本次生成后剩余 %lld 积分。";
 "%lld credits. %lld remaining after this generation." = "%lld 积分。本次生成后剩余 %lld 积分。";
 "%lld images are ready in Palmier Pro." = "%lld 张图像已在 Palmier Pro 中准备就绪。";
 "%lld items" = "%lld 个项目";
@@ -40,8 +39,13 @@
 "(image payload)" = "（图像载荷）";
 "/ month" = "/ 月";
 "0 credits" = "0 积分";
+"0 credits used" = "已使用 0 积分";
 "1 clip" = "1 个片段";
 "1 credit" = "1 积分";
+"1 credit estimated. Actual billing may differ." = "预计 1 积分。实际计费可能有所不同。";
+"1 credit needed. Only %lld remaining." = "需要 1 积分。仅剩 %lld。";
+"1 credit used" = "已使用 1 积分";
+"1 credit. %lld remaining after this generation." = "1 积分。本次生成后剩余 %lld 积分。";
 "1 item" = "1 个项目";
 "1 media file is missing and will be skipped." = "1 个媒体文件缺失，将被跳过。";
 "1 section" = "1 个部分";
@@ -387,6 +391,7 @@
 "Generate music that fits the video" = "生成与视频匹配的音乐";
 "Generate video, image, or audio with different models and settings. Drag assets from the media panel above into the reference frame." = "使用不同模型和设置生成视频、图像或音频。将素材从上方媒体面板拖入参考框。";
 "Generate · %lld credits" = "生成 · %lld 积分";
+"Generate · 1 credit" = "生成 · 1 积分";
 "Generated" = "已生成";
 "Generating…" = "正在生成…";
 "Generation Failed" = "生成失败";
