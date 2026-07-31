@@ -815,6 +815,7 @@
 "Synchronized 1 clip" = "已同步 1 個片段";
 "Synchronizing…" = "正在同步…";
 "System" = "系統";
+"System Language" = "系統語言";
 "Take a screenshot of the preview and use it as a reference for generation. Particularly useful for creating AI transitions." = "截取預覽畫面並將其用作產生參考。這對建立 AI 轉場尤其有用。";
 "Target Language" = "目標語言";
 "Temperature" = "色溫";
