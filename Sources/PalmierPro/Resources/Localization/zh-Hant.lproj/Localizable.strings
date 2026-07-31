@@ -106,6 +106,7 @@
 "Auto" = "自動";
 "Available" = "可用";
 "Back" = "返回";
+"Background" = "背景";
 "Basic Correction" = "基本校正";
 "Beat detection failed. Check that the media file is reachable, then retry." = "節拍檢測失敗。請檢查媒體檔案是否可訪問，然後重試。";
 "Blend" = "混合";
@@ -584,6 +585,7 @@
 "Organize with Agent" = "使用 Agent 整理";
 "Original" = "原始";
 "Original FPS" = "原始影格率";
+"Outline" = "描邊";
 "Outline Color" = "描邊顏色";
 "Outline Width" = "描邊寬度";
 "Overlay" = "疊加";
@@ -739,6 +741,7 @@
 "Settings" = "設定";
 "Settings…" = "設定…";
 "Setup instructions" = "設定說明";
+"Shadow" = "陰影";
 "Share usage data" = "共享使用資料";
 "Sharpen" = "銳化";
 "Shortcuts" = "快捷鍵";
