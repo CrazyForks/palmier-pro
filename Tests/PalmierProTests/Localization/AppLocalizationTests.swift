@@ -13,6 +13,10 @@ struct AppLocalizationTests {
             #expect(localization.string("System Language") == "System Language")
             #expect(localization.string(key: "System Language") == "System Language")
             #expect(localization.string(key: "Export Queue") == "Export Queue")
+            #expect(localization.string(key: "Moments") == "Moments")
+            #expect(localization.string(key: "Spoken") == "Spoken")
+            #expect(localization.string(key: "Files") == "Files")
+            #expect(localization.string("\(1234) credits") == "1,234 credits")
             #expect(
                 BundledResource.bundle.localizedString(
                     forKey: "CFBundleTypeName",
