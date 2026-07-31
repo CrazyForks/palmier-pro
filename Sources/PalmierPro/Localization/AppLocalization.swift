@@ -19,32 +19,49 @@ final class AppLocalization {
     }
 
     var requiresRestart: Bool {
-        selection != activeLanguage
+        (selection.identifier ?? systemIdentifier) != activeIdentifier
     }
 
     private let defaults: UserDefaults
     private let localizedBundle: Bundle
+    private let systemIdentifier: String
 
-    init(defaults: UserDefaults = .standard, resourceBundle: Bundle = BundledResource.bundle) {
+    init(
+        defaults: UserDefaults = .standard,
+        resourceBundle: Bundle = BundledResource.bundle,
+        preferredLanguages: [String] = Locale.preferredLanguages
+    ) {
         self.defaults = defaults
 
-        let identifiers = Self.localizationIdentifiers(in: resourceBundle)
+        let resources = Self.localizationResources(in: resourceBundle)
+        let identifiers = resources.map(\.identifier)
         availableLanguages = identifiers.map(AppLanguage.language)
+        let resolvedSystemIdentifier = Self.preferredIdentifier(
+            in: resources,
+            preferredLanguages: preferredLanguages
+        )
+        systemIdentifier = resolvedSystemIdentifier
 
         let storedLanguage = AppLanguage.stored(in: defaults)
         let validLanguage: AppLanguage
         if let identifier = storedLanguage.identifier, identifiers.contains(identifier) {
-            validLanguage = storedLanguage
+            validLanguage = .language(identifier)
         } else {
             validLanguage = .system
+        }
+        if defaults.string(forKey: AppLanguage.defaultsKey).map({ $0 != validLanguage.id }) == true {
+            defaults.set(validLanguage.id, forKey: AppLanguage.defaultsKey)
         }
 
         activeLanguage = validLanguage
         selection = validLanguage
-        activeIdentifier = Self.resolveIdentifier(for: validLanguage, available: identifiers)
-        activeLocale = Locale(identifier: activeIdentifier)
+        let resolvedActiveIdentifier = validLanguage.identifier ?? resolvedSystemIdentifier
+        activeIdentifier = resolvedActiveIdentifier
+        activeLocale = Locale(identifier: resolvedActiveIdentifier)
+        let resourceIdentifier = resources.first { $0.identifier == resolvedActiveIdentifier }?.resourceIdentifier
+            ?? resolvedActiveIdentifier
         localizedBundle = Self.localizedBundle(
-            for: activeIdentifier,
+            for: resourceIdentifier,
             resourceBundle: resourceBundle
         )
     }
@@ -69,24 +86,41 @@ final class AppLocalization {
         return locale.localizedString(forIdentifier: identifier) ?? identifier
     }
 
-    private static func localizationIdentifiers(in bundle: Bundle) -> [String] {
+    private struct LocalizationResource {
+        let identifier: String
+        let resourceIdentifier: String
+    }
+
+    private static func localizationResources(in bundle: Bundle) -> [LocalizationResource] {
         bundle.localizations
             .filter { $0 != "Base" }
+            .map {
+                LocalizationResource(
+                    identifier: Locale(identifier: $0).identifier,
+                    resourceIdentifier: $0
+                )
+            }
             .sorted { lhs, rhs in
-                let lhsName = Locale(identifier: lhs).localizedString(forIdentifier: lhs) ?? lhs
-                let rhsName = Locale(identifier: rhs).localizedString(forIdentifier: rhs) ?? rhs
+                let lhsName = Locale(identifier: lhs.identifier)
+                    .localizedString(forIdentifier: lhs.identifier) ?? lhs.identifier
+                let rhsName = Locale(identifier: rhs.identifier)
+                    .localizedString(forIdentifier: rhs.identifier) ?? rhs.identifier
                 return lhsName.localizedStandardCompare(rhsName) == .orderedAscending
             }
     }
 
-    private static func resolveIdentifier(for language: AppLanguage, available: [String]) -> String {
-        if let identifier = language.identifier {
-            return identifier
-        }
-        return Bundle.preferredLocalizations(
-            from: available,
-            forPreferences: Locale.preferredLanguages
-        ).first ?? "en"
+    private static func preferredIdentifier(
+        in resources: [LocalizationResource],
+        preferredLanguages: [String]
+    ) -> String {
+        let preferredIdentifier = Bundle.preferredLocalizations(
+            from: resources.map(\.resourceIdentifier),
+            forPreferences: preferredLanguages
+        ).first.map { Locale(identifier: $0).identifier }
+        return resources.first { $0.identifier == preferredIdentifier }?.identifier
+            ?? resources.first { $0.identifier == "en" }?.identifier
+            ?? resources.first?.identifier
+            ?? "en"
     }
 
     private static func localizedBundle(for identifier: String, resourceBundle: Bundle) -> Bundle {

@@ -36,26 +36,49 @@ struct AppLocalizationTests {
         }
     }
 
+    @Test func storedLanguageIdentifiersAreCanonicalized() throws {
+        try withDefaults { defaults in
+            defaults.set("EN", forKey: AppLanguage.defaultsKey)
+
+            let localization = AppLocalization(defaults: defaults)
+
+            #expect(localization.activeLanguage == .language("en"))
+            #expect(defaults.string(forKey: AppLanguage.defaultsKey) == "en")
+        }
+    }
+
     @Test func unsupportedStoredLanguageFallsBackToSystem() throws {
         try withDefaults { defaults in
             defaults.set("not-a-bundled-language", forKey: AppLanguage.defaultsKey)
 
-            let localization = AppLocalization(defaults: defaults)
+            let localization = AppLocalization(defaults: defaults, preferredLanguages: ["en"])
 
             #expect(localization.activeLanguage == .system)
+            #expect(localization.activeIdentifier == "en")
             #expect(localization.selection == .system)
-            #expect(localization.availableLanguages.contains(.language(localization.activeIdentifier)))
+            #expect(defaults.string(forKey: AppLanguage.defaultsKey) == "system")
         }
     }
 
-    @Test func changingLanguagePersistsAndRequiresRestart() throws {
+    @Test func selectingTheActiveSystemLanguageDoesNotRequireRestart() throws {
         try withDefaults { defaults in
-            let localization = AppLocalization(defaults: defaults)
+            let localization = AppLocalization(defaults: defaults, preferredLanguages: ["en"])
 
             localization.selection = .language("en")
 
             #expect(defaults.string(forKey: AppLanguage.defaultsKey) == "en")
-            #expect(localization.requiresRestart == (localization.activeLanguage != .language("en")))
+            #expect(!localization.requiresRestart)
+        }
+    }
+
+    @Test func selectingAnotherLanguageRequiresRestart() throws {
+        try withDefaults { defaults in
+            let localization = AppLocalization(defaults: defaults, preferredLanguages: ["en"])
+
+            localization.selection = .language("fr")
+
+            #expect(defaults.string(forKey: AppLanguage.defaultsKey) == "fr")
+            #expect(localization.requiresRestart)
         }
     }
 

@@ -9,14 +9,14 @@ enum AppLanguage: Hashable, Identifiable, Sendable {
     var id: String {
         switch self {
         case .system: "system"
-        case .language(let identifier): identifier
+        case .language(let identifier): Locale(identifier: identifier).identifier
         }
     }
 
     var identifier: String? {
         switch self {
         case .system: nil
-        case .language(let identifier): identifier
+        case .language: id
         }
     }
 
@@ -24,6 +24,6 @@ enum AppLanguage: Hashable, Identifiable, Sendable {
         guard let identifier = defaults.string(forKey: defaultsKey), identifier != "system" else {
             return .system
         }
-        return .language(identifier)
+        return .language(Locale(identifier: identifier).identifier)
     }
 }
