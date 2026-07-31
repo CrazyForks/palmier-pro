@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Merges compiler-extracted strings and registered model keys into the generated English source catalog.
 
 import fs from "node:fs";
 import path from "node:path";

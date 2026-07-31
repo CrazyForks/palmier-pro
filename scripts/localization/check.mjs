@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Validates localization catalogs, placeholders, registered keys, and protected UI and Agent boundaries.
 
 import fs from "node:fs";
 import path from "node:path";

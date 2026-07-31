@@ -1,4 +1,5 @@
 #!/bin/zsh
+# Builds app localization output, selects app-owned data safely, then regenerates and validates English.
 set -euo pipefail
 
 repo_root="${0:A:h:h:h}"
