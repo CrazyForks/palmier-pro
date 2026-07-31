@@ -95,7 +95,7 @@ struct MCPInstructionsPane: View {
     private var cursorSection: some View {
         agentSection(
             .cursor,
-            name: L10n.string("Cursor"),
+            name: "Cursor",
             description: L10n.string("Install the Palmier Pro MCP server in Cursor."),
             action: (L10n.string("Install in Cursor"), openCursor)
         ) {
@@ -109,7 +109,7 @@ struct MCPInstructionsPane: View {
     private var claudeDesktopSection: some View {
         agentSection(
             .claude,
-            name: L10n.string("Claude Desktop"),
+            name: "Claude Desktop",
             description: L10n.string("Install the bundled Palmier Pro connector."),
             action: (L10n.string("Install in Claude Desktop"), openClaudeDesktopBundle)
         ) {
@@ -120,7 +120,7 @@ struct MCPInstructionsPane: View {
     private var claudeCodeSection: some View {
         agentSection(
             .claude,
-            name: L10n.string("Claude Code"),
+            name: "Claude Code",
             description: L10n.string("Run this command once in Terminal.")
         ) {
             CodeBlockView(content: claudeCodeCommand)
@@ -130,7 +130,7 @@ struct MCPInstructionsPane: View {
     private var codexSection: some View {
         agentSection(
             .codex,
-            name: L10n.string("Codex"),
+            name: "Codex",
             description: L10n.string("Run this command once in Terminal.")
         ) {
             CodeBlockView(content: codexCommand)

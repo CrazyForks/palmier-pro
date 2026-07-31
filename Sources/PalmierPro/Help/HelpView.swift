@@ -9,7 +9,7 @@ enum HelpTab: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .shortcuts: L10n.key("Shortcuts")
-        case .mcp: L10n.key("MCP")
+        case .mcp: "MCP"
         }
     }
 

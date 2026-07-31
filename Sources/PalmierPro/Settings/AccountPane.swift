@@ -109,7 +109,7 @@ struct AccountPane: View {
     }
 
     private func upgradeButton(for plan: AvailablePlan, isPrimary: Bool) -> some View {
-        let label = L10n.string("Upgrade to \(L10n.string(key: plan.tier.upgradeLabel))")
+        let label = L10n.string("Upgrade to \(plan.tier.upgradeLabel)")
         return Button {
             Task { await account.subscribe(tier: plan.tier) }
         } label: {

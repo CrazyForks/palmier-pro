@@ -63,7 +63,7 @@ struct EditorResetButton: View {
                 .hoverHighlight()
         }
         .buttonStyle(.plain)
-        .help(L10n.string("Reset \(title.lowercased())"))
-        .accessibilityLabel(L10n.string("Reset \(title)"))
+        .help(L10n.string("Reset: \(title)"))
+        .accessibilityLabel(L10n.string("Reset: \(title)"))
     }
 }

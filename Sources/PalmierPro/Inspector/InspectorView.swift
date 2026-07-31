@@ -1128,7 +1128,7 @@ struct InspectorView: View {
     }
 
     private var aiBadge: some View {
-        Text(L10n.string("AI"))
+        Text(verbatim: "AI")
             .font(.system(size: AppTheme.FontSize.xxs, weight: .bold))
             .tracking(AppTheme.Tracking.wide)
             .foregroundStyle(AppTheme.aiGradient)

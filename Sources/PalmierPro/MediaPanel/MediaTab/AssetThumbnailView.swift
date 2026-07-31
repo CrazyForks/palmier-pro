@@ -218,7 +218,7 @@ struct AssetThumbnailView: View {
     }
 
     private var sourceBadge: some View {
-        Text(L10n.string("AI"))
+        Text(verbatim: "AI")
             .font(.system(size: AppTheme.FontSize.xxs, weight: .semibold))
             .foregroundStyle(AppTheme.MediaOverlay.aiGradient)
             .padding(.horizontal, AppTheme.Spacing.sm)

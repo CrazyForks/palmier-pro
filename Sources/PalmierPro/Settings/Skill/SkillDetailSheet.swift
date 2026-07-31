@@ -133,7 +133,7 @@ struct SkillDetailSheet: View {
             }
 
             HStack(spacing: AppTheme.Spacing.smMd) {
-                Text(verbatim: state?.label ?? L10n.string("Local"))
+                Text(verbatim: state.map { L10n.string(key: $0.label) } ?? L10n.string("Local"))
                     .font(.system(size: AppTheme.FontSize.xs))
                     .foregroundStyle(state?.color ?? AppTheme.Text.tertiaryColor)
 

@@ -96,7 +96,7 @@ struct AccountPopoverCard: View {
     @ViewBuilder
     private func planRow(plan: AvailablePlan, isPrimary: Bool) -> some View {
         HStack(spacing: AppTheme.Spacing.sm) {
-            Text(L10n.string(key: plan.tier.upgradeLabel))
+            Text(verbatim: plan.tier.upgradeLabel)
                 .font(.system(size: AppTheme.FontSize.sm, weight: .semibold))
                 .foregroundStyle(AppTheme.Text.primaryColor)
 

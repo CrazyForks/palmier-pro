@@ -205,9 +205,9 @@ extension InspectorView {
                 .labelsHidden()
                 .disabled(!state.hasEffects)
                 .help(state.hasEffects
-                    ? L10n.string("Enable \(title.lowercased())")
+                    ? L10n.string("Enable: \(title)")
                     : L10n.string("No adjustments yet"))
-                .accessibilityLabel(L10n.string("Enable \(title)"))
+                .accessibilityLabel(L10n.string("Enable: \(title)"))
             }
         ) {
             Group {

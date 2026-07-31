@@ -48,7 +48,7 @@ enum AppNotifications {
 
         let content = UNMutableNotificationContent()
         content.title = L10n.string("Generation complete")
-        content.body = body(assetName: assetName, assetType: assetType, count: count)
+        content.body = generationBody(assetName: assetName, assetType: assetType, count: count)
         content.sound = .default
         var userInfo = ["assetId": assetId]
         if let projectURL {
@@ -130,14 +130,25 @@ enum AppNotifications {
             && (Bundle.main.bundleIdentifier?.contains(".") ?? false)
     }
 
-    private static func body(assetName: String, assetType: ClipType, count: Int) -> String {
+    static func generationBody(assetName: String, assetType: ClipType, count: Int) -> String {
         if count > 1 {
-            return L10n.string("\(count) \(assetType.localizedTrackLabel.lowercased()) items are ready in Palmier Pro.")
+            switch assetType {
+            case .video, .sequence: return L10n.string("\(count) videos are ready in Palmier Pro.")
+            case .audio: return L10n.string("\(count) audio clips are ready in Palmier Pro.")
+            case .image: return L10n.string("\(count) images are ready in Palmier Pro.")
+            case .text: return L10n.string("\(count) text clips are ready in Palmier Pro.")
+            case .lottie: return L10n.string("\(count) Lottie animations are ready in Palmier Pro.")
+            }
         }
         let name = assetName.trimmingCharacters(in: .whitespacesAndNewlines)
-        return name.isEmpty
-            ? L10n.string("Your \(assetType.localizedTrackLabel.lowercased()) is ready.")
-            : L10n.string("\(name) is ready.")
+        guard name.isEmpty else { return L10n.string("\(name) is ready.") }
+        switch assetType {
+        case .video, .sequence: return L10n.string("Your video is ready.")
+        case .audio: return L10n.string("Your audio clip is ready.")
+        case .image: return L10n.string("Your image is ready.")
+        case .text: return L10n.string("Your text clip is ready.")
+        case .lottie: return L10n.string("Your Lottie animation is ready.")
+        }
     }
 }
 

@@ -93,7 +93,7 @@ struct CustomAspectRatioSheet: View {
                 .textFieldStyle(.roundedBorder)
                 .font(.system(size: AppTheme.FontSize.md).monospacedDigit())
                 .frame(width: AppTheme.EditorPanel.numericFieldWidth)
-                .accessibilityLabel(L10n.string("Aspect ratio \(label.lowercased())"))
+                .accessibilityLabel(L10n.string("Aspect ratio: \(label)"))
         }
     }
 

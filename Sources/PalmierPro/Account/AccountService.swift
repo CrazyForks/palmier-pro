@@ -21,8 +21,8 @@ enum AccountTier: String, Decodable, Sendable {
     var upgradeLabel: String {
         switch self {
         case .none: return ""
-        case .pro: return L10n.key("Pro")
-        case .max: return L10n.key("Max")
+        case .pro: return "Pro"
+        case .max: return "Max"
         }
     }
 }

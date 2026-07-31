@@ -491,7 +491,7 @@ struct TextStyleControls<AfterAlignment: View, AfterColor: View>: View {
                 axisField(value: selection.value(xKeyPath), label: "X", range: range) { value, commit in
                     updateNumber(value, keyPath: xKeyPath, fitToContent: fitToContent, commit: commit)
                 }
-                axisField(value: selection.value(yKeyPath), label: L10n.string("Y"), range: range) { value, commit in
+                axisField(value: selection.value(yKeyPath), label: "Y", range: range) { value, commit in
                     updateNumber(value, keyPath: yKeyPath, fitToContent: fitToContent, commit: commit)
                 }
             }

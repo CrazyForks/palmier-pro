@@ -75,7 +75,7 @@ struct UpdateOverlay: View {
     private func section(_ section: ChangelogSection) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             if let heading = section.heading, !heading.isEmpty {
-                Text(L10n.string(key: heading))
+                Text(verbatim: heading)
                     .font(.system(size: AppTheme.FontSize.xl, weight: .light))
                     .tracking(AppTheme.Tracking.tight)
                     .foregroundStyle(AppTheme.Text.primaryColor)
@@ -84,7 +84,7 @@ struct UpdateOverlay: View {
                 HStack(alignment: .firstTextBaseline, spacing: AppTheme.Spacing.sm) {
                     Text(verbatim: "•")
                         .foregroundStyle(AppTheme.Text.tertiaryColor)
-                    Text(L10n.string(key: item))
+                    Text(verbatim: item)
                         .font(.system(size: AppTheme.FontSize.smMd))
                         .foregroundStyle(AppTheme.Text.secondaryColor)
                         .fixedSize(horizontal: false, vertical: true)
