@@ -36,18 +36,33 @@ export function sourceKeys() {
   return [...keys].sort();
 }
 
-function localizedSourceNames() {
-  const names = new Set();
-  const pattern = /L10n\.string\(\s*(?:#*)?"/;
-
-  for (const file of filesUnder(sourceRoot, ".swift")) {
-    if (!pattern.test(fs.readFileSync(file, "utf8"))) continue;
-    const name = path.basename(file, ".swift");
-    if (names.has(name)) throw new Error(`Duplicate Swift filename prevents localization sync: ${name}.swift`);
-    names.add(name);
+function appStringsDataPaths(directory) {
+  const sourceFiles = filesUnder(sourceRoot, ".swift").map((file) => path.resolve(file));
+  const sourceNames = new Set();
+  for (const file of sourceFiles) {
+    const name = path.basename(file);
+    if (sourceNames.has(name)) throw new Error(`Duplicate Swift filename prevents localization sync: ${name}`);
+    sourceNames.add(name);
   }
 
-  return [...names].sort();
+  const expectedSources = new Set(sourceFiles);
+  const foundSources = new Set();
+  const dataPaths = [];
+  for (const entry of fs.readdirSync(directory)) {
+    if (!entry.endsWith(".stringsdata")) continue;
+    const dataPath = path.join(directory, entry);
+    const data = JSON.parse(fs.readFileSync(dataPath, "utf8"));
+    const source = path.resolve(data.source);
+    if (!expectedSources.has(source)) continue;
+    foundSources.add(source);
+    if ((data.tables?.Localizable ?? []).length > 0) dataPaths.push(dataPath);
+  }
+
+  const missingSources = sourceFiles.filter((file) => !foundSources.has(file));
+  if (missingSources.length > 0) {
+    throw new Error(`Missing compiler localization output for: ${missingSources.map((file) => path.relative(root, file)).join(", ")}`);
+  }
+  return dataPaths.sort();
 }
 
 function argumentValues(name) {
@@ -108,8 +123,10 @@ function synchronize() {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === scriptPath) {
-  if (process.argv.includes("--list-localized-source-names")) {
-    for (const name of localizedSourceNames()) console.log(name);
+  if (process.argv.includes("--list-app-stringsdata")) {
+    const directories = argumentValues("--list-app-stringsdata");
+    if (directories.length !== 1) throw new Error("--list-app-stringsdata is required exactly once");
+    for (const dataPath of appStringsDataPaths(directories[0])) console.log(dataPath);
   } else {
     synchronize();
   }

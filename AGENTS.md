@@ -185,7 +185,7 @@ Rule: **any drop target that spans an area containing other drop targets must us
 - Register app-owned UI labels stored in models with `L10n.key`, then resolve them at the UI boundary with `L10n.string(key:)`.
 - Render user content, filenames, technical values, provider metadata, and other non-translatable values with `Text(verbatim:)` or an equivalent verbatim API.
 - Never localize Agent or MCP contracts, persistence values, stable identifiers, machine-readable errors, or analytics values.
-- Run `scripts/localization/sync.sh` after changing UI copy. Run `node scripts/localization/check.mjs --require-complete` for language PRs.
+- Run `scripts/localization/sync.sh` after changing UI copy. CI requires complete coverage when a PR changes a non-English catalog.
 - The generated `en.lproj/Localizable.strings` file is the source inventory. Do not edit it manually.
 - A language PR must add only complete `<locale>.lproj` directories containing `Localizable.strings` and `InfoPlist.strings`. Translate values, never keys, and do not add production-code language lists.
 - Follow `docs/Localization.md` for source patterns, translation boundaries, and manual verification.
