@@ -41,6 +41,22 @@ struct AppLocalizationTests {
         }
     }
 
+    @Test(arguments: [
+        ("zh-Hans", "导出"),
+        ("zh-Hant", "匯出"),
+    ])
+    func bundledChineseLocalizationCanBeSelected(identifier: String, export: String) throws {
+        try withDefaults { defaults in
+            defaults.set(identifier, forKey: AppLanguage.defaultsKey)
+
+            let localization = AppLocalization(defaults: defaults)
+
+            #expect(localization.availableLanguages.contains(.language(identifier)))
+            #expect(localization.activeIdentifier == identifier)
+            #expect(localization.string("Export") == export)
+        }
+    }
+
     @Test func unsupportedStoredLanguageFallsBackToSystem() throws {
         try withDefaults { defaults in
             defaults.set("not-a-bundled-language", forKey: AppLanguage.defaultsKey)
