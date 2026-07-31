@@ -119,7 +119,9 @@ struct AudioMeterView: View {
 
 private struct AudioMeterAccessibilityRepresentation: View {
     let meter: AudioMeterHub
-    @State private var description = String()
+    @State private var description = L10n.string(
+        "Left \(Int(AudioMeterChannelState.floorDb)) dBFS, right \(Int(AudioMeterChannelState.floorDb)) dBFS"
+    )
 
     var body: some View {
         Text(L10n.string("Master Audio Meter"))

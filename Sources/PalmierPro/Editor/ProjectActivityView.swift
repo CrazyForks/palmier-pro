@@ -17,6 +17,7 @@ struct ProjectActivityView: View {
 
     private static let relativeFormatter: RelativeDateTimeFormatter = {
         let formatter = RelativeDateTimeFormatter()
+        formatter.locale = AppLocalization.shared.activeLocale
         formatter.unitsStyle = .abbreviated
         return formatter
     }()
@@ -29,7 +30,7 @@ struct ProjectActivityView: View {
                     .foregroundStyle(AppTheme.Text.primaryColor)
                 Spacer()
                 if !entries.isEmpty {
-                    Text(L10n.string("\(CostEstimator.format(total)) used"))
+                    Text(L10n.string("\(total) credits used"))
                         .font(.system(size: AppTheme.FontSize.xs, weight: .medium))
                         .monospacedDigit()
                         .foregroundStyle(AppTheme.Text.tertiaryColor)
@@ -117,7 +118,9 @@ struct ProjectActivityView: View {
     }
 
     private func creditLabel(_ entry: BackendProjectActivityEntry) -> String {
-        entry.kind == .refund ? "\(entry.credits) refunded" : CostEstimator.format(entry.credits)
+        entry.kind == .refund
+            ? L10n.string("\(entry.credits) credits refunded")
+            : CostEstimator.localizedDescription(entry.credits)
     }
 
     @MainActor
@@ -128,12 +131,12 @@ struct ProjectActivityView: View {
 
         guard let projectId else {
             isLoading = false
-            unavailableMessage = "Save this project to view activity"
+            unavailableMessage = L10n.string("Save this project to view activity")
             return
         }
         guard let publisher = GenerationBackend.subscribeToProjectActivity(projectId: projectId) else {
             isLoading = false
-            unavailableMessage = "Activity unavailable"
+            unavailableMessage = L10n.string("Activity unavailable")
             return
         }
 
@@ -146,13 +149,13 @@ struct ProjectActivityView: View {
             guard !Task.isCancelled else { return }
             if isLoading {
                 isLoading = false
-                unavailableMessage = "Activity unavailable"
+                unavailableMessage = L10n.string("Activity unavailable")
             }
         } catch {
             guard !Task.isCancelled else { return }
             Log.generation.warning("project activity failed: \(error.localizedDescription)")
             isLoading = false
-            unavailableMessage = "Activity unavailable"
+            unavailableMessage = L10n.string("Activity unavailable")
         }
     }
 }

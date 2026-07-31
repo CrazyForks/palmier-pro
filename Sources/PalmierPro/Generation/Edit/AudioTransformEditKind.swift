@@ -70,7 +70,11 @@ enum AudioTransformEditKind: CaseIterable, Equatable {
         effectiveDurationOverride: Double? = nil
     ) -> EditActionAvailability {
         guard asset.type == .audio || asset.type == .video else {
-            return .disabled(reason: L10n.string("\(L10n.string(key: title)) requires audio or video"))
+            let reason = switch self {
+            case .cleanup: L10n.string("Voice Cleanup requires audio or video")
+            case .dubbing: L10n.string("Dubbing requires audio or video")
+            }
+            return .disabled(reason: reason)
         }
         if asset.type == .video && !asset.hasAudio {
             return .disabled(reason: L10n.string("Video has no audio track"))
@@ -79,7 +83,11 @@ enum AudioTransformEditKind: CaseIterable, Equatable {
             return .disabled(reason: L10n.string("Generation in progress"))
         }
         guard let model else {
-            return .disabled(reason: L10n.string("\(L10n.string(key: title)) model not available"))
+            let reason = switch self {
+            case .cleanup: L10n.string("Voice Cleanup model not available")
+            case .dubbing: L10n.string("Dubbing model not available")
+            }
+            return .disabled(reason: reason)
         }
         guard model.acceptsSource(asset.type) else {
             return .disabled(reason: L10n.string("\(model.displayName) does not accept this media"))

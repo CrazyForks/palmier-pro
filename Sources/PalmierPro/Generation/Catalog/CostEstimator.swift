@@ -142,11 +142,19 @@ enum CostEstimator {
         }
     }
 
-    static func format(_ credits: Int?) -> String {
+    static func stableDescription(_ credits: Int?) -> String {
         guard let credits else { return "—" }
         if credits <= 0 { return "0 credits" }
         if credits == 1 { return "1 credit" }
         return "\(credits) credits"
+    }
+
+    @MainActor
+    static func localizedDescription(_ credits: Int?) -> String {
+        guard let credits else { return "—" }
+        if credits <= 0 { return L10n.string("0 credits") }
+        if credits == 1 { return L10n.string("1 credit") }
+        return L10n.string("\(credits) credits")
     }
 
     private static func resolvedRate(_ dict: [String: Double], key: String?) -> Double? {

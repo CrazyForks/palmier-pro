@@ -91,7 +91,7 @@ struct MusicTab: View {
         }
         if let cost = estimatedCost, cost > AccountService.shared.remainingCredits,
            AccountService.shared.budgetCredits != nil {
-            return L10n.string("\(cost) credits needed. Only \(AccountService.shared.remainingCredits.formatted()) remaining.")
+            return L10n.string("\(cost) credits needed. Only \(AccountService.shared.remainingCredits) remaining.")
         }
         return nil
     }
@@ -101,7 +101,7 @@ struct MusicTab: View {
     }
 
     private var generateLabel: String {
-        if let cost = estimatedCost, cost > 0 { return L10n.string("Generate · \(CostEstimator.format(cost))") }
+        if let cost = estimatedCost, cost > 0 { return L10n.string("Generate · \(cost) credits") }
         return L10n.string("Generate")
     }
 

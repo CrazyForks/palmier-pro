@@ -66,7 +66,7 @@ struct CreditSummaryView: View {
             Capsule().stroke(AppTheme.Border.subtleColor, lineWidth: AppTheme.BorderWidth.hairline)
         )
         .fixedSize(horizontal: true, vertical: false)
-        .help(L10n.string("\(left.formatted()) of \(budget.formatted()) credits remaining this period"))
+        .help(L10n.string("\(left) of \(budget) credits remaining this period"))
     }
 
     /// Tint by remaining ratio — full bar is healthy, drained bar is alarming.

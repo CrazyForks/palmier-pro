@@ -17,14 +17,14 @@ extension MediaTab {
         return ScrollView {
             LazyVStack(alignment: .leading, spacing: 0) {
                 if !visualHits.isEmpty {
-                    momentHeader("Moments", icon: "sparkle.magnifyingglass", count: visualHits.count, collapsible: true)
-                    if !collapsedSearchSections.contains("Moments") {
+                    momentHeader(L10n.key("Moments"), icon: "sparkle.magnifyingglass", count: visualHits.count, collapsible: true)
+                    if !collapsedSearchSections.contains(L10n.key("Moments")) {
                         resultsGrid { ForEach(visualHits.indices, id: \.self) { momentCard(visualHits[$0]) } }
                     }
                 }
                 if !spokenHits.isEmpty {
-                    momentHeader("Spoken", icon: "waveform", count: spokenHits.count, collapsible: true)
-                    if !collapsedSearchSections.contains("Spoken") {
+                    momentHeader(L10n.key("Spoken"), icon: "waveform", count: spokenHits.count, collapsible: true)
+                    if !collapsedSearchSections.contains(L10n.key("Spoken")) {
                         VStack(spacing: AppTheme.Spacing.sm) {
                             ForEach(spokenHits.indices, id: \.self) { spokenRow(spokenHits[$0]) }
                         }
@@ -32,7 +32,7 @@ extension MediaTab {
                     }
                 }
                 if !nameMatches.isEmpty {
-                    momentHeader("Files", icon: "doc", count: nameMatches.count)
+                    momentHeader(L10n.key("Files"), icon: "doc", count: nameMatches.count)
                     resultsGrid { ForEach(nameMatches) { fileCard($0) } }
                 }
                 if visualHits.isEmpty, spokenHits.isEmpty, nameMatches.isEmpty {
@@ -57,8 +57,8 @@ extension MediaTab {
         collapsedSectionTitles: Set<String>
     ) -> [String] {
         let sections = [
-            collapsedSectionTitles.contains("Moments") ? [] : momentAssetIds,
-            collapsedSectionTitles.contains("Spoken") ? [] : spokenAssetIds,
+            collapsedSectionTitles.contains(L10n.key("Moments")) ? [] : momentAssetIds,
+            collapsedSectionTitles.contains(L10n.key("Spoken")) ? [] : spokenAssetIds,
             fileAssetIds,
         ]
         var seen: Set<String> = []

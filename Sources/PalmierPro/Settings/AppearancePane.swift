@@ -10,10 +10,10 @@ struct AppearancePane: View {
                 HStack(alignment: .top, spacing: AppTheme.Spacing.mdLg) {
                     ForEach(AppAppearance.allCases) { option in
                         SettingsPreviewCard(
-                            label: L10n.string(key: option.label),
+                            label: option.label,
                             shortcutLabel: nil,
                             isSelected: appearance.selection == option,
-                            accessibilityLabel: L10n.string("\(L10n.string(key: option.label)) appearance"),
+                            accessibilityLabel: appearanceAccessibilityLabel(option),
                             action: { appearance.selection = option }
                         ) {
                             AppearancePreview(option: option)
@@ -27,10 +27,10 @@ struct AppearancePane: View {
                 HStack(alignment: .top, spacing: AppTheme.Spacing.mdLg) {
                     ForEach(LayoutPreset.allCases) { preset in
                         SettingsPreviewCard(
-                            label: L10n.string(key: preset.label),
+                            label: preset.label,
                             shortcutLabel: preset.shortcutLabel,
                             isSelected: workspaceLayout.selection == preset,
-                            accessibilityLabel: L10n.string("\(L10n.string(key: preset.label)) workspace layout"),
+                            accessibilityLabel: workspaceAccessibilityLabel(preset),
                             action: { workspaceLayout.selection = preset }
                         ) {
                             WorkspaceLayoutPreview(preset: preset)
@@ -44,6 +44,22 @@ struct AppearancePane: View {
             SettingsSection(title: L10n.string("Timeline colors")) {
                 TimelineColorsPane()
             }
+        }
+    }
+
+    private func appearanceAccessibilityLabel(_ appearance: AppAppearance) -> String {
+        switch appearance {
+        case .system: L10n.string("System appearance")
+        case .light: L10n.string("Light appearance")
+        case .dark: L10n.string("Dark appearance")
+        }
+    }
+
+    private func workspaceAccessibilityLabel(_ layout: LayoutPreset) -> String {
+        switch layout {
+        case .default: L10n.string("Default workspace layout")
+        case .media: L10n.string("Media workspace layout")
+        case .vertical: L10n.string("Vertical workspace layout")
         }
     }
 }

@@ -96,7 +96,7 @@ struct AccountPane: View {
             }
 
             if let credits = plan.monthlyBudgetCredits {
-                Text(L10n.string("\(credits.formatted()) credits / month"))
+                Text(L10n.string("\(credits) credits / month"))
                     .font(.system(size: AppTheme.FontSize.sm))
                     .foregroundStyle(AppTheme.Text.secondaryColor)
                     .monospacedDigit()

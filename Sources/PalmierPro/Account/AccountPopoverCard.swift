@@ -151,7 +151,7 @@ struct AccountPopoverCard: View {
         if credits >= 1000, credits % 1000 == 0 {
             return L10n.string("\(credits / 1000)k credits")
         }
-        return L10n.string("\(credits.formatted()) credits")
+        return CostEstimator.localizedDescription(credits)
     }
 
     @ViewBuilder
@@ -164,7 +164,7 @@ struct AccountPopoverCard: View {
                     .progressViewStyle(.linear)
                     .tint(barColor(remaining))
                 HStack(spacing: AppTheme.Spacing.xs) {
-                    Text(L10n.string("\(left.formatted()) / \(budget.formatted()) credits"))
+                    Text(L10n.string("\(left) / \(budget) credits"))
                         .font(.system(size: AppTheme.FontSize.sm, weight: .medium))
                         .monospacedDigit()
                         .foregroundStyle(AppTheme.Text.secondaryColor)
@@ -238,6 +238,12 @@ struct AccountPopoverCard: View {
     private var formattedPeriodEnd: String? {
         guard let endMs = account.account?.user.currentPeriodEnd else { return nil }
         let end = Date(timeIntervalSince1970: endMs / 1000)
-        return end.formatted(date: .abbreviated, time: .omitted)
+        return end.formatted(
+            .dateTime
+                .year()
+                .month(.abbreviated)
+                .day()
+                .locale(AppLocalization.shared.activeLocale)
+        )
     }
 }

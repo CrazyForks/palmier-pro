@@ -27,7 +27,7 @@ struct TopOffField<Trailing: View>: View {
                     .disabled(account.isBuyingCredits)
                 Text(credits == 1
                     ? L10n.string("= 1 credit")
-                    : L10n.string("= \(credits.formatted()) credits"))
+                    : L10n.string("= \(credits) credits"))
                     .font(.system(size: AppTheme.FontSize.sm))
                     .monospacedDigit()
                     .foregroundStyle(

@@ -59,7 +59,7 @@ struct SkillCollectionButton: View {
             .contentShape(Capsule(style: .continuous))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(L10n.string("\(title), \(count.formatted()) skills"))
+        .accessibilityLabel(L10n.string("\(title), \(count) skills"))
     }
 }
 

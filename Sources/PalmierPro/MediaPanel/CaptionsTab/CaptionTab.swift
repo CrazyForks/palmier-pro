@@ -74,12 +74,12 @@ struct CaptionTab: View {
         }
         guard cost > 0 else { return L10n.string("Cached — no credits used.") }
         guard let remaining = remainingCloudCredits else {
-            return L10n.string("\(CostEstimator.format(cost)) estimated. Actual billing may differ.")
+            return L10n.string("\(cost) credits estimated. Actual billing may differ.")
         }
         if cost > remaining {
-            return L10n.string("\(CostEstimator.format(cost)) needed. Only \(remaining.formatted()) remaining.")
+            return L10n.string("\(cost) credits needed. Only \(remaining) remaining.")
         }
-        return L10n.string("\(CostEstimator.format(cost)). \((remaining - cost).formatted()) remaining after this generation.")
+        return L10n.string("\(cost) credits. \(remaining - cost) remaining after this generation.")
     }
 
     private static let translateLanguages = [
@@ -512,7 +512,7 @@ struct CaptionTab: View {
         guard let remaining = remainingCloudCredits else { return nil }
         guard remaining > 0 else { return L10n.string("Add credits to use Cloud.") }
         if cost > remaining {
-            return L10n.string("\(CostEstimator.format(cost)) needed. Only \(remaining.formatted()) remaining.")
+            return L10n.string("\(cost) credits needed. Only \(remaining) remaining.")
         }
         return nil
     }

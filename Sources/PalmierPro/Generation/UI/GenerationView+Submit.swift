@@ -103,9 +103,9 @@ extension GenerationView {
             return L10n.string("\(cost) credits estimated. Actual billing may differ.")
         }
         if cost > left {
-            return L10n.string("\(cost) credits needed. Only \(left.formatted()) remaining.")
+            return L10n.string("\(cost) credits needed. Only \(left) remaining.")
         }
-        return L10n.string("\(cost) credits. \((left - cost).formatted()) credits remaining after this generation.")
+        return L10n.string("\(cost) credits. \(left - cost) credits remaining after this generation.")
     }
 
     var costEstimateLabel: some View {
