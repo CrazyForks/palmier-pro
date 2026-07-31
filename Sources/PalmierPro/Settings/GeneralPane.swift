@@ -36,10 +36,20 @@ struct GeneralPane: View {
                 }
 
                 if localization.requiresRestart {
-                    Text(L10n.string("Changes take effect after restarting Palmier Pro."))
-                        .font(.system(size: AppTheme.FontSize.sm))
-                        .foregroundStyle(AppTheme.Text.secondaryColor)
-                        .fixedSize(horizontal: false, vertical: true)
+                    HStack(alignment: .center, spacing: AppTheme.Spacing.lg) {
+                        Text(L10n.string("Changes take effect after restarting Palmier Pro."))
+                            .font(.system(size: AppTheme.FontSize.sm))
+                            .foregroundStyle(AppTheme.Text.secondaryColor)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        Spacer(minLength: AppTheme.Spacing.lg)
+
+                        Button(L10n.string("Restart Palmier Pro")) {
+                            AppDelegate.shared.restart()
+                        }
+                        .buttonStyle(.capsule(.secondary))
+                        .fixedSize()
+                    }
                 }
             }
 

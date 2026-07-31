@@ -1,8 +1,16 @@
 import AppKit
 import ClerkKit
 
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    static let shared = AppDelegate()
+
     private var isTerminating = false
+    private var restartRequested = false
+
+    private override init() {
+        super.init()
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Activate the app (required when launched from CLI, not a .app bundle)
@@ -44,6 +52,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if isTerminating { return .terminateLater }
         isTerminating = true
         let projects = AppState.shared.openProjects
+        let shouldRestart = restartRequested
 
         Task { @MainActor in
             do {
@@ -53,15 +62,42 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 if !MLXRuntime.beginTermination() {
                     await MLXRuntime.waitUntilIdle()
                 }
+                if shouldRestart {
+                    try await Self.scheduleRelaunch(
+                        applicationURL: Bundle.main.bundleURL,
+                        processID: ProcessInfo.processInfo.processIdentifier
+                    )
+                }
                 sender.reply(toApplicationShouldTerminate: true)
             } catch {
                 projects.forEach { $0.editorViewModel.projectPackageCoordinator.cancelClosing() }
+                restartRequested = false
                 isTerminating = false
                 sender.presentError(error)
                 sender.reply(toApplicationShouldTerminate: false)
             }
         }
         return .terminateLater
+    }
+
+    func restart() {
+        guard !isTerminating else { return }
+        restartRequested = true
+        NSApp.terminate(nil)
+    }
+
+    @concurrent
+    private static func scheduleRelaunch(applicationURL: URL, processID: Int32) async throws {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/sh")
+        process.arguments = [
+            "-c",
+            "while kill -0 \"$1\" 2>/dev/null; do sleep 0.1; done; exec /usr/bin/open -n \"$2\"",
+            "palmier-restart",
+            String(processID),
+            applicationURL.path,
+        ]
+        try process.run()
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {
