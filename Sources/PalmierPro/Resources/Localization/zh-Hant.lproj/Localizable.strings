@@ -79,6 +79,7 @@
 "Add to chat" = "添加到對話";
 "Add video to the timeline, then mark a range to score only part of it." = "將影片添加到時間軸，然後標記範圍，只為其中一部分配樂。";
 "Added to %@" = "已添加到 %@";
+"Adjust" = "調整";
 "Adjust Range" = "調整範圍";
 "Agent" = "Agent";
 "Agent Mode" = "Agent 模式";
@@ -90,6 +91,7 @@
 "Amount" = "數量";
 "Analyzing media so you can search it." = "正在分析媒體以供搜尋。";
 "Angle" = "角度";
+"Animate" = "動畫";
 "Animation" = "動畫";
 "Anthropic API Key" = "Anthropic API 金鑰";
 "App version %@ and macOS %@ are included." = "將包含 App 版本 %@ 和 macOS %@。";
@@ -109,6 +111,7 @@
 "Background" = "背景";
 "Basic Correction" = "基本校正";
 "Beat detection failed. Check that the media file is reachable, then retry." = "節拍檢測失敗。請檢查媒體檔案是否可訪問，然後重試。";
+"Blacks" = "黑色";
 "Blend" = "混合";
 "Blends denoised and original audio — lower this if voices sound thin or over-compressed." = "混合降噪音訊和原始音訊。如果人聲聽起來單薄或壓縮過度，請降低此值。";
 "Blur" = "模糊";
@@ -202,7 +205,9 @@
 "Completed" = "已完成";
 "Connect an agent" = "連接 Agent";
 "Connect an external agent to inspect and edit the open Palmier Pro project." = "連接外部 Agent，以檢查和編輯已打開的 Palmier Pro 專案。";
+"Content" = "內容";
 "Continue" = "繼續";
+"Contrast" = "對比";
 "Copied" = "已複製";
 "Copy" = "複製";
 "Copy Path" = "複製路徑";
@@ -270,6 +275,7 @@
 "Deselect & Reset Tool" = "取消選擇並重置工具";
 "Destination" = "目標位置";
 "Detail" = "細節";
+"Details" = "詳細資訊";
 "Detect Beats" = "檢測節拍";
 "Detected %lld beats at %lld BPM." = "檢測到 %lld 個節拍，速度為 %lld BPM。";
 "Detected %lld beats." = "檢測到 %lld 個節拍。";
@@ -321,6 +327,7 @@
 "Export, %lld active, %lld waiting" = "匯出：%lld 個進行中，%lld 個等待中";
 "Exporting…" = "正在匯出…";
 "Export…" = "匯出…";
+"Exposure" = "曝光度";
 "Extra Large" = "特大";
 "Fade In" = "淡入";
 "Fade Out" = "淡出";
@@ -354,6 +361,8 @@
 "Full Frame" = "全畫幅";
 "Full Screen" = "全螢幕";
 "Full changelog" = "完整更新日誌";
+"Gain" = "增益";
+"Gamma" = "伽瑪";
 "General" = "通用";
 "Generate" = "產生";
 "Generate B-roll" = "產生補充鏡頭";
@@ -392,6 +401,7 @@
 "Hide keyframe timeline" = "隱藏關鍵影格時間軸";
 "Highlight" = "高光";
 "Highlight Block" = "高亮色塊";
+"Highlights" = "亮部";
 "Hold" = "保持";
 "Hue" = "色相";
 "Hue Curves" = "色相曲線";
@@ -449,6 +459,7 @@
 "Lets external clients like Cursor, Claude Desktop, Claude Code, and Codex edit your timeline." = "允許 Cursor、Claude Desktop、Claude Code 和 Codex 等外部客戶端編輯時間軸。";
 "Levels" = "色階";
 "Library" = "資料庫";
+"Lift" = "提升";
 "Light" = "淺色";
 "Lighten" = "變亮";
 "Line Spacing" = "行距";
@@ -470,6 +481,7 @@
 "Local runs with Apple's SpeechAnalyzer. Cloud uses credits and a more accurate model with more capabilities." = "本機轉錄使用 Apple SpeechAnalyzer。雲端會使用積分，並提供更準確、功能更多的模型。";
 "Log in for 250 free credits" = "登入即可獲得 250 免費積分";
 "Lottie" = "Lottie";
+"Luma" = "亮度";
 "Luminosity" = "明度";
 "Lyrics (optional). [Verse] and [Chorus] tags supported." = "歌詞（可選）。支援 [Verse] 和 [Chorus] 標籤。";
 "MCP" = "MCP";
@@ -698,6 +710,7 @@
 "Sample Key Color" = "取樣鍵控顏色";
 "Sample Project" = "示例專案";
 "Sample key color" = "取樣鍵控顏色";
+"Sat" = "飽和度";
 "Saturation" = "飽和度";
 "Save" = "儲存";
 "Save As" = "儲存為";
@@ -742,6 +755,7 @@
 "Settings…" = "設定…";
 "Setup instructions" = "設定說明";
 "Shadow" = "陰影";
+"Shadows" = "陰影";
 "Share usage data" = "共享使用資料";
 "Sharpen" = "銳化";
 "Shortcuts" = "快捷鍵";
@@ -817,6 +831,7 @@
 "System Language" = "系統語言";
 "Take a screenshot of the preview and use it as a reference for generation. Particularly useful for creating AI transitions." = "截取預覽畫面並將其用作產生參考。這對建立 AI 轉場尤其有用。";
 "Target Language" = "目標語言";
+"Temperature" = "色溫";
 "Temporary files" = "臨時檔案";
 "Text" = "文本";
 "Text to Music" = "文本產生音樂";
@@ -842,6 +857,7 @@
 "Timeline" = "時間軸";
 "Timeline Format" = "時間軸格式";
 "Timeline colors" = "時間軸顏色";
+"Tint" = "色調";
 "Tints waveforms by speaker. Voices are matched across clips using cloud transcripts." = "按說話者為波形著色。使用雲端轉錄匹配不同片段中的聲音。";
 "Toggle Agent Panel" = "顯示或隱藏 Agent 面板";
 "Tone" = "色調";
@@ -900,6 +916,7 @@
 "Version" = "版本";
 "Version %@" = "版本 %@";
 "Vertical" = "垂直";
+"Vibrance" = "鮮艷度";
 "Video" = "影片";
 "Video Ref" = "影片參考";
 "Video Reframing: Select a clip/video, and use LTX 2.3 Reframe video model to change the aspect ratio" = "影片畫面重構：選擇片段或影片，然後使用 LTX 2.3 Reframe 影片模型更改長寬比";
@@ -923,6 +940,7 @@
 "Welcome to Palmier Pro, %@" = "歡迎使用 Palmier Pro，%@";
 "What's New in v%@" = "v%@ 新功能";
 "White Balance" = "白平衡";
+"Whites" = "白色";
 "Whole timeline · %@" = "整個時間軸 · %@";
 "Width" = "寬度";
 "Word Cycle" = "字詞循環";
