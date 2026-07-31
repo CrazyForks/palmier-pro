@@ -173,7 +173,7 @@ struct AccountPane: View {
 
     private var remainingCard: some View {
         card {
-            cardCaption("Remaining")
+            cardCaption(L10n.string("Remaining"))
 
             Spacer(minLength: AppTheme.Spacing.sm)
 
@@ -191,7 +191,7 @@ struct AccountPane: View {
 
     private var buyCard: some View {
         card {
-            cardCaption("Buy more")
+            cardCaption(L10n.string("Buy more"))
 
             TopOffField(
                 dollars: $topOffDollars,

@@ -106,6 +106,7 @@
 "Auto" = "Auto";
 "Available" = "Available";
 "Back" = "Back";
+"Background" = "Background";
 "Basic Correction" = "Basic Correction";
 "Beat detection failed. Check that the media file is reachable, then retry." = "Beat detection failed. Check that the media file is reachable, then retry.";
 "Blend" = "Blend";
@@ -584,6 +585,7 @@
 "Organize with Agent" = "Organize with Agent";
 "Original" = "Original";
 "Original FPS" = "Original FPS";
+"Outline" = "Outline";
 "Outline Color" = "Outline Color";
 "Outline Width" = "Outline Width";
 "Overlay" = "Overlay";
@@ -739,6 +741,7 @@
 "Settings" = "Settings";
 "Settings…" = "Settings…";
 "Setup instructions" = "Setup instructions";
+"Shadow" = "Shadow";
 "Share usage data" = "Share usage data";
 "Sharpen" = "Sharpen";
 "Shortcuts" = "Shortcuts";

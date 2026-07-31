@@ -236,7 +236,7 @@ struct TextStyleControls<AfterAlignment: View, AfterColor: View>: View {
 
     private var outlineGroup: some View {
         decorationGroup(
-            "Outline",
+            L10n.string("Outline"),
             isExpanded: $outlineExpanded,
             fitToContent: true,
             enabledKeyPath: \.border.enabled,
@@ -261,7 +261,7 @@ struct TextStyleControls<AfterAlignment: View, AfterColor: View>: View {
 
     private var shadowGroup: some View {
         decorationGroup(
-            "Shadow",
+            L10n.string("Shadow"),
             isExpanded: $shadowExpanded,
             fitToContent: true,
             enabledKeyPath: \.shadow.enabled,
@@ -302,7 +302,7 @@ struct TextStyleControls<AfterAlignment: View, AfterColor: View>: View {
 
     private var backgroundGroup: some View {
         decorationGroup(
-            "Background",
+            L10n.string("Background"),
             isExpanded: $backgroundExpanded,
             fitToContent: true,
             enabledKeyPath: \.background.enabled,
