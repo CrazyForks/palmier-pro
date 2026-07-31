@@ -13,20 +13,13 @@ swift build \
   -Xswiftc -emit-localized-strings-path \
   -Xswiftc "$temporary_directory"
 
-typeset -A source_names
 localized_source_names=()
 stringsdata_arguments=()
-while IFS= read -r source; do
-  name="${source:t:r}"
-  if [[ -n "${source_names[$name]-}" ]]; then
-    print -u2 "Duplicate Swift filename prevents localization sync: $name.swift"
-    exit 1
-  fi
-  source_names[$name]="$source"
-  if grep -Eq 'L10n\.string\((#*)?"' "$source"; then
-    localized_source_names+=("$name")
-  fi
-done < <(find "$source_root" -type f -name '*.swift' -print)
+localized_source_list="$temporary_directory/localized-sources"
+node scripts/localization/sync.mjs --list-localized-source-names > "$localized_source_list"
+while IFS= read -r name; do
+  localized_source_names+=("$name")
+done < "$localized_source_list"
 
 typeset -A dependency_names
 while IFS= read -r source_list; do

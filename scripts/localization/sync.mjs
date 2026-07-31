@@ -35,6 +35,20 @@ export function sourceKeys() {
   return [...keys].sort();
 }
 
+function localizedSourceNames() {
+  const names = new Set();
+  const pattern = /L10n\.string\(\s*(?:#*)?"/;
+
+  for (const file of filesUnder(sourceRoot, ".swift")) {
+    if (!pattern.test(fs.readFileSync(file, "utf8"))) continue;
+    const name = path.basename(file, ".swift");
+    if (names.has(name)) throw new Error(`Duplicate Swift filename prevents localization sync: ${name}.swift`);
+    names.add(name);
+  }
+
+  return [...names].sort();
+}
+
 function argumentValues(name) {
   const values = [];
   for (let index = 2; index < process.argv.length; index += 1) {
@@ -92,4 +106,10 @@ function synchronize() {
   console.log(`Synchronized ${keys.size} source strings.`);
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === scriptPath) synchronize();
+if (process.argv[1] && path.resolve(process.argv[1]) === scriptPath) {
+  if (process.argv.includes("--list-localized-source-names")) {
+    for (const name of localizedSourceNames()) console.log(name);
+  } else {
+    synchronize();
+  }
+}

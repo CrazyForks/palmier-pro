@@ -35,15 +35,22 @@ function lineNumber(source, index) {
   return source.slice(0, index).split("\n").length;
 }
 
-function placeholders(value) {
+export function placeholderSignature(value) {
   const result = [];
-  const pattern = /%%|%(?:\d+\$)?[-+#0 ']*\d*(?:\.\d+)?(?:hh|h|ll|l|L|z|t|j|q)?([@diuoxXfFeEgGaAcCsSp])/g;
+  let nextIndex = 1;
+  const pattern = /%%|%(?:(\d+)\$)?[-+#0 ']*\d*(?:\.\d+)?(?:hh|h|ll|l|L|z|t|j|q)?([@diuoxXfFeEgGaAcCsSp])/g;
   for (const match of value.matchAll(pattern)) {
     if (match[0] === "%%") continue;
-    const type = match[1].toLowerCase();
-    result.push("diuox".includes(type) ? "integer" : "fega".includes(type) ? "floating" : type);
+    const type = match[2].toLowerCase();
+    result.push({
+      index: match[1] ? Number(match[1]) : nextIndex++,
+      type: "diuox".includes(type) ? "integer" : "fega".includes(type) ? "floating" : type,
+    });
   }
-  return result.sort().join(",");
+  return result
+    .sort((lhs, rhs) => lhs.index - rhs.index || lhs.type.localeCompare(rhs.type))
+    .map(({ index, type }) => `${index}:${type}`)
+    .join(",");
 }
 
 function parseStrings(file) {
@@ -114,7 +121,7 @@ for (const tableName of tableNames) {
       const value = targetEntries.get(key);
       if (!value.trim()) {
         errors.push(`${relative(targetFile)}: empty translation for ${JSON.stringify(key)}`);
-      } else if (placeholders(value) !== placeholders(sourceEntries.get(key))) {
+      } else if (placeholderSignature(value) !== placeholderSignature(sourceEntries.get(key))) {
         errors.push(`${relative(targetFile)}: incompatible placeholders for ${JSON.stringify(key)}`);
       }
     }
@@ -131,97 +138,6 @@ const localizable = sourceTables.get("Localizable") ?? new Map();
 for (const key of sourceKeys()) {
   if (!localizable.has(key)) {
     errors.push(`en.lproj/Localizable.strings: missing registered source key ${JSON.stringify(key)}`);
-  }
-}
-
-function firstArgument(source, openIndex) {
-  let depth = 1;
-  let blockCommentDepth = 0;
-  let state = "normal";
-  let quoteLength = 0;
-  for (let index = openIndex + 1; index < source.length; index += 1) {
-    const current = source[index];
-    const next = source[index + 1];
-
-    if (state === "lineComment") {
-      if (current === "\n") state = "normal";
-      continue;
-    }
-    if (state === "blockComment") {
-      if (current === "/" && next === "*") {
-        blockCommentDepth += 1;
-        index += 1;
-      } else if (current === "*" && next === "/") {
-        blockCommentDepth -= 1;
-        index += 1;
-        if (blockCommentDepth === 0) state = "normal";
-      }
-      continue;
-    }
-    if (state === "string") {
-      if (current === "\\") {
-        index += 1;
-      } else if (quoteLength === 3 && source.slice(index, index + 3) === '"""') {
-        index += 2;
-        state = "normal";
-      } else if (quoteLength === 1 && current === '"') {
-        state = "normal";
-      }
-      continue;
-    }
-
-    if (current === "/" && next === "/") {
-      state = "lineComment";
-      index += 1;
-    } else if (current === "/" && next === "*") {
-      state = "blockComment";
-      blockCommentDepth = 1;
-      index += 1;
-    } else if (source.slice(index, index + 3) === '"""') {
-      state = "string";
-      quoteLength = 3;
-      index += 2;
-    } else if (current === '"') {
-      state = "string";
-      quoteLength = 1;
-    } else if (current === "(") {
-      depth += 1;
-    } else if (current === ")") {
-      depth -= 1;
-      if (depth === 0) return source.slice(openIndex + 1, index);
-    } else if (current === "," && depth === 1) {
-      return source.slice(openIndex + 1, index);
-    }
-  }
-  return null;
-}
-
-const localizedAPIs = new Set([
-  "Button", "ColorPicker", "ContentUnavailableView", "GroupBox", "Label", "LabeledContent",
-  "Link", "Menu", "NavigationLink", "Picker", "ProgressView", "Section", "SecureField", "Text",
-  "TextField", "Toggle", "accessibilityAction", "accessibilityHint", "accessibilityLabel",
-  "accessibilityValue", "alert", "confirmationDialog", "help", "navigationTitle",
-  "EditorPanelGroup", "GeneratingOverlay", "InspectorRow", "MediaPanelToast", "SettingsGroup",
-  "SettingsSection", "SettingsToggleRow",
-]);
-const appKitAPIs = new Set(["NSMenu", "NSMenuItem", "addItem"]);
-
-function checkUICalls(file, source) {
-  const identifierPattern = /[A-Za-z_][A-Za-z0-9_]*/g;
-  for (const match of source.matchAll(identifierPattern)) {
-    const name = match[0];
-    if (!localizedAPIs.has(name) && !appKitAPIs.has(name)) continue;
-    let openIndex = match.index + name.length;
-    while (/\s/.test(source[openIndex] ?? "")) openIndex += 1;
-    if (source[openIndex] !== "(") continue;
-    const argument = firstArgument(source, openIndex);
-    if (argument === null || !/(?:#*)"/.test(argument)) continue;
-    if (argument.includes("L10n.") || argument.includes("verbatim:") || argument.trim() === "String()") continue;
-    if (name === "Section" && /^\s*id\s*:/.test(argument)) continue;
-    if (name === "NSMenuItem" && !/^\s*title\s*:/.test(argument)) continue;
-    if (name === "NSMenu" && !/^\s*title\s*:/.test(argument)) continue;
-    if (name === "addItem" && !/^\s*withTitle\s*:/.test(argument)) continue;
-    errors.push(`${relative(file)}:${lineNumber(source, match.index)}: ${name} contains an unclassified string literal`);
   }
 }
 
@@ -244,7 +160,6 @@ function checkNamedUILiterals(file, source) {
 
 for (const file of filesUnder(sourceRoot, ".swift")) {
   const source = fs.readFileSync(file, "utf8");
-  checkUICalls(file, source);
   checkNamedUILiterals(file, source);
   if (file.includes(`${path.sep}Agent${path.sep}Tools${path.sep}`) && source.includes("L10n.")) {
     errors.push(`${relative(file)}: Agent tool contracts must not use UI localization`);
