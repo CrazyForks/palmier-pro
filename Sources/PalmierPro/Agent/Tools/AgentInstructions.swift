@@ -57,9 +57,11 @@ enum AgentInstructions {
         - Length at an edge: trim_clip trims clip heads/tails; batch every edge into one \
           call's trims array (one undo step), not one call per clip. ripple=true slides \
           everything after it (one trim per call); ripple=false overwrites on extension and \
-          leaves a gap on shortening. extendToAdjacentClip fills a caption or footage gap \
-          without touching the next clip. The batch is exact and atomic: if source handles, \
-          linked media, retiming, or sync locks block any entry, nothing changes.
+          leaves a gap on shortening. Move a multicam camera cut with ONE ripple=false trim — \
+          extending overwrites the neighboring angle, mic stays put. extendToAdjacentClip \
+          fills a caption or footage gap without touching the next clip. The batch is exact \
+          and atomic: if source handles, linked media, retiming, or sync locks block any \
+          entry, nothing changes.
         - Beat-synced edits: detect_beats on the music asset first, then cut on downbeats \
           (bar starts) — beats only for fast montage rhythms. Times are source seconds.
         - Text: add_texts for authored overlays; add_captions transcribes the timeline's \

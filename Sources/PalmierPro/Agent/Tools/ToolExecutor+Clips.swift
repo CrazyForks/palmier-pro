@@ -1096,7 +1096,7 @@ extension ToolExecutor {
             edge: trim.edge.trimEdge,
             propagateToLinked: true
         ) {
-            throw ToolError(reason)
+            throw ToolError(reason + " To resize one camera segment against its neighboring angle (e.g. move a change_cam cut) without moving the group, retry with ripple=false.")
         }
         let edgeDelta = trim.edge == .tail ? trim.requested : -trim.requested
         let plan = editor.planRippleTrim(
