@@ -59,14 +59,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 for project in projects {
                     try await project.saveBeforeClosing()
                 }
-                if !MLXRuntime.beginTermination() {
-                    await MLXRuntime.waitUntilIdle()
-                }
                 if shouldRestart {
                     try await Self.scheduleRelaunch(
                         applicationURL: Bundle.main.bundleURL,
                         processID: ProcessInfo.processInfo.processIdentifier
                     )
+                }
+                if !MLXRuntime.beginTermination() {
+                    await MLXRuntime.waitUntilIdle()
                 }
                 sender.reply(toApplicationShouldTerminate: true)
             } catch {

@@ -95,7 +95,7 @@ private struct SettingsSidebar: View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xxs) {
             ForEach(visibleTabs) { tab in
                 SidebarRowButton(
-                    label: tab.label,
+                    label: L10n.string(key: tab.label),
                     systemImage: tab.systemImage,
                     isSelected: selectedTab == tab,
                     action: { selectedTab = tab }
