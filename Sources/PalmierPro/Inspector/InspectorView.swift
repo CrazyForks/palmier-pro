@@ -1070,7 +1070,7 @@ struct InspectorView: View {
     @ViewBuilder
     private func fileSection(_ asset: MediaAsset) -> some View {
         metadataSection(title: L10n.string("File")) {
-            plainMetadataRow(label: L10n.string("Type"), value: asset.type.trackLabel)
+            plainMetadataRow(label: L10n.string("Type"), value: asset.type.localizedTrackLabel)
             if asset.type != .audio, let width = asset.sourceWidth, let height = asset.sourceHeight {
                 plainMetadataRow(label: L10n.string("Dimensions"), value: "\(width) × \(height)")
             }

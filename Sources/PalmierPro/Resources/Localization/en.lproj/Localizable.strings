@@ -62,6 +62,7 @@
 "Add Text" = "Add Text";
 "Add an email above to enable a reply" = "Add an email above to enable a reply";
 "Add captions to my timeline" = "Add captions to my timeline";
+"Add credits" = "Add credits";
 "Add credits to use Cloud." = "Add credits to use Cloud.";
 "Add emoji" = "Add emoji";
 "Add generated audio to an audio track at this clip's start." = "Add generated audio to an audio track at this clip's start.";
@@ -115,6 +116,7 @@
 "Browse Community Skills ↗" = "Browse Community Skills ↗";
 "Buy" = "Buy";
 "Buy $%lld" = "Buy $%lld";
+"Buy more" = "Buy more";
 "Cache" = "Cache";
 "Cached — no credits used." = "Cached — no credits used.";
 "Can't delete every timeline — the project needs at least one." = "Can't delete every timeline — the project needs at least one.";
@@ -645,6 +647,7 @@
 "Relink Folder…" = "Relink Folder…";
 "Relinked %lld of %lld offline clips." = "Relinked %lld of %lld offline clips.";
 "Relink…" = "Relink…";
+"Remaining" = "Remaining";
 "Remove" = "Remove";
 "Remove %@" = "Remove %@";
 "Remove API key" = "Remove API key";
@@ -878,6 +881,7 @@
 "Upgrade to %@" = "Upgrade to %@";
 "Upgrade to Max" = "Upgrade to Max";
 "Upgrade to Pro" = "Upgrade to Pro";
+"Upgrade to add credits" = "Upgrade to add credits";
 "Uploading…" = "Uploading…";
 "Upscale" = "Upscale";
 "Upscale source media" = "Upscale source media";

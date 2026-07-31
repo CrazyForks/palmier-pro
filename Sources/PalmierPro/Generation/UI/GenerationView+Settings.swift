@@ -256,7 +256,7 @@ extension GenerationView {
                     parts.append(label)
                 }
             }
-            return parts.isEmpty ? "Settings" : parts.joined(separator: " \u{00B7} ")
+            return parts.isEmpty ? L10n.string("Settings") : parts.joined(separator: " \u{00B7} ")
         }
         if selectedType == .audio {
             if audioModel.hasDurationControl, !audioUsesSource {
@@ -326,11 +326,11 @@ extension GenerationView {
         } else {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
                 if selectedType == .video {
-                    settingsPicker(L10n.key("Duration"), selection: $selectedDuration, options: videoModel.durations) { "\($0)s" }
+                    settingsPicker(L10n.string("Duration"), selection: $selectedDuration, options: videoModel.durations) { "\($0)s" }
                 }
                 if selectedType == .audio, !audioUsesSource {
                     if let durations = audioModel.durations {
-                        settingsPicker(L10n.key("Duration"), selection: $selectedAudioDuration, options: durations) { "\($0)s" }
+                        settingsPicker(L10n.string("Duration"), selection: $selectedAudioDuration, options: durations) { "\($0)s" }
                     } else if let range = audioModel.durationRange {
                         VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
                             Text(L10n.string("Duration"))
@@ -350,7 +350,7 @@ extension GenerationView {
                 }
                 if !currentAspectRatios.isEmpty {
                     settingsPicker(
-                        L10n.key("Aspect Ratio"),
+                        L10n.string("Aspect Ratio"),
                         selection: $selectedAspectRatio,
                         options: currentAspectRatios,
                         gridMinWidth: selectedType == .image ? GenerationSettingsLayout.imageAspectGridMinWidth : nil
@@ -359,14 +359,14 @@ extension GenerationView {
                     }
                 }
                 if let resolutions = currentResolutions {
-                    settingsPicker(L10n.key("Resolution"), selection: $selectedResolution, options: resolutions) { resolutionLabel($0) }
+                    settingsPicker(L10n.string("Resolution"), selection: $selectedResolution, options: resolutions) { resolutionLabel($0) }
                 }
                 if let qualities = currentQualities {
-                    settingsPicker(L10n.key("Quality"), selection: $selectedQuality, options: qualities) { $0.capitalized }
+                    settingsPicker(L10n.string("Quality"), selection: $selectedQuality, options: qualities) { $0.capitalized }
                 }
                 if selectedType == .image, imageModel.maxImages > 1 {
                     settingsPicker(
-                        L10n.key("Count"),
+                        L10n.string("Count"),
                         selection: $selectedNumImages,
                         options: Array(1...imageModel.maxImages)
                     ) { "\($0)" }
@@ -410,7 +410,7 @@ extension GenerationView {
         format: @escaping (T) -> String
     ) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
-            Text(L10n.string(key: label))
+            Text(verbatim: label)
                 .font(.system(size: AppTheme.FontSize.xs, weight: .medium))
                 .foregroundStyle(AppTheme.Text.tertiaryColor)
             if options.count <= 5, gridMinWidth == nil {

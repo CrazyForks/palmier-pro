@@ -109,7 +109,7 @@ private struct CreditActionsPopover: View {
 
     @ViewBuilder
     private var freeActions: some View {
-        sectionCaption("Upgrade to add credits")
+        sectionCaption(L10n.string("Upgrade to add credits"))
         Button { openAccountSettings() } label: {
             Text(L10n.string("Account settings")).frame(maxWidth: .infinity)
         }
@@ -121,7 +121,7 @@ private struct CreditActionsPopover: View {
 
     @ViewBuilder
     private var paidActions: some View {
-        sectionCaption("Add credits")
+        sectionCaption(L10n.string("Add credits"))
         TopOffField(dollars: $topOffDollars, controlSize: .small, fillWidth: false) {
             account.buyCredits(dollars: topOffDollars)
             isPresented = false
@@ -138,7 +138,7 @@ private struct CreditActionsPopover: View {
 
     @ViewBuilder
     private func sectionCaption(_ text: String) -> some View {
-        Text(text)
+        Text(verbatim: text)
             .font(.system(size: AppTheme.FontSize.xs, weight: .medium))
             .foregroundStyle(AppTheme.Text.tertiaryColor)
     }
