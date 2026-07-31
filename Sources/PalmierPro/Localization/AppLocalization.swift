@@ -6,7 +6,6 @@ import SwiftUI
 final class AppLocalization {
     static let shared = AppLocalization()
 
-    let activeLanguage: AppLanguage
     let activeIdentifier: String
     let activeLocale: Locale
     let availableLanguages: [AppLanguage]
@@ -53,7 +52,6 @@ final class AppLocalization {
             defaults.set(validLanguage.id, forKey: AppLanguage.defaultsKey)
         }
 
-        activeLanguage = validLanguage
         selection = validLanguage
         let resolvedActiveIdentifier = validLanguage.identifier ?? resolvedSystemIdentifier
         activeIdentifier = resolvedActiveIdentifier
@@ -74,13 +72,13 @@ final class AppLocalization {
         )
     }
 
-    func string(key: String, defaultValue: String? = nil) -> String {
-        localizedBundle.localizedString(forKey: key, value: defaultValue, table: nil)
+    func string(key: String) -> String {
+        localizedBundle.localizedString(forKey: key, value: nil, table: nil)
     }
 
     func displayName(for language: AppLanguage) -> String {
         guard let identifier = language.identifier else {
-            return string("System Language")
+            return string(key: L10n.key("System Language"))
         }
         let locale = Locale(identifier: identifier)
         return locale.localizedString(forIdentifier: identifier) ?? identifier
@@ -113,14 +111,10 @@ final class AppLocalization {
         in resources: [LocalizationResource],
         preferredLanguages: [String]
     ) -> String {
-        let preferredIdentifier = Bundle.preferredLocalizations(
+        return Bundle.preferredLocalizations(
             from: resources.map(\.resourceIdentifier),
             forPreferences: preferredLanguages
-        ).first.map { Locale(identifier: $0).identifier }
-        return resources.first { $0.identifier == preferredIdentifier }?.identifier
-            ?? resources.first { $0.identifier == "en" }?.identifier
-            ?? resources.first?.identifier
-            ?? "en"
+        ).first.map { Locale(identifier: $0).identifier } ?? "en"
     }
 
     private static func localizedBundle(for identifier: String, resourceBundle: Bundle) -> Bundle {
@@ -148,7 +142,7 @@ enum L10n {
         AppLocalization.shared.string(keyAndValue)
     }
 
-    static func string(key: String, defaultValue: String? = nil) -> String {
-        AppLocalization.shared.string(key: key, defaultValue: defaultValue)
+    static func string(key: String) -> String {
+        AppLocalization.shared.string(key: key)
     }
 }
