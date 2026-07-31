@@ -149,7 +149,7 @@
 "Captured %@." = "已截取 %@。";
 "Captured %@. The destination folder was removed, so the frame was saved at the top level of Media." = "已截取 %@。目的檔案夾已被移除，因此此影格已儲存至「媒體」頂層。";
 "Censor profanity" = "屏蔽不雅用語";
-"Center" = "居中";
+"Center" = "置中";
 "Change aspect ratio and extend the frame with AI" = "使用 AI 更改長寬比並擴展畫面";
 "Change to Match" = "更改以匹配";
 "Changes take effect after restarting Palmier Pro." = "更改將在重新啓動 Palmier Pro 後生效。";
@@ -159,7 +159,7 @@
 "Check for Updates…" = "檢查更新…";
 "Choose Audio" = "選擇音訊";
 "Choose a .cube LUT file" = "選擇 .cube LUT 檔案";
-"Choose a crop aspect" = "選擇裁剪長寬比";
+"Choose a crop aspect" = "選擇裁切長寬比";
 "Choose animation clip color" = "選擇動畫片段顏色";
 "Choose audio clip color" = "選擇音訊片段顏色";
 "Choose color" = "選擇顏色";
@@ -234,12 +234,12 @@
 "Creating…" = "正在建立…";
 "Credits" = "積分";
 "Credits cover AI generation and chat." = "積分可用於 AI 產生和對話。";
-"Crop" = "裁剪";
-"Crop applies to one clip at a time" = "每次只能裁剪一個片段";
+"Crop" = "裁切";
+"Crop applies to one clip at a time" = "每次只能裁切一個片段";
 "Curves" = "曲線";
-"Custom" = "自定義";
-"Custom Aspect Ratio" = "自定義長寬比";
-"Custom…" = "自定義…";
+"Custom" = "自訂";
+"Custom Aspect Ratio" = "自訂長寬比";
+"Custom…" = "自訂…";
 "Cut" = "剪下";
 "Dark" = "深色";
 "Dark appearance" = "深色外觀";
@@ -304,12 +304,12 @@
 "Duplicate Clip" = "複製片段";
 "Duplicate Clip to New Track" = "將片段複製到新軌道";
 "Duplicate Clips to New Track" = "將片段複製到新軌道";
-"Duration" = "時長";
-"Duration (%lld-%lld seconds)" = "時長（%lld–%lld 秒）";
+"Duration" = "持續時間";
+"Duration (%lld-%lld seconds)" = "持續時間（%lld–%lld 秒）";
 "Edge Rounding" = "邊緣圓角";
 "Edge Softness" = "邊緣柔化";
 "Edit" = "編輯";
-"Edit crop on canvas" = "在畫布上編輯裁剪";
+"Edit crop on canvas" = "在畫布上編輯裁切";
 "Edit doesn't support Lottie" = "編輯不支援 Lottie";
 "Edit doesn't support audio" = "編輯不支援音訊";
 "Edit doesn't support sequences" = "編輯不支援序列";
@@ -337,7 +337,7 @@
 "Export, %lld active, %lld waiting" = "匯出：%lld 個進行中，%lld 個等待中";
 "Exporting…" = "正在匯出…";
 "Export…" = "匯出…";
-"Exposure" = "曝光度";
+"Exposure" = "曝光";
 "Extra Large" = "特大";
 "Fade In" = "淡入";
 "Fade Out" = "淡出";
@@ -355,7 +355,7 @@
 "First Frame" = "首影格";
 "First-time sign-ups only" = "僅限首次註冊";
 "First/Last" = "首影格/尾影格";
-"Fit" = "適應";
+"Fit" = "適合";
 "Fix names & jargon" = "修正名稱和術語";
 "Flat" = "平面";
 "Flip" = "翻轉";
@@ -374,7 +374,7 @@
 "Full changelog" = "完整更新日誌";
 "Gain" = "增益";
 "Gamma" = "伽瑪";
-"General" = "通用";
+"General" = "一般";
 "Generate" = "產生";
 "Generate B-roll" = "產生補充鏡頭";
 "Generate Captions" = "產生字幕";
@@ -402,7 +402,7 @@
 "Get a notification when a generation finishes." = "在產生完成時接收通知。";
 "Get started" = "開始使用";
 "Getting the search model ready." = "正在準備搜尋模型。";
-"Glow" = "發光";
+"Glow" = "輝光";
 "Go to next keyframe" = "前往下一個關鍵影格";
 "Go to previous keyframe" = "前往上一個關鍵影格";
 "Grid 2×2" = "2×2 網格";
@@ -471,7 +471,7 @@
 "Let's take a quick tour of the workspace and what you can do." = "快速瞭解工作區及其功能。";
 "Lets external clients like Cursor, Claude Desktop, Claude Code, and Codex edit your timeline." = "允許 Cursor、Claude Desktop、Claude Code 和 Codex 等外部客戶端編輯時間軸。";
 "Levels" = "色階";
-"Library" = "資料庫";
+"Library" = "媒體庫";
 "Lift" = "提升";
 "Light" = "淺色";
 "Light appearance" = "淺色外觀";
@@ -550,7 +550,7 @@
 "Music" = "音樂";
 "My Projects" = "我的專案";
 "Name" = "名稱";
-"Nest settings discarded. Undo to restore." = "嵌套設定已丟棄。撤銷可恢復。";
+"Nest settings discarded. Undo to restore." = "嵌套設定已丟棄。還原可恢復。";
 "New" = "新建";
 "New Folder" = "新建資料夾";
 "New Project" = "新建專案";
@@ -617,8 +617,8 @@
 "Outline Color" = "描邊顏色";
 "Outline Width" = "描邊寬度";
 "Overlay" = "疊加";
-"Overline" = "上划線";
-"Padding" = "留白";
+"Overline" = "上劃線";
+"Padding" = "內邊距";
 "Palmier Project" = "Palmier 專案";
 "Palmier couldn't load this clip's source file. It may be missing, on an ejected drive, or unreadable." = "Palmier 無法載入此片段的來源檔案。檔案可能缺失、位於已推出的磁碟上或無法讀取。";
 "Palmier couldn't load this source file. It may be missing, on an ejected drive, or unreadable." = "Palmier 無法載入此來源檔案。檔案可能缺失、位於已推出的磁碟上或無法讀取。";
@@ -712,7 +712,7 @@
 "Restart Palmier Pro to apply this change." = "重新啓動 Palmier Pro 以套用此更改。";
 "Retry" = "重試";
 "Retry Download" = "重試下載";
-"Reveal in Finder" = "在“Finder”中顯示";
+"Reveal in Finder" = "在 Finder 中顯示";
 "Ripple Delete" = "波紋刪除";
 "Ripple Delete Gap" = "波紋刪除間隙";
 "Ripple Insert" = "波紋插入";
@@ -806,7 +806,7 @@
 "Smooth" = "平滑";
 "Soft Light" = "柔光";
 "Sound Effects" = "音效";
-"Source" = "源";
+"Source" = "來源";
 "Source Audio" = "源音訊";
 "Source Media" = "來源媒體";
 "Source Video" = "源影片";
@@ -826,7 +826,7 @@
 "Step Backward" = "後退一影格";
 "Step Forward" = "前進一影格";
 "Stop" = "停止";
-"Stop editing crop on canvas" = "停止在畫布上編輯裁剪";
+"Stop editing crop on canvas" = "停止在畫布上編輯裁切";
 "Stopped" = "已停止";
 "Storage" = "儲存空間";
 "Streaming through your Anthropic API key (BYOK)" = "正在透過你的 Anthropic API key 流式傳輸 (BYOK)";
@@ -869,7 +869,7 @@
 "This model cannot cap the output at 60 FPS." = "此模型無法將輸出限制為 60 FPS。";
 "This permanently removes %@." = "這將永久移除 %@。";
 "Three-Up" = "三畫面";
-"Threshold" = "閾值";
+"Threshold" = "臨界值";
 "Thumbnail Size" = "縮圖大小";
 "Timecode" = "時間碼";
 "Timeline" = "時間軸";
@@ -904,9 +904,9 @@
 "UPPERCASE" = "大寫";
 "Unable to open Claude Desktop" = "無法打開 Claude Desktop";
 "Unable to save skill" = "無法儲存技能";
-"Underline" = "下划線";
-"Undo" = "撤銷";
-"Undo (⌘Z)" = "撤銷 (⌘Z)";
+"Underline" = "下劃線";
+"Undo" = "還原";
+"Undo (⌘Z)" = "還原 (⌘Z)";
 "Ungroup Multicam" = "取消多機位分組";
 "Unlink" = "取消連結";
 "Untitled" = "未命名";
@@ -936,7 +936,7 @@
 "Version %@" = "版本 %@";
 "Vertical" = "垂直";
 "Vertical workspace layout" = "垂直工作區配置";
-"Vibrance" = "鮮艷度";
+"Vibrance" = "自然飽和度";
 "Video" = "影片";
 "Video Ref" = "影片參考";
 "Video has no audio track" = "影片沒有音訊軌道";
@@ -951,7 +951,7 @@
 "Voice Cleanup model not available" = "人聲清理模型不可用";
 "Voice Cleanup requires audio or video" = "人聲清理需要音訊或影片";
 "Volume" = "音量";
-"Warmth" = "暖度";
+"Warmth" = "色溫";
 "Watch Tutorial" = "觀看教學";
 "We may email you for follow-up questions" = "我們可能會透過電子郵件向你詢問後續問題";
 "We read every message and may reach out at %@." = "我們會閱讀每條訊息，並可能透過 %@ 與你聯繫。";
