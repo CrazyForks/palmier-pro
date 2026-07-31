@@ -36,28 +36,28 @@ extension InspectorView {
     /// Basic › Tone.
     private var toneControls: [EffectControl] {
         [
-            EffectControl(effectId: "color.exposure", paramKey: "ev"),
-            EffectControl(effectId: "color.contrast", paramKey: "amount"),
-            EffectControl(effectId: "color.highlightsShadows", paramKey: "highlights"),
-            EffectControl(effectId: "color.highlightsShadows", paramKey: "shadows"),
-            EffectControl(effectId: "color.blacksWhites", paramKey: "blacks"),
-            EffectControl(effectId: "color.blacksWhites", paramKey: "whites"),
+            EffectControl(effectId: "color.exposure", paramKey: "ev", label: L10n.string("Exposure")),
+            EffectControl(effectId: "color.contrast", paramKey: "amount", label: L10n.string("Contrast")),
+            EffectControl(effectId: "color.highlightsShadows", paramKey: "highlights", label: L10n.string("Highlights")),
+            EffectControl(effectId: "color.highlightsShadows", paramKey: "shadows", label: L10n.string("Shadows")),
+            EffectControl(effectId: "color.blacksWhites", paramKey: "blacks", label: L10n.string("Blacks")),
+            EffectControl(effectId: "color.blacksWhites", paramKey: "whites", label: L10n.string("Whites")),
         ]
     }
 
     /// Basic › White Balance.
     private var whiteBalanceControls: [EffectControl] {
         [
-            EffectControl(effectId: "color.temperature", paramKey: "temperature", gradient: AppTheme.Slider.tempGradient),
-            EffectControl(effectId: "color.temperature", paramKey: "tint", gradient: AppTheme.Slider.tintGradient),
+            EffectControl(effectId: "color.temperature", paramKey: "temperature", label: L10n.string("Temperature"), gradient: AppTheme.Slider.tempGradient),
+            EffectControl(effectId: "color.temperature", paramKey: "tint", label: L10n.string("Tint"), gradient: AppTheme.Slider.tintGradient),
         ]
     }
 
     /// Basic › Presence.
     private var presenceControls: [EffectControl] {
         [
-            EffectControl(effectId: "color.vibrance", paramKey: "amount"),
-            EffectControl(effectId: "color.saturation", paramKey: "amount"),
+            EffectControl(effectId: "color.vibrance", paramKey: "amount", label: L10n.string("Vibrance")),
+            EffectControl(effectId: "color.saturation", paramKey: "amount", label: L10n.string("Saturation")),
         ]
     }
 
@@ -426,9 +426,9 @@ extension InspectorView {
     @ViewBuilder
     private func wheelsContent(clips: [Clip]) -> some View {
         HStack(alignment: .top, spacing: AppTheme.Spacing.md) {
-            wheelControl("Lift", prefix: "lift", clips: clips)
-            wheelControl("Gamma", prefix: "gamma", clips: clips)
-            wheelControl("Gain", prefix: "gain", clips: clips)
+            wheelControl(L10n.string("Lift"), prefix: "lift", clips: clips)
+            wheelControl(L10n.string("Gamma"), prefix: "gamma", clips: clips)
+            wheelControl(L10n.string("Gain"), prefix: "gain", clips: clips)
         }
         .frame(maxWidth: .infinity)
     }

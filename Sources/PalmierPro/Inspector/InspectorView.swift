@@ -39,19 +39,38 @@ struct InspectorClipSelection {
 struct InspectorView: View {
     @Environment(EditorViewModel.self) var editor
 
-    enum ClipTab: String, Hashable {
-        case text = "Content"
-        case textAnimate = "Animate"
-        case video = "Video"
-        case effects = "Adjust"
-        case audio = "Audio"
-        case multicam = "Multicam"
-        case ai = "AI Edit"
+    enum ClipTab: Hashable {
+        case text
+        case textAnimate
+        case video
+        case effects
+        case audio
+        case multicam
+        case ai
+
+        var titleKey: String {
+            switch self {
+            case .text: L10n.key("Content")
+            case .textAnimate: L10n.key("Animate")
+            case .video: L10n.key("Video")
+            case .effects: L10n.key("Adjust")
+            case .audio: L10n.key("Audio")
+            case .multicam: L10n.key("Multicam")
+            case .ai: L10n.key("AI Edit")
+            }
+        }
     }
 
-    enum AssetTab: String, Hashable {
-        case details = "Details"
-        case ai = "AI Edit"
+    enum AssetTab: Hashable {
+        case details
+        case ai
+
+        var titleKey: String {
+            switch self {
+            case .details: L10n.key("Details")
+            case .ai: L10n.key("AI Edit")
+            }
+        }
     }
 
     @State private var preferredTab: ClipTab = .video
@@ -387,19 +406,19 @@ struct InspectorView: View {
 
     private func tabBar(_ tabs: [ClipTab], selectedTab: ClipTab?) -> some View {
         TitleTabBar(
-            titles: tabs.map(\.rawValue),
-            selected: selectedTab?.rawValue
+            titles: tabs.map(\.titleKey),
+            selected: selectedTab?.titleKey
         ) { title in
-            if let tab = tabs.first(where: { $0.rawValue == title }) { preferredTab = tab }
+            if let tab = tabs.first(where: { $0.titleKey == title }) { preferredTab = tab }
         }
     }
 
     private func assetTabBar(_ tabs: [AssetTab]) -> some View {
         TitleTabBar(
-            titles: tabs.map(\.rawValue),
-            selected: preferredAssetTab.rawValue
+            titles: tabs.map(\.titleKey),
+            selected: preferredAssetTab.titleKey
         ) { title in
-            if let tab = tabs.first(where: { $0.rawValue == title }) { preferredAssetTab = tab }
+            if let tab = tabs.first(where: { $0.titleKey == title }) { preferredAssetTab = tab }
         }
     }
 

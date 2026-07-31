@@ -79,6 +79,7 @@
 "Add to chat" = "Add to chat";
 "Add video to the timeline, then mark a range to score only part of it." = "Add video to the timeline, then mark a range to score only part of it.";
 "Added to %@" = "Added to %@";
+"Adjust" = "Adjust";
 "Adjust Range" = "Adjust Range";
 "Agent" = "Agent";
 "Agent Mode" = "Agent Mode";
@@ -90,6 +91,7 @@
 "Amount" = "Amount";
 "Analyzing media so you can search it." = "Analyzing media so you can search it.";
 "Angle" = "Angle";
+"Animate" = "Animate";
 "Animation" = "Animation";
 "Anthropic API Key" = "Anthropic API Key";
 "App version %@ and macOS %@ are included." = "App version %@ and macOS %@ are included.";
@@ -109,6 +111,7 @@
 "Background" = "Background";
 "Basic Correction" = "Basic Correction";
 "Beat detection failed. Check that the media file is reachable, then retry." = "Beat detection failed. Check that the media file is reachable, then retry.";
+"Blacks" = "Blacks";
 "Blend" = "Blend";
 "Blends denoised and original audio — lower this if voices sound thin or over-compressed." = "Blends denoised and original audio — lower this if voices sound thin or over-compressed.";
 "Blur" = "Blur";
@@ -202,7 +205,9 @@
 "Completed" = "Completed";
 "Connect an agent" = "Connect an agent";
 "Connect an external agent to inspect and edit the open Palmier Pro project." = "Connect an external agent to inspect and edit the open Palmier Pro project.";
+"Content" = "Content";
 "Continue" = "Continue";
+"Contrast" = "Contrast";
 "Copied" = "Copied";
 "Copy" = "Copy";
 "Copy Path" = "Copy Path";
@@ -270,6 +275,7 @@
 "Deselect & Reset Tool" = "Deselect & Reset Tool";
 "Destination" = "Destination";
 "Detail" = "Detail";
+"Details" = "Details";
 "Detect Beats" = "Detect Beats";
 "Detected %lld beats at %lld BPM." = "Detected %lld beats at %lld BPM.";
 "Detected %lld beats." = "Detected %lld beats.";
@@ -321,6 +327,7 @@
 "Export, %lld active, %lld waiting" = "Export, %lld active, %lld waiting";
 "Exporting…" = "Exporting…";
 "Export…" = "Export…";
+"Exposure" = "Exposure";
 "Extra Large" = "Extra Large";
 "Fade In" = "Fade In";
 "Fade Out" = "Fade Out";
@@ -354,6 +361,8 @@
 "Full Frame" = "Full Frame";
 "Full Screen" = "Full Screen";
 "Full changelog" = "Full changelog";
+"Gain" = "Gain";
+"Gamma" = "Gamma";
 "General" = "General";
 "Generate" = "Generate";
 "Generate B-roll" = "Generate B-roll";
@@ -392,6 +401,7 @@
 "Hide keyframe timeline" = "Hide keyframe timeline";
 "Highlight" = "Highlight";
 "Highlight Block" = "Highlight Block";
+"Highlights" = "Highlights";
 "Hold" = "Hold";
 "Hue" = "Hue";
 "Hue Curves" = "Hue Curves";
@@ -449,6 +459,7 @@
 "Lets external clients like Cursor, Claude Desktop, Claude Code, and Codex edit your timeline." = "Lets external clients like Cursor, Claude Desktop, Claude Code, and Codex edit your timeline.";
 "Levels" = "Levels";
 "Library" = "Library";
+"Lift" = "Lift";
 "Light" = "Light";
 "Lighten" = "Lighten";
 "Line Spacing" = "Line Spacing";
@@ -470,6 +481,7 @@
 "Local runs with Apple's SpeechAnalyzer. Cloud uses credits and a more accurate model with more capabilities." = "Local runs with Apple's SpeechAnalyzer. Cloud uses credits and a more accurate model with more capabilities.";
 "Log in for 250 free credits" = "Log in for 250 free credits";
 "Lottie" = "Lottie";
+"Luma" = "Luma";
 "Luminosity" = "Luminosity";
 "Lyrics (optional). [Verse] and [Chorus] tags supported." = "Lyrics (optional). [Verse] and [Chorus] tags supported.";
 "MCP" = "MCP";
@@ -698,6 +710,7 @@
 "Sample Key Color" = "Sample Key Color";
 "Sample Project" = "Sample Project";
 "Sample key color" = "Sample key color";
+"Sat" = "Sat";
 "Saturation" = "Saturation";
 "Save" = "Save";
 "Save As" = "Save As";
@@ -742,6 +755,7 @@
 "Settings…" = "Settings…";
 "Setup instructions" = "Setup instructions";
 "Shadow" = "Shadow";
+"Shadows" = "Shadows";
 "Share usage data" = "Share usage data";
 "Sharpen" = "Sharpen";
 "Shortcuts" = "Shortcuts";
@@ -817,6 +831,7 @@
 "System Language" = "System Language";
 "Take a screenshot of the preview and use it as a reference for generation. Particularly useful for creating AI transitions." = "Take a screenshot of the preview and use it as a reference for generation. Particularly useful for creating AI transitions.";
 "Target Language" = "Target Language";
+"Temperature" = "Temperature";
 "Temporary files" = "Temporary files";
 "Text" = "Text";
 "Text to Music" = "Text to Music";
@@ -842,6 +857,7 @@
 "Timeline" = "Timeline";
 "Timeline Format" = "Timeline Format";
 "Timeline colors" = "Timeline colors";
+"Tint" = "Tint";
 "Tints waveforms by speaker. Voices are matched across clips using cloud transcripts." = "Tints waveforms by speaker. Voices are matched across clips using cloud transcripts.";
 "Toggle Agent Panel" = "Toggle Agent Panel";
 "Tone" = "Tone";
@@ -900,6 +916,7 @@
 "Version" = "Version";
 "Version %@" = "Version %@";
 "Vertical" = "Vertical";
+"Vibrance" = "Vibrance";
 "Video" = "Video";
 "Video Ref" = "Video Ref";
 "Video Reframing: Select a clip/video, and use LTX 2.3 Reframe video model to change the aspect ratio" = "Video Reframing: Select a clip/video, and use LTX 2.3 Reframe video model to change the aspect ratio";
@@ -923,6 +940,7 @@
 "Welcome to Palmier Pro, %@" = "Welcome to Palmier Pro, %@";
 "What's New in v%@" = "What's New in v%@";
 "White Balance" = "White Balance";
+"Whites" = "Whites";
 "Whole timeline · %@" = "Whole timeline · %@";
 "Width" = "Width";
 "Word Cycle" = "Word Cycle";
