@@ -415,9 +415,9 @@
 "Hide keyframe timeline" = "Ocultar línea de tiempo de fotogramas clave";
 "Highlight" = "Resaltar";
 "Highlight Block" = "Bloque resaltado";
-"Highlights" = "Iluminaciones";
+"Highlights" = "Zonas claras";
 "Hold" = "Mantener";
-"Hue" = "Tono";
+"Hue" = "Matiz";
 "Hue Curves" = "Curvas de tono";
 "Identify Speakers" = "Identificar hablantes";
 "Identifying…" = "Identificando…";
@@ -773,7 +773,7 @@
 "Shadow" = "Sombra";
 "Shadows" = "Sombras";
 "Share usage data" = "Compartir datos de uso";
-"Sharpen" = "Enfocar";
+"Sharpen" = "Nitidez";
 "Shortcuts" = "Funciones rápidas";
 "Show in Finder" = "Mostrar en el Finder";
 "Show keyframe timeline" = "Mostrar línea de tiempo de fotogramas clave";
@@ -936,7 +936,7 @@
 "Version %@" = "Versión %@";
 "Vertical" = "Vertical";
 "Vertical workspace layout" = "Disposición vertical del espacio de trabajo";
-"Vibrance" = "Intensidad";
+"Vibrance" = "Vivacidad";
 "Video" = "Vídeo";
 "Video Ref" = "Ref. de vídeo";
 "Video has no audio track" = "El vídeo no tiene pista de audio";
