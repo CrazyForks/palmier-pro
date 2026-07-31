@@ -93,7 +93,7 @@
 "Angle" = "角度";
 "Animate" = "动画";
 "Animation" = "动画";
-"Anthropic API Key" = "Anthropic API 密钥";
+"Anthropic API Key" = "Anthropic API key";
 "App version %@ and macOS %@ are included." = "将包含 App 版本 %@ 和 macOS %@。";
 "Appearance" = "外观";
 "Apply" = "应用";
@@ -151,7 +151,7 @@
 "Changes take effect after restarting Palmier Pro." = "更改将在重新启动 Palmier Pro 后生效。";
 "Changing the ratio preserves the shorter edge." = "更改比例时会保留较短边。";
 "Chat history" = "对话历史";
-"Chat with your agent! It can generate content, edit clips, organize your assets, and much more. Start by signing in, or bring your own Anthropic API key." = "与 Agent 对话。它可以生成内容、编辑片段、整理素材等。登录即可开始，也可以使用自己的 Anthropic API 密钥。";
+"Chat with your agent! It can generate content, edit clips, organize your assets, and much more. Start by signing in, or bring your own Anthropic API key." = "与 Agent 对话。它可以生成内容、编辑片段、整理素材等。登录即可开始，也可以使用自己的 Anthropic API key。";
 "Check for Updates…" = "检查更新…";
 "Choose Audio" = "选择音频";
 "Choose a .cube LUT file" = "选择 .cube LUT 文件";
@@ -384,7 +384,7 @@
 "Generation complete" = "生成完成";
 "Generation in progress" = "正在生成";
 "Generation panel" = "生成面板";
-"Get Anthropic API key" = "获取 Anthropic API 密钥";
+"Get Anthropic API key" = "获取 Anthropic API key";
 "Get a notification when a generation finishes." = "在生成完成时接收通知。";
 "Get started" = "开始使用";
 "Getting the search model ready." = "正在准备搜索模型。";
@@ -664,7 +664,7 @@
 "Remaining" = "剩余";
 "Remove" = "移除";
 "Remove %@" = "移除 %@";
-"Remove API key" = "移除 API 密钥";
+"Remove API key" = "移除 API key";
 "Remove Dead Air" = "移除无声部分";
 "Remove background sound and keep speech" = "移除背景声音并保留语音";
 "Remove filler words" = "移除填充词";
@@ -812,7 +812,7 @@
 "Stop editing crop on canvas" = "停止在画布上编辑裁剪";
 "Stopped" = "已停止";
 "Storage" = "存储空间";
-"Streaming through your Anthropic API key (BYOK)" = "正在通过你的 Anthropic API 密钥流式传输 (BYOK)";
+"Streaming through your Anthropic API key (BYOK)" = "正在通过你的 Anthropic API key 流式传输 (BYOK)";
 "Strikethrough" = "删除线";
 "Style" = "样式";
 "Style instructions (optional). e.g., warm and slow, British accent." = "样式说明（可选），例如温暖舒缓、英式口音。";
@@ -910,7 +910,7 @@
 "Use as first frame or reference" = "用作首帧或参考";
 "Use for non-English or mixed-language audio." = "用于非英语或混合语言音频。";
 "Use trimmed portion only" = "仅使用修剪部分";
-"Use your own API key for AI chat. Stored in the macOS Keychain." = "使用自己的 API 密钥进行 AI 对话。密钥存储在 macOS 钥匙串中。";
+"Use your own API key for AI chat. Stored in the macOS Keychain." = "使用自己的 API key 进行 AI 对话。它存储在 macOS 钥匙串中。";
 "Uses selected clips when available, otherwise all captionable audio. Choose a track to limit captions." = "有选中片段时使用所选片段，否则使用所有可添加字幕的音频。选择轨道可限制字幕范围。";
 "Uses the whole timeline by default. Mark a range on the timeline to score only that span." = "默认使用整个时间线。在时间线上标记范围可仅为该区段配乐。";
 "Version" = "版本";
@@ -967,5 +967,5 @@
 "lowercase" = "小写";
 "or use your own Anthropic key" = "或使用你自己的 Anthropic 密钥";
 "result" = "结果";
-"using API key" = "使用 API 密钥";
+"using API key" = "使用 API key";
 "you@example.com — so we can reply" = "you@example.com，以便我们回复";
