@@ -679,6 +679,7 @@
 "Resolution" = "分辨率";
 "Resolution must be at least 2 × 2 pixels." = "分辨率必须至少为 2 × 2 像素。";
 "Resolution must not exceed 8192 pixels on either edge." = "任一边的分辨率不得超过 8192 像素。";
+"Restart Palmier Pro" = "重新启动 Palmier Pro";
 "Restart Palmier Pro to apply this change." = "重新启动 Palmier Pro 以应用此更改。";
 "Retry" = "重试";
 "Retry Download" = "重试下载";
