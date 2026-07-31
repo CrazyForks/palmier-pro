@@ -62,6 +62,7 @@
 "Add Text" = "添加文本";
 "Add an email above to enable a reply" = "在上方添加電子郵件以接收回覆";
 "Add captions to my timeline" = "為我的時間軸添加字幕";
+"Add credits" = "添加積分";
 "Add credits to use Cloud." = "添加積分以使用雲端。";
 "Add emoji" = "添加表情符號";
 "Add generated audio to an audio track at this clip's start." = "在此片段開頭將產生的音訊添加到音訊軌道。";
@@ -115,6 +116,7 @@
 "Browse Community Skills ↗" = "瀏覽社區技能 ↗";
 "Buy" = "購買";
 "Buy $%lld" = "購買 $%lld";
+"Buy more" = "購買更多";
 "Cache" = "快取";
 "Cached — no credits used." = "已快取，未使用積分。";
 "Can't delete every timeline — the project needs at least one." = "無法刪除所有時間軸。專案至少需要一條時間軸。";
@@ -645,6 +647,7 @@
 "Relink Folder…" = "重新連結資料夾…";
 "Relinked %lld of %lld offline clips." = "已重新連結 %lld/%lld 個離線片段。";
 "Relink…" = "重新連結…";
+"Remaining" = "剩餘";
 "Remove" = "移除";
 "Remove %@" = "移除 %@";
 "Remove API key" = "移除 API 金鑰";
@@ -877,6 +880,7 @@
 "Upgrade to %@" = "升級到 %@";
 "Upgrade to Max" = "升級到 Max";
 "Upgrade to Pro" = "升級到 Pro";
+"Upgrade to add credits" = "升級以添加積分";
 "Uploading…" = "正在上傳…";
 "Upscale" = "放大";
 "Upscale source media" = "放大來源媒體";

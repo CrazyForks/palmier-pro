@@ -62,6 +62,7 @@
 "Add Text" = "添加文本";
 "Add an email above to enable a reply" = "在上方添加电子邮件以接收回复";
 "Add captions to my timeline" = "为我的时间线添加字幕";
+"Add credits" = "添加积分";
 "Add credits to use Cloud." = "添加积分以使用云端。";
 "Add emoji" = "添加表情符号";
 "Add generated audio to an audio track at this clip's start." = "在此片段开头将生成的音频添加到音频轨道。";
@@ -115,6 +116,7 @@
 "Browse Community Skills ↗" = "浏览社区技能 ↗";
 "Buy" = "购买";
 "Buy $%lld" = "购买 $%lld";
+"Buy more" = "购买更多";
 "Cache" = "缓存";
 "Cached — no credits used." = "已缓存，未使用积分。";
 "Can't delete every timeline — the project needs at least one." = "无法删除所有时间线。项目至少需要一条时间线。";
@@ -645,6 +647,7 @@
 "Relink Folder…" = "重新链接文件夹…";
 "Relinked %lld of %lld offline clips." = "已重新链接 %lld/%lld 个离线片段。";
 "Relink…" = "重新链接…";
+"Remaining" = "剩余";
 "Remove" = "移除";
 "Remove %@" = "移除 %@";
 "Remove API key" = "移除 API 密钥";
@@ -877,6 +880,7 @@
 "Upgrade to %@" = "升级到 %@";
 "Upgrade to Max" = "升级到 Max";
 "Upgrade to Pro" = "升级到 Pro";
+"Upgrade to add credits" = "升级以添加积分";
 "Uploading…" = "正在上传…";
 "Upscale" = "放大";
 "Upscale source media" = "放大源媒体";
