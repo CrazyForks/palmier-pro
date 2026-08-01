@@ -413,11 +413,12 @@ final class AgentService {
                 }
 
                 dropEmptyAssistantTurn(id: assistantID)
-                if Task.isCancelled { break loop }
                 if stopReason == .toolUse {
                     await runPendingToolUses(assistantID: assistantID, conversationID: conversationID)
+                    if Task.isCancelled { break loop }
                     continue loop
                 }
+                if Task.isCancelled { break loop }
                 break loop
             } catch is CancellationError {
                 dropEmptyAssistantTurn(id: assistantID)
