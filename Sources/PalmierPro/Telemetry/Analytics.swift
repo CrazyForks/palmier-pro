@@ -31,6 +31,7 @@ enum Analytics {
         case agentSessionStarted = "agent session started"
         case agentToolCalled = "agent tool called"
         case mcpSessionActivated = "mcp session activated"
+        case onboardingCompleted = "onboarding completed"
     }
 
     #if PRODUCTION_TELEMETRY
@@ -146,6 +147,7 @@ enum Analytics {
             Event.agentSessionStarted.rawValue,
             Event.agentToolCalled.rawValue,
             Event.mcpSessionActivated.rawValue,
+            Event.onboardingCompleted.rawValue,
             "$identify",
         ])
     }
@@ -206,13 +208,17 @@ enum Analytics {
             "format",
             "mode",
             "model",
+            "interests",
             "project_id",
             "resolution",
+            "roles",
             "source",
             "status",
+            "survey_version",
             "timeline_changed",
             "tool_name",
             "tool_duration_seconds",
+            "video_types",
         ])
     }
 
