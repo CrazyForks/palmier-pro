@@ -63,8 +63,18 @@ final class ToolExecutor {
         source: String = "agent",
         sessionID: String? = nil
     ) async -> ToolResult {
-        let started = ContinuousClock.now
         let origin = Analytics.Origin(source: source, sessionID: sessionID ?? analyticsSessionID)
+        return await Analytics.$origin.withValue(origin) {
+            await executeWithOrigin(name: name, args: args, origin: origin)
+        }
+    }
+
+    private func executeWithOrigin(
+        name: String,
+        args: [String: Any],
+        origin: Analytics.Origin
+    ) async -> ToolResult {
+        let started = ContinuousClock.now
         guard let tool = ToolName(rawValue: name) else {
             let result = ToolResult.error("Unknown tool: \(name)")
             captureToolAnalytics(
@@ -130,9 +140,7 @@ final class ToolExecutor {
         )
         do {
             let resolved = try expandingIdPrefixes(in: args, editor: editor)
-            result = try await Analytics.$origin.withValue(origin) {
-                try await run(tool, editor, resolved)
-            }
+            result = try await run(tool, editor, resolved)
         } catch let err as ToolError {
             result = .error(err.message)
         } catch {
@@ -253,7 +261,7 @@ final class ToolExecutor {
                 options: .regularExpression
             )
             .replacingOccurrences(
-                of: #"/(?:Users|Volumes|private|tmp)/[^\s,\"']+"#,
+                of: #"/(?:Users|Volumes|private|tmp)(?:/[^\r\n]*)?"#,
                 with: "[path redacted]",
                 options: .regularExpression
             )

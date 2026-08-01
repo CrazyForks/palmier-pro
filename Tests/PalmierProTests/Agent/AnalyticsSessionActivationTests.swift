@@ -60,13 +60,19 @@ struct AnalyticsSessionActivationTests {
 
     @Test @MainActor func toolErrorMessageOmitsAbsolutePathsAndURLs() {
         let result = ToolResult.error(
-            "Import failed at /Users/editor/Movies/secret.mov from https://example.com/private"
+            """
+            Import failed at /Users/editor/Library/Application Support/secret.mov
+            Download failed from https://example.com/private
+            Retry the operation.
+            """
         )
 
         let message = ToolExecutor.sanitizedToolErrorMessage(result)
 
         #expect(message?.contains("Import failed") == true)
+        #expect(message?.contains("Application Support") == false)
         #expect(message?.contains("secret.mov") == false)
         #expect(message?.contains("example.com") == false)
+        #expect(message?.contains("Retry the operation.") == true)
     }
 }
