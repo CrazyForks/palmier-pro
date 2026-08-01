@@ -121,6 +121,7 @@ private struct OnboardingFlowLayout: SwiftUI.Layout {
 struct OnboardingAccountStep: View {
     @Bindable var account: AccountService
     let sampleState: OnboardingSampleState
+    let signInFailed: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xxl) {
@@ -156,7 +157,7 @@ struct OnboardingAccountStep: View {
         if sampleState == .failed {
             return L10n.string("Sample project couldn’t be opened. Try again.")
         }
-        if account.lastError != nil {
+        if signInFailed, !account.isSignedIn {
             return L10n.string("Sign-in couldn’t be completed. Try again.")
         }
         return nil

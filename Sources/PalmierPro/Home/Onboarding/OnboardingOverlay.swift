@@ -4,6 +4,7 @@ struct OnboardingOverlay: View {
     @Bindable var onboarding: OnboardingStore
 
     @Bindable private var account = AccountService.shared
+    @State private var signInFailed = false
 
     var body: some View {
         ZStack {
@@ -67,7 +68,11 @@ struct OnboardingOverlay: View {
         case .profile:
             OnboardingProfileStep(onboarding: onboarding)
         case .account:
-            OnboardingAccountStep(account: account, sampleState: onboarding.sampleState)
+            OnboardingAccountStep(
+                account: account,
+                sampleState: onboarding.sampleState,
+                signInFailed: signInFailed
+            )
         }
     }
 
@@ -83,7 +88,11 @@ struct OnboardingOverlay: View {
             case .profile:
                 primaryButton(L10n.string("Continue"), action: onboarding.submitProfile)
             case .account:
-                secondaryButton(L10n.string("Skip"), action: onboarding.complete)
+                secondaryButton(
+                    L10n.string("Skip"),
+                    action: onboarding.skip,
+                    disabled: account.isSigningIn
+                )
                 accountAction
             }
         }
@@ -111,10 +120,14 @@ struct OnboardingOverlay: View {
             .disabled(isBusy)
     }
 
-    private func secondaryButton(_ label: String, action: @escaping () -> Void) -> some View {
+    private func secondaryButton(
+        _ label: String,
+        action: @escaping () -> Void,
+        disabled: Bool? = nil
+    ) -> some View {
         Button(label, action: action)
             .buttonStyle(.capsule(.secondary, size: .regular))
-            .disabled(isBusy)
+            .disabled(disabled ?? isBusy)
     }
 
     private var isBusy: Bool {
@@ -122,6 +135,10 @@ struct OnboardingOverlay: View {
     }
 
     private func signIn() {
-        Task { await account.signInWithGoogle() }
+        Task {
+            signInFailed = false
+            await account.signInWithGoogle()
+            signInFailed = !account.isSignedIn && account.lastError != nil
+        }
     }
 }

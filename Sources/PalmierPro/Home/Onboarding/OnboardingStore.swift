@@ -50,6 +50,13 @@ final class OnboardingStore {
         isComplete = true
     }
 
+    func skip() {
+        sampleTask?.cancel()
+        sampleTask = nil
+        sampleState = .idle
+        complete()
+    }
+
     func selection(for question: OnboardingQuestion) -> Set<String> {
         selections[question, default: []]
     }
@@ -73,8 +80,12 @@ final class OnboardingStore {
                     sampleState = .failed
                     return
                 }
+                try Task.checkCancellation()
                 try await AppState.shared.openSample(slug: sample.slug, startTutorial: true)
+                try Task.checkCancellation()
                 complete()
+            } catch is CancellationError {
+                sampleState = .idle
             } catch {
                 Log.app.error("onboarding sample failed to open: \(error.localizedDescription)")
                 sampleState = .failed
