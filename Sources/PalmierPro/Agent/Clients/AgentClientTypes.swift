@@ -74,6 +74,7 @@ struct AgentRequestContext: Equatable, Sendable {
 enum AnthropicStreamEvent: Sendable {
     case thinkingDelta(String)
     case thinkingSignature(String)
+    case redactedThinking(String)
     case textDelta(String)
     case toolUseComplete(id: String, name: String, inputJSON: String)
     case messageStop(stopReason: AnthropicStopReason)
@@ -144,10 +145,15 @@ enum AnthropicSSE {
             case "content_block_start":
                 if let index = event["index"] as? Int,
                    let block = event["content_block"] as? [String: Any],
-                   block["type"] as? String == "tool_use",
-                   let id = block["id"] as? String,
-                   let name = block["name"] as? String {
-                    pendingTools[index] = (id, name, "")
+                   let blockType = block["type"] as? String {
+                    if blockType == "tool_use",
+                       let id = block["id"] as? String,
+                       let name = block["name"] as? String {
+                        pendingTools[index] = (id, name, "")
+                    } else if blockType == "redacted_thinking",
+                              let data = block["data"] as? String {
+                        continuation.yield(.redactedThinking(data))
+                    }
                 }
 
             case "content_block_delta":

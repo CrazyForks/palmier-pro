@@ -401,6 +401,8 @@ final class AgentService {
                         appendThinkingDelta(chunk, toAssistant: assistantID)
                     case .thinkingSignature(let signature):
                         appendThinkingSignature(signature, toAssistant: assistantID)
+                    case .redactedThinking(let data):
+                        appendRedactedThinking(data, toAssistant: assistantID)
                     case .textDelta(let chunk):
                         appendTextDelta(chunk, toAssistant: assistantID)
                     case .toolUseComplete(let id, let name, let inputJSON):
@@ -410,6 +412,8 @@ final class AgentService {
                     }
                 }
 
+                dropEmptyAssistantTurn(id: assistantID)
+                if Task.isCancelled { break loop }
                 if stopReason == .toolUse {
                     await runPendingToolUses(assistantID: assistantID, conversationID: conversationID)
                     continue loop
@@ -434,9 +438,10 @@ final class AgentService {
         messages.firstIndex { $0.id == id && $0.role == .assistant }
     }
 
-    private func dropEmptyAssistantTurn(id: UUID) {
-        guard let index = assistantMessageIndex(id: id),
-              messages[index].blocks.isEmpty else { return }
+    func dropEmptyAssistantTurn(id: UUID) {
+        guard let index = assistantMessageIndex(id: id) else { return }
+        messages[index].blocks.removeAll { Self.contentBlockJSON($0) == nil }
+        guard messages[index].blocks.isEmpty else { return }
         messages.remove(at: index)
     }
 
@@ -462,6 +467,11 @@ final class AgentService {
         } else {
             messages[index].blocks.append(.thinking(text: "", signature: chunk))
         }
+    }
+
+    private func appendRedactedThinking(_ data: String, toAssistant id: UUID) {
+        guard let index = assistantMessageIndex(id: id) else { return }
+        messages[index].blocks.append(.redactedThinking(data: data))
     }
 
     private func appendTextDelta(_ chunk: String, toAssistant id: UUID) {
@@ -636,11 +646,13 @@ final class AgentService {
         return out
     }
 
-    private static func contentBlockJSON(_ block: AgentContentBlock) -> [String: Any]? {
+    static func contentBlockJSON(_ block: AgentContentBlock) -> [String: Any]? {
         switch block {
         case .thinking(let text, let signature):
             guard !signature.isEmpty else { return nil }
             return ["type": "thinking", "thinking": text, "signature": signature]
+        case .redactedThinking(let data):
+            return ["type": "redacted_thinking", "data": data]
         case .text(let s):
             guard !s.isEmpty else { return nil }
             return ["type": "text", "text": s]
@@ -694,13 +706,14 @@ struct AgentMessage: Identifiable, Codable {
 
 enum AgentContentBlock: Codable {
     case thinking(text: String, signature: String)
+    case redactedThinking(data: String)
     case text(String)
     case toolUse(id: String, name: String, inputJSON: String)
     case toolResult(toolUseId: String, content: [ToolResult.Block], isError: Bool)
 
-    private enum Kind: String, Codable { case thinking, text, toolUse, toolResult }
+    private enum Kind: String, Codable { case thinking, redactedThinking, text, toolUse, toolResult }
     private enum CodingKeys: String, CodingKey {
-        case kind, text, signature, id, name, input, toolUseId, content, isError
+        case kind, text, signature, data, id, name, input, toolUseId, content, isError
     }
 
     init(from decoder: Decoder) throws {
@@ -711,6 +724,8 @@ enum AgentContentBlock: Codable {
                 text: try c.decode(String.self, forKey: .text),
                 signature: try c.decode(String.self, forKey: .signature)
             )
+        case .redactedThinking:
+            self = .redactedThinking(data: try c.decode(String.self, forKey: .data))
         case .text:
             self = .text(try c.decode(String.self, forKey: .text))
         case .toolUse:
@@ -735,6 +750,9 @@ enum AgentContentBlock: Codable {
             try c.encode(Kind.thinking, forKey: .kind)
             try c.encode(text, forKey: .text)
             try c.encode(signature, forKey: .signature)
+        case .redactedThinking(let data):
+            try c.encode(Kind.redactedThinking, forKey: .kind)
+            try c.encode(data, forKey: .data)
         case .text(let s):
             try c.encode(Kind.text, forKey: .kind)
             try c.encode(s, forKey: .text)

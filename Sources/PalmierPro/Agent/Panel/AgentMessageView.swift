@@ -72,6 +72,8 @@ struct AgentMessageView: View {
                     if !text.isEmpty {
                         ThinkingSummaryView(text: text)
                     }
+                case .redactedThinking:
+                    EmptyView()
                 case .text(let text):
                     MarkdownText(text: text)
                         .frame(maxWidth: .infinity, alignment: .leading)
