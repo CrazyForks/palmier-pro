@@ -157,6 +157,16 @@ if [ -d "$RES_BUNDLE/Images" ]; then
   cp -R "$RES_BUNDLE/Images" "$APP/Contents/Resources/"
 fi
 # .lproj folders must live at the bundle root for macOS to resolve them.
+# Incremental SwiftPM builds can leave removed locales behind — prune those first.
+SRC_LOCALIZATION="$ROOT/Sources/PalmierPro/Resources/Localization"
+for locale_dir in "$RES_BUNDLE"/*.lproj; do
+  [ -d "$locale_dir" ] || continue
+  locale_name="$(basename "$locale_dir")"
+  if [ ! -d "$SRC_LOCALIZATION/$locale_name" ]; then
+    echo "==> removing stale localization $locale_name from resource bundle"
+    rm -rf "$locale_dir"
+  fi
+done
 LOCALIZATION_COUNT=0
 for locale_dir in "$RES_BUNDLE"/*.lproj; do
   [ -d "$locale_dir" ] || continue
