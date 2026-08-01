@@ -248,8 +248,8 @@ extension EditorViewModel {
         settings: SilenceRemovalSettings
     ) -> [Range<Double>] {
         let mask: [Bool]?
-        if let group = multicamGroup(of: clip),
-           let member = group.member(mediaRef: clip.mediaRef) {
+        if let group = multicamGroup(of: clip) {
+            guard let member = group.member(mediaRef: clip.mediaRef) else { return [] }
             let key = DeadAirMaskCache.Key(
                 group: group,
                 member: member,

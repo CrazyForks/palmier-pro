@@ -206,6 +206,34 @@ struct MulticamTests {
         #expect(builds == 2)
     }
 
+    @Test func orphanedMulticamClipDoesNotFallBackToSingleMediaMask() {
+        let group = MulticamSource(name: "Podcast", members: [
+            .init(
+                mediaRef: "member",
+                kind: .mic,
+                angleLabel: "member",
+                sync: .init(offsetSeconds: 0, confidence: 1)
+            ),
+        ])
+        var clip = Fixtures.clip(
+            mediaRef: "orphan",
+            mediaType: .audio,
+            start: 0,
+            duration: 30
+        )
+        clip.multicamGroupId = group.id
+        let harness = ToolHarness(timeline: Fixtures.timeline(tracks: [
+            Fixtures.audioTrack(clips: [clip]),
+        ]))
+        harness.editor.multicamGroups = [group]
+        harness.editor.mediaVisualCache.speech.installQuietNonSpeechMask(
+            [Bool](repeating: true, count: 40),
+            for: clip.mediaRef
+        )
+
+        #expect(harness.editor.deadAirSourceRanges(for: clip, settings: .default).isEmpty)
+    }
+
     @Test func lagSearchKeepsHalfOverlap() {
         // 3:35 files (~21500 hops) with a 240s window: without the clamp, ±220s lags
         // with seconds of overlap were legal — the false-peak that doubled a group's length.
