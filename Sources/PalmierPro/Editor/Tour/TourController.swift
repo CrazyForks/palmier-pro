@@ -156,7 +156,10 @@ final class TourController {
 
     private func selectAIEditClip(in editor: EditorViewModel) {
         guard let clipId = Self.firstAIEditVisualClipId(in: editor) else { return }
-        editor.selectPreviewClip(clipId)
+        // Replace selection so a prior multi-select cannot hide AI Edit.
+        editor.selectedGap = nil
+        editor.selectedTimelineRange = nil
+        editor.selectedClipIds = editor.expandToLinkGroup([clipId])
     }
 
     // MARK: - Step list
