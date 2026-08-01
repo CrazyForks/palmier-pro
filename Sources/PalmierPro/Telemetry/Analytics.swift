@@ -45,6 +45,7 @@ enum Analytics {
         case exportFailed = "export failed"
         case agentSessionStarted = "agent session started"
         case agentToolCalled = "agent tool called"
+        case agentStarterPromptClicked = "agent starter prompt clicked"
         case editorEditCommitted = "editor edit committed"
         case generationSubmitted = "generation submitted"
         case mcpSessionActivated = "mcp session activated"
@@ -222,6 +223,7 @@ enum Analytics {
             "resolution",
             "session_id",
             "source",
+            "starter_prompt",
             "status",
             "timeline_changed",
             "tool_name",
