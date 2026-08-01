@@ -6,6 +6,21 @@ import PostHog
 enum Analytics {
     typealias Payload = [String: Any]
 
+    struct Origin: Sendable {
+        let source: String
+        let sessionID: String
+    }
+
+    /// Attributes synchronous work started by the agent or an MCP client.
+    @TaskLocal static var origin: Origin?
+
+    static let manualSource = "manual"
+
+    static func originProperties() -> Payload {
+        guard let origin else { return ["source": manualSource] }
+        return ["source": origin.source, "session_id": origin.sessionID]
+    }
+
     struct SessionActivation {
         private(set) var isActivated: Bool
 
@@ -30,6 +45,7 @@ enum Analytics {
         case exportFailed = "export failed"
         case agentSessionStarted = "agent session started"
         case agentToolCalled = "agent tool called"
+        case generationSubmitted = "generation submitted"
         case mcpSessionActivated = "mcp session activated"
     }
 
@@ -145,6 +161,7 @@ enum Analytics {
             Event.exportFailed.rawValue,
             Event.agentSessionStarted.rawValue,
             Event.agentToolCalled.rawValue,
+            Event.generationSubmitted.rawValue,
             Event.mcpSessionActivated.rawValue,
             "$identify",
         ])
@@ -201,13 +218,17 @@ enum Analytics {
         Set([
             "active_day",
             "client_info",
+            "error_message",
             "export_duration_seconds",
             "failure_reason",
             "format",
+            "generation_type",
             "mode",
             "model",
+            "output_count",
             "project_id",
             "resolution",
+            "session_id",
             "source",
             "status",
             "timeline_changed",
