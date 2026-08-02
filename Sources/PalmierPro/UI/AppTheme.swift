@@ -426,11 +426,10 @@ enum AppTheme {
 
     enum EditorPanel {
         static let defaultWidth: CGFloat = 340
-        static let minimumWidth: CGFloat = 240
+        static let minimumWidth: CGFloat = 300
         static let labelColumnWidth: CGFloat = 88
         static let rowMinHeight: CGFloat = 22
         static let groupHeaderHeight: CGFloat = 28
-        static let tabBarHeight: CGFloat = 34
         static let fieldMinHeight: CGFloat = 22
         static let numericFieldWidth: CGFloat = 56
         static let compactNumericFieldWidth: CGFloat = 36
