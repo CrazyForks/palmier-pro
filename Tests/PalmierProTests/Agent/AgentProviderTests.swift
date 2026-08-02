@@ -7,7 +7,7 @@ struct AgentProviderTests {
     @Test func modelCatalogContainsExactlySupportedModels() {
         #expect(AgentModel.allCases.map { [$0.rawValue, $0.displayName] } == [
             ["claude-sonnet-5", "Sonnet 5"],
-            ["claude-opus-4-8", "Opus 4.8"],
+            ["claude-opus-5", "Opus 5"],
             ["claude-fable-5", "Fable 5"],
             ["gpt-5.6-luna", "GPT-5.6 Luna"],
             ["gpt-5.6-terra", "GPT-5.6 Terra"],
@@ -15,6 +15,7 @@ struct AgentProviderTests {
         ])
         #expect(AgentModel.allCases.allSatisfy { $0.maxOutputTokens == 64_000 })
         #expect(AgentModel.defaultModel == .terra)
+        #expect(AgentModel.persisted("claude-opus-4-8") == .opus5)
         #expect(AgentModel.allCases.map(\.provider) == [
             .anthropic, .anthropic, .anthropic, .openAI, .openAI, .openAI,
         ])

@@ -71,7 +71,7 @@ enum AgentReasoningEffort: String, CaseIterable, Sendable {
 
 enum AgentModel: String, CaseIterable, Codable, Sendable {
     case sonnet5 = "claude-sonnet-5"
-    case opus48 = "claude-opus-4-8"
+    case opus5 = "claude-opus-5"
     case fable5 = "claude-fable-5"
     case luna = "gpt-5.6-luna"
     case terra = "gpt-5.6-terra"
@@ -82,7 +82,7 @@ enum AgentModel: String, CaseIterable, Codable, Sendable {
     var displayName: String {
         switch self {
         case .sonnet5: "Sonnet 5"
-        case .opus48: "Opus 4.8"
+        case .opus5: "Opus 5"
         case .fable5: "Fable 5"
         case .luna: "GPT-5.6 Luna"
         case .terra: "GPT-5.6 Terra"
@@ -92,7 +92,7 @@ enum AgentModel: String, CaseIterable, Codable, Sendable {
 
     var provider: AgentProvider {
         switch self {
-        case .sonnet5, .opus48, .fable5: .anthropic
+        case .sonnet5, .opus5, .fable5: .anthropic
         case .luna, .terra, .sol: .openAI
         }
     }
@@ -101,6 +101,10 @@ enum AgentModel: String, CaseIterable, Codable, Sendable {
 
     var requiresPaidHostedPlan: Bool {
         self == .fable5 || self == .sol
+    }
+
+    static func persisted(_ rawValue: String) -> AgentModel? {
+        rawValue == "claude-opus-4-8" ? .opus5 : AgentModel(rawValue: rawValue)
     }
 
     var supportedReasoningEfforts: [AgentReasoningEffort] {

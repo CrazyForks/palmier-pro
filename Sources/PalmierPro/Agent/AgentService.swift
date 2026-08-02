@@ -13,7 +13,7 @@ final class AgentService {
     init(userDefaults: UserDefaults = .standard) {
         self.userDefaults = userDefaults
         self.model = userDefaults.string(forKey: "agentModel")
-            .flatMap(AgentModel.init(rawValue:))
+            .flatMap(AgentModel.persisted)
             ?? .defaultModel
         self.reasoningEfforts = Dictionary(uniqueKeysWithValues: AgentModel.allCases.map {
             ($0, AgentReasoningPreferences.effort(for: $0, defaults: userDefaults))
