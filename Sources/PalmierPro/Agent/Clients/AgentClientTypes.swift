@@ -77,7 +77,7 @@ enum AgentModel: String, CaseIterable, Codable, Sendable {
     case terra = "gpt-5.6-terra"
     case sol = "gpt-5.6-sol"
 
-    static let defaultModel: AgentModel = .sonnet5
+    static let defaultModel: AgentModel = .terra
 
     var displayName: String {
         switch self {

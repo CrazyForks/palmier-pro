@@ -14,7 +14,7 @@ struct AgentProviderTests {
             ["gpt-5.6-sol", "GPT-5.6 Sol"],
         ])
         #expect(AgentModel.allCases.allSatisfy { $0.maxOutputTokens == 64_000 })
-        #expect(AgentModel.defaultModel == .sonnet5)
+        #expect(AgentModel.defaultModel == .terra)
         #expect(AgentModel.allCases.map(\.provider) == [
             .anthropic, .anthropic, .anthropic, .openAI, .openAI, .openAI,
         ])
