@@ -445,6 +445,7 @@ enum AppTheme {
             width: 960 + GenerationPanel.minimumWidthAdjustment,
             height: 600
         )
+        static let projectTitlebarLeadingWidth: CGFloat = 80
         static let projectTitlebarTrailingWidth: CGFloat = 280
         static let settingsDefault = NSSize(width: 1200, height: 800)
         static let settingsMin = NSSize(width: 860, height: 640)

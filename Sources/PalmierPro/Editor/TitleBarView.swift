@@ -6,12 +6,18 @@ struct TitleBarLeadingView: View {
     var body: some View {
         HStack(spacing: AppTheme.Spacing.smMd) {
             Button(action: { editor.agentPanelVisible.toggle() }) {
-                Image(systemName: editor.agentPanelVisible ? "bubble.left.fill" : "bubble.left")
-                    .font(.system(size: AppTheme.FontSize.md))
-                    .foregroundStyle(AppTheme.aiGradient)
-                    .opacity(editor.agentPanelVisible ? 1 : AppTheme.Opacity.strong)
-                    .frame(width: AppTheme.IconSize.lg, height: AppTheme.IconSize.lg)
-                    .hoverHighlight()
+                HStack(spacing: AppTheme.Spacing.xs) {
+                    Image(systemName: editor.agentPanelVisible ? "bubble.left.fill" : "bubble.left")
+                        .foregroundStyle(AppTheme.aiGradient)
+                        .opacity(editor.agentPanelVisible ? 1 : AppTheme.Opacity.strong)
+                        .frame(width: AppTheme.IconSize.sm, height: AppTheme.IconSize.sm)
+                    Text(L10n.string("Chat"))
+                        .foregroundStyle(AppTheme.Text.secondaryColor)
+                }
+                .font(.system(size: AppTheme.FontSize.sm, weight: AppTheme.FontWeight.medium))
+                .padding(.horizontal, AppTheme.Spacing.sm)
+                .frame(height: AppTheme.IconSize.lg)
+                .hoverHighlight()
             }
             .buttonStyle(.plain)
             .help(L10n.string("Toggle Agent Panel"))
