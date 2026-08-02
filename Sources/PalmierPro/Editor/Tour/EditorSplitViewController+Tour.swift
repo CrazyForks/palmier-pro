@@ -31,11 +31,18 @@ extension EditorSplitViewController {
         }
     }
 
-    /// A view's frame in this controller's view coords, flipped to top-left origin.
+    /// A view's frame in the full window content coords, flipped to top-left origin.
     private func flippedFrame(of source: NSView?) -> CGRect? {
         guard let source, source.window != nil,
+              let windowContent = source.window?.contentView,
               source.bounds.width > 1, source.bounds.height > 1 else { return nil }
-        let r = source.convert(source.bounds, to: view)
-        return CGRect(x: r.minX, y: view.bounds.height - r.maxY, width: r.width, height: r.height)
+        let r = source.convert(source.bounds, to: windowContent)
+        let top = windowContent.isFlipped ? r.minY : windowContent.bounds.height - r.maxY
+        return CGRect(
+            x: r.minX,
+            y: top,
+            width: r.width,
+            height: r.height
+        )
     }
 }
