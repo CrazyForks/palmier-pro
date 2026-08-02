@@ -67,6 +67,8 @@
 "Activity unavailable" = "Hoạt động không khả dụng";
 "Add Range to Chat" = "Thêm vùng vào chat";
 "Add Text" = "Thêm văn bản";
+"Add an Anthropic API key or credits to use this model." = "Thêm khóa API Anthropic hoặc tín dụng để dùng mô hình này.";
+"Add an OpenAI API key or credits to use this model." = "Thêm khóa API OpenAI hoặc tín dụng để dùng mô hình này.";
 "Add an email above to enable a reply" = "Thêm email ở trên để nhận phản hồi";
 "Add captions" = "Thêm phụ đề";
 "Add credits" = "Thêm tín dụng";
@@ -158,6 +160,7 @@
 "Change to Match" = "Đổi cho khớp";
 "Changes take effect after restarting Palmier Pro." = "Thay đổi có hiệu lực sau khi khởi động lại Palmier Pro.";
 "Changing the ratio preserves the shorter edge." = "Thay đổi tỷ lệ sẽ giữ nguyên cạnh ngắn hơn.";
+"Chat" = "Chat";
 "Chat history" = "Lịch sử chat";
 "Chat with your agent! It can generate content, edit clips, organize your assets, and much more. Start by signing in, or bring your own Anthropic API key." = "Chat với agent của bạn. Agent có thể tạo nội dung, chỉnh sửa clip, sắp xếp tài nguyên và nhiều việc khác. Hãy đăng nhập hoặc dùng khóa API Anthropic của riêng bạn để bắt đầu.";
 "Check for Updates…" = "Kiểm tra bản cập nhật…";
@@ -405,6 +408,7 @@
 "Generation in progress" = "Đang tạo";
 "Generation panel" = "Bảng tạo nội dung";
 "Get Anthropic API key" = "Lấy khóa API Anthropic";
+"Get OpenAI API key" = "Lấy khóa API OpenAI";
 "Get a notification when a generation finishes." = "Nhận thông báo khi hoàn tất tạo nội dung.";
 "Getting the search model ready." = "Đang chuẩn bị mô hình tìm kiếm.";
 "Glow" = "Phát sáng";
@@ -418,6 +422,8 @@
 "Height" = "Chiều cao";
 "Help" = "Trợ giúp";
 "Hide keyframe timeline" = "Ẩn timeline khung hình chính";
+"Hide reasoning" = "Ẩn phần suy luận";
+"High" = "Cao";
 "Highlight" = "Tô sáng";
 "Highlight Block" = "Khối tô sáng";
 "Highlights" = "Vùng sáng";
@@ -442,6 +448,7 @@
 "Indexing %lld/%lld" = "Đang lập chỉ mục %lld/%lld";
 "Input" = "Đầu vào";
 "Inspector" = "Trình kiểm tra";
+"Inspector Panel" = "Bảng kiểm tra";
 "Install" = "Cài đặt";
 "Install in Claude Desktop" = "Cài đặt trong Claude Desktop";
 "Install in Cursor" = "Cài đặt trong Cursor";
@@ -504,6 +511,7 @@
 "Local runs with Apple's SpeechAnalyzer." = "Chế độ Cục bộ sử dụng SpeechAnalyzer của Apple.";
 "Local runs with Apple's SpeechAnalyzer. Cloud uses credits and a more accurate model with more capabilities." = "Chế độ Cục bộ sử dụng SpeechAnalyzer của Apple. Đám mây dùng tín dụng và mô hình chính xác hơn với nhiều khả năng hơn.";
 "Log in for 250 free credits" = "Đăng nhập để nhận 250 tín dụng miễn phí";
+"Low" = "Thấp";
 "Luma" = "Luma";
 "Luminosity" = "Độ sáng";
 "Lyrics (optional). [Verse] and [Chorus] tags supported." = "Lời bài hát (không bắt buộc). Hỗ trợ thẻ [Verse] và [Chorus].";
@@ -526,6 +534,7 @@
 "Match Timeline" = "Khớp với timeline";
 "Match mouth movement to replacement audio" = "Khớp chuyển động miệng với âm thanh thay thế";
 "Matches voices across clips, transcribing untranscribed timeline clips first (uses credits). Transcripts and voice fingerprints are cached, so re-runs are fast." = "Khớp giọng nói giữa các clip, trước tiên chép lời những clip chưa có bản chép lời trên timeline (dùng tín dụng). Bản chép lời và dấu giọng nói được lưu vào bộ nhớ đệm nên lần chạy lại sẽ nhanh.";
+"Max" = "Tối đa";
 "Max plan" = "Gói Max";
 "Max words" = "Số từ tối đa";
 "Maximize Focused Panel" = "Phóng to bảng đang chọn";
@@ -539,6 +548,7 @@
 "Medium" = "Vừa";
 "Mic" = "Micrô";
 "Midpoint" = "Điểm giữa";
+"Minimal" = "Tối thiểu";
 "Minimum Pause" = "Khoảng dừng tối thiểu";
 "Mixed" = "Hỗn hợp";
 "Mode" = "Chế độ";
@@ -617,6 +627,7 @@
 "Open Skills to browse community playbooks, create your own, or add them to other agents." = "Mở Kỹ năng để duyệt cẩm nang cộng đồng, tự tạo kỹ năng hoặc thêm kỹ năng vào agent khác.";
 "Open Timeline" = "Mở timeline";
 "Open the AI Edit tab to upscale, prompt-edit, create video from a frame, or generate music, SFX, cleanup, and dubbing from the clip." = "Mở tab Chỉnh sửa bằng AI để nâng độ phân giải, chỉnh sửa bằng prompt, tạo video từ một khung hình, hoặc tạo nhạc, SFX, làm sạch âm thanh và lồng tiếng từ clip.";
+"OpenAI API Key" = "Khóa API OpenAI";
 "Opening Google" = "Đang mở Google";
 "Opening Google…" = "Đang mở Google…";
 "Open…" = "Mở…";
@@ -671,6 +682,7 @@
 "Range" = "Vùng";
 "Razor (C)" = "Dao cắt (C)";
 "Razor Tool" = "Công cụ Dao cắt";
+"Reasoning effort" = "Mức độ suy luận";
 "Redetect Beats" = "Phát hiện lại nhịp";
 "Redo" = "Làm lại";
 "Redo (⇧⌘Z)" = "Làm lại (⇧⌘Z)";
@@ -764,7 +776,6 @@
 "Select Forward on All Tracks" = "Chọn về phía trước trên tất cả track";
 "Select Forward on Track" = "Chọn về phía trước trên track";
 "Select Range" = "Chọn vùng";
-"Select a range" = "Chọn một vùng";
 "Select a single clip to enable" = "Chọn một clip để bật";
 "Select media files or folders to import" = "Chọn tệp hoặc thư mục phương tiện để nhập";
 "Selected" = "Đã chọn";
@@ -794,6 +805,7 @@
 "Show in Finder" = "Hiển thị trong Finder";
 "Show keyframe timeline" = "Hiển thị timeline khung hình chính";
 "Show notifications" = "Hiển thị thông báo";
+"Show reasoning" = "Hiển thị phần suy luận";
 "Side by Side" = "Cạnh nhau";
 "Sign In" = "Đăng nhập";
 "Sign in" = "Đăng nhập";
@@ -801,6 +813,7 @@
 "Sign in to receive 250 free credits for AI chat and generation." = "Đăng nhập để nhận 250 tín dụng miễn phí cho chat và tạo nội dung bằng AI.";
 "Sign in to subscribe and use AI generation." = "Đăng nhập để đăng ký và dùng tính năng tạo nội dung AI.";
 "Sign in to use AI" = "Đăng nhập để dùng AI";
+"Sign in to use AI chat." = "Đăng nhập để dùng chat AI.";
 "Sign in to use Cloud transcription." = "Đăng nhập để dùng tính năng chép lời trên đám mây.";
 "Sign in to use Cloud." = "Đăng nhập để dùng Đám mây.";
 "Sign in with Google" = "Đăng nhập bằng Google";
@@ -848,11 +861,13 @@
 "Stopped" = "Đã dừng";
 "Storage" = "Dung lượng lưu trữ";
 "Streaming through your Anthropic API key (BYOK)" = "Đang truyền qua khóa API Anthropic của bạn (BYOK)";
+"Streaming through your OpenAI API key (BYOK)" = "Đang truyền qua khóa API OpenAI của bạn (BYOK)";
 "Strikethrough" = "Gạch ngang";
 "Student" = "Sinh viên";
 "Style" = "Kiểu";
 "Style instructions (optional). e.g., warm and slow, British accent." = "Hướng dẫn phong cách (không bắt buộc). Ví dụ: ấm áp và chậm rãi, giọng Anh.";
 "Subscribe" = "Đăng ký";
+"Subscribe or add your own API key to use this model." = "Đăng ký hoặc thêm khóa API của riêng bạn để dùng mô hình này.";
 "Subscription" = "Gói đăng ký";
 "Swap Media" = "Thay phương tiện";
 "Swap the clip's media when generation completes. Speed, volume, trim, and transform are preserved." = "Thay phương tiện của clip khi hoàn tất tạo nội dung. Tốc độ, âm lượng, phần cắt và biến đổi được giữ nguyên.";
@@ -880,10 +895,10 @@
 "The clip you're adding has different settings than the current project." = "Clip bạn đang thêm có cài đặt khác với dự án hiện tại.";
 "The export" = "Bản xuất";
 "The project will be moved to the Trash." = "Dự án sẽ được chuyển vào Thùng rác.";
+"The selected model refused this request. Revise the prompt and try again." = "Mô hình đã chọn từ chối yêu cầu này. Hãy sửa câu lệnh rồi thử lại.";
 "The selected projects will be moved to the Trash." = "Các dự án đã chọn sẽ được chuyển vào Thùng rác.";
 "The timeline settings changed. Close this sheet and try again." = "Cài đặt timeline đã thay đổi. Đóng bảng này và thử lại.";
 "Theme" = "Chủ đề";
-"This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "Đây là thước timeline. Giữ Shift và kéo trên thước để chọn vùng cần kết xuất. Bạn có thể chọn bất kỳ khoảng nào để chỉnh sửa bằng AI hoặc tạo nhạc phù hợp với vùng đó.";
 "This is where all your footage and assets live." = "Đây là nơi chứa toàn bộ cảnh quay và tài nguyên của bạn.";
 "This is your preview panel to play a selected media or the whole timeline." = "Đây là bảng xem trước để phát phương tiện đã chọn hoặc toàn bộ timeline.";
 "This model cannot cap the output at 60 FPS." = "Mô hình này không thể giới hạn đầu ra ở 60 FPS.";
@@ -997,6 +1012,7 @@
 "Word Slide" = "Trượt từ";
 "Working on %@" = "Đang xử lý %@";
 "Workspace layout" = "Bố cục không gian làm việc";
+"X High" = "Rất cao";
 "You're all set" = "Mọi thứ đã sẵn sàng";
 "YouTube" = "YouTube";
 "Your Lottie animation is ready." = "Hoạt ảnh Lottie của bạn đã sẵn sàng.";
@@ -1019,7 +1035,9 @@
 "error" = "lỗi";
 "group moved right to fit" = "đã di chuyển nhóm sang phải để vừa chỗ";
 "lowercase" = "chữ thường";
-"or use your own Anthropic key" = "hoặc dùng khóa Anthropic của riêng bạn";
+"or add your own Anthropic key" = "hoặc thêm khóa Anthropic của riêng bạn";
+"or add your own OpenAI key" = "hoặc thêm khóa OpenAI của riêng bạn";
 "result" = "kết quả";
-"using API key" = "đang dùng khóa API";
+"using Anthropic API key" = "đang dùng khóa API Anthropic";
+"using OpenAI API key" = "đang dùng khóa API OpenAI";
 "you@example.com — so we can reply" = "ban@example.com — để chúng tôi có thể phản hồi";

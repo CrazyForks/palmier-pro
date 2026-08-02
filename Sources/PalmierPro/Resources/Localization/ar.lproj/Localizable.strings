@@ -67,6 +67,8 @@
 "Activity unavailable" = "النشاط غير متاح";
 "Add Range to Chat" = "إضافة النطاق إلى الدردشة";
 "Add Text" = "إضافة نص";
+"Add an Anthropic API key or credits to use this model." = "أضف مفتاح واجهة API من Anthropic أو رصيدًا لاستخدام هذا النموذج.";
+"Add an OpenAI API key or credits to use this model." = "أضف مفتاح واجهة API من OpenAI أو رصيدًا لاستخدام هذا النموذج.";
 "Add an email above to enable a reply" = "أضف بريدًا إلكترونيًا أعلاه لإتاحة الرد";
 "Add captions" = "إضافة ترجمات";
 "Add credits" = "إضافة رصيد";
@@ -158,6 +160,7 @@
 "Change to Match" = "التغيير للمطابقة";
 "Changes take effect after restarting Palmier Pro." = "تسري التغييرات بعد إعادة تشغيل Palmier Pro.";
 "Changing the ratio preserves the shorter edge." = "يحافظ تغيير النسبة على الحافة الأقصر.";
+"Chat" = "الدردشة";
 "Chat history" = "سجل الدردشة";
 "Chat with your agent! It can generate content, edit clips, organize your assets, and much more. Start by signing in, or bring your own Anthropic API key." = "تحدث مع وكيلك. يمكنه إنشاء المحتوى وتحرير المقاطع وتنظيم أصولك وغير ذلك. ابدأ بتسجيل الدخول أو استخدم مفتاح واجهة API الخاص بك من Anthropic.";
 "Check for Updates…" = "التحقق من وجود تحديثات…";
@@ -405,6 +408,7 @@
 "Generation in progress" = "الإنشاء قيد التنفيذ";
 "Generation panel" = "لوحة الإنشاء";
 "Get Anthropic API key" = "الحصول على مفتاح واجهة API من Anthropic";
+"Get OpenAI API key" = "الحصول على مفتاح واجهة API من OpenAI";
 "Get a notification when a generation finishes." = "تلقي إشعار عند اكتمال الإنشاء.";
 "Getting the search model ready." = "جارٍ إعداد نموذج البحث.";
 "Glow" = "توهج";
@@ -418,6 +422,8 @@
 "Height" = "الارتفاع";
 "Help" = "مساعدة";
 "Hide keyframe timeline" = "إخفاء المخطط الزمني للإطارات الرئيسية";
+"Hide reasoning" = "إخفاء الاستدلال";
+"High" = "مرتفع";
 "Highlight" = "تمييز";
 "Highlight Block" = "كتلة التمييز";
 "Highlights" = "الإضاءات";
@@ -442,6 +448,7 @@
 "Indexing %lld/%lld" = "جارٍ الفهرسة ⁨%lld/%lld⁩";
 "Input" = "الإدخال";
 "Inspector" = "لوحة الخصائص";
+"Inspector Panel" = "لوحة الخصائص";
 "Install" = "تثبيت";
 "Install in Claude Desktop" = "التثبيت في Claude Desktop";
 "Install in Cursor" = "التثبيت في Cursor";
@@ -504,6 +511,7 @@
 "Local runs with Apple's SpeechAnalyzer." = "يعمل الوضع المحلي باستخدام SpeechAnalyzer من Apple.";
 "Local runs with Apple's SpeechAnalyzer. Cloud uses credits and a more accurate model with more capabilities." = "يعمل الوضع المحلي باستخدام SpeechAnalyzer من Apple. يستخدم الوضع السحابي الرصيد ونموذجًا أدق بإمكانات أكثر.";
 "Log in for 250 free credits" = "سجّل الدخول للحصول على 250 رصيدًا مجانيًا";
+"Low" = "منخفض";
 "Luma" = "لوما";
 "Luminosity" = "الإضاءة";
 "Lyrics (optional). [Verse] and [Chorus] tags supported." = "كلمات الأغنية (اختيارية). علامتا ⁨[Verse]⁩ و⁨[Chorus]⁩ مدعومتان.";
@@ -526,6 +534,7 @@
 "Match Timeline" = "مطابقة المخطط الزمني";
 "Match mouth movement to replacement audio" = "مطابقة حركة الفم مع الصوت البديل";
 "Matches voices across clips, transcribing untranscribed timeline clips first (uses credits). Transcripts and voice fingerprints are cached, so re-runs are fast." = "يطابق الأصوات بين المقاطع، مع تفريغ مقاطع المخطط الزمني غير المفرّغة أولاً (يستخدم الرصيد). تُحفظ النصوص المفرّغة وبصمات الصوت في ذاكرة التخزين المؤقت، لذلك تكون عمليات التشغيل التالية سريعة.";
+"Max" = "الحد الأقصى";
 "Max plan" = "خطة Max";
 "Max words" = "الحد الأقصى للكلمات";
 "Maximize Focused Panel" = "تكبير اللوحة النشطة";
@@ -539,6 +548,7 @@
 "Medium" = "متوسط";
 "Mic" = "الميكروفون";
 "Midpoint" = "نقطة المنتصف";
+"Minimal" = "الحد الأدنى";
 "Minimum Pause" = "الحد الأدنى للتوقف";
 "Mixed" = "مختلط";
 "Mode" = "الوضع";
@@ -617,6 +627,7 @@
 "Open Skills to browse community playbooks, create your own, or add them to other agents." = "افتح «المهارات» لاستعراض أدلة عمل المجتمع أو إنشاء مهاراتك أو إضافتها إلى وكلاء آخرين.";
 "Open Timeline" = "فتح المخطط الزمني";
 "Open the AI Edit tab to upscale, prompt-edit, create video from a frame, or generate music, SFX, cleanup, and dubbing from the clip." = "افتح علامة التبويب «تحرير بالذكاء الاصطناعي» لرفع الدقة، أو التحرير عبر مطالبة، أو إنشاء فيديو من إطار، أو توليد موسيقى ومؤثرات صوتية وتنظيف الصوت والدبلجة من المقطع.";
+"OpenAI API Key" = "مفتاح واجهة API من OpenAI";
 "Opening Google" = "جارٍ فتح Google";
 "Opening Google…" = "جارٍ فتح Google…";
 "Open…" = "فتح…";
@@ -671,6 +682,7 @@
 "Range" = "النطاق";
 "Razor (C)" = "الشفرة ⁨(C)⁩";
 "Razor Tool" = "أداة الشفرة";
+"Reasoning effort" = "مستوى الاستدلال";
 "Redetect Beats" = "إعادة اكتشاف الإيقاعات";
 "Redo" = "إعادة";
 "Redo (⇧⌘Z)" = "إعادة ⁨(⇧⌘Z)⁩";
@@ -764,7 +776,6 @@
 "Select Forward on All Tracks" = "تحديد إلى الأمام على كل المسارات";
 "Select Forward on Track" = "تحديد إلى الأمام على المسار";
 "Select Range" = "تحديد نطاق";
-"Select a range" = "حدد نطاقًا";
 "Select a single clip to enable" = "حدد مقطعًا واحدًا للتمكين";
 "Select media files or folders to import" = "حدد ملفات الوسائط أو المجلدات لاستيرادها";
 "Selected" = "محدد";
@@ -794,6 +805,7 @@
 "Show in Finder" = "إظهار في Finder";
 "Show keyframe timeline" = "إظهار المخطط الزمني للإطارات الرئيسية";
 "Show notifications" = "إظهار الإشعارات";
+"Show reasoning" = "إظهار الاستدلال";
 "Side by Side" = "جنبًا إلى جنب";
 "Sign In" = "تسجيل الدخول";
 "Sign in" = "تسجيل الدخول";
@@ -801,6 +813,7 @@
 "Sign in to receive 250 free credits for AI chat and generation." = "سجّل الدخول للحصول على 250 رصيدًا مجانيًا لدردشة الذكاء الاصطناعي والإنشاء.";
 "Sign in to subscribe and use AI generation." = "سجّل الدخول للاشتراك واستخدام الإنشاء بالذكاء الاصطناعي.";
 "Sign in to use AI" = "سجّل الدخول لاستخدام الذكاء الاصطناعي";
+"Sign in to use AI chat." = "سجّل الدخول لاستخدام دردشة الذكاء الاصطناعي.";
 "Sign in to use Cloud transcription." = "سجّل الدخول لاستخدام التفريغ النصي السحابي.";
 "Sign in to use Cloud." = "سجّل الدخول لاستخدام الوضع السحابي.";
 "Sign in with Google" = "تسجيل الدخول باستخدام Google";
@@ -848,11 +861,13 @@
 "Stopped" = "متوقف";
 "Storage" = "التخزين";
 "Streaming through your Anthropic API key (BYOK)" = "جارٍ البث عبر مفتاح واجهة API الخاص بك من Anthropic ‏(BYOK)";
+"Streaming through your OpenAI API key (BYOK)" = "جارٍ البث عبر مفتاح واجهة API الخاص بك من OpenAI ‏(BYOK)";
 "Strikethrough" = "يتوسطه خط";
 "Student" = "طالب";
 "Style" = "النمط";
 "Style instructions (optional). e.g., warm and slow, British accent." = "تعليمات النمط (اختيارية)، مثل: دافئ وبطيء، بلهجة بريطانية.";
 "Subscribe" = "اشتراك";
+"Subscribe or add your own API key to use this model." = "اشترك أو أضف مفتاح واجهة API الخاص بك لاستخدام هذا النموذج.";
 "Subscription" = "الاشتراك";
 "Swap Media" = "تبديل الوسائط";
 "Swap the clip's media when generation completes. Speed, volume, trim, and transform are preserved." = "بدّل وسائط المقطع عند اكتمال الإنشاء. يتم الاحتفاظ بالسرعة ومستوى الصوت والتشذيب والتحويل.";
@@ -880,10 +895,10 @@
 "The clip you're adding has different settings than the current project." = "للمقطع الذي تضيفه إعدادات مختلفة عن المشروع الحالي.";
 "The export" = "الملف";
 "The project will be moved to the Trash." = "سيتم نقل المشروع إلى سلة المهملات.";
+"The selected model refused this request. Revise the prompt and try again." = "رفض النموذج المحدد هذا الطلب. عدّل المطالبة وأعد المحاولة.";
 "The selected projects will be moved to the Trash." = "سيتم نقل المشاريع المحددة إلى سلة المهملات.";
 "The timeline settings changed. Close this sheet and try again." = "تغيرت إعدادات المخطط الزمني. أغلق هذه اللوحة وأعد المحاولة.";
 "Theme" = "السمة";
-"This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "هذه مسطرة المخطط الزمني. اضغط على Shift واسحب على المسطرة لتحديد نطاق للتصيير. يمكنك اختيار أي خانة للتحرير بالذكاء الاصطناعي أو إنشاء موسيقى تلائم ذلك النطاق.";
 "This is where all your footage and assets live." = "هنا توجد كل لقطاتك وأصولك.";
 "This is your preview panel to play a selected media or the whole timeline." = "هذه لوحة المعاينة لتشغيل الوسائط المحددة أو المخطط الزمني كاملاً.";
 "This model cannot cap the output at 60 FPS." = "لا يمكن لهذا النموذج تحديد سقف الإخراج عند ⁨60 FPS⁩.";
@@ -997,6 +1012,7 @@
 "Word Slide" = "انزلاق الكلمات";
 "Working on %@" = "جارٍ العمل على ⁨%@⁩";
 "Workspace layout" = "تخطيط مساحة العمل";
+"X High" = "مرتفع جدًا";
 "You're all set" = "أصبح كل شيء جاهزًا";
 "YouTube" = "YouTube";
 "Your Lottie animation is ready." = "رسم Lottie المتحرك جاهز.";
@@ -1019,7 +1035,9 @@
 "error" = "خطأ";
 "group moved right to fit" = "تم تحريك المجموعة إلى اليمين للملاءمة";
 "lowercase" = "أحرف صغيرة";
-"or use your own Anthropic key" = "أو استخدم مفتاح Anthropic الخاص بك";
+"or add your own Anthropic key" = "أو أضف مفتاح Anthropic الخاص بك";
+"or add your own OpenAI key" = "أو أضف مفتاح OpenAI الخاص بك";
 "result" = "النتيجة";
-"using API key" = "باستخدام مفتاح واجهة API";
+"using Anthropic API key" = "باستخدام مفتاح واجهة API من Anthropic";
+"using OpenAI API key" = "باستخدام مفتاح واجهة API من OpenAI";
 "you@example.com — so we can reply" = "⁨you@example.com⁩ حتى نتمكن من الرد";
