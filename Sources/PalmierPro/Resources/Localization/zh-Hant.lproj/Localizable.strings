@@ -442,6 +442,7 @@
 "Indexing %lld/%lld" = "正在索引 %lld/%lld";
 "Input" = "輸入";
 "Inspector" = "檢查器";
+"Inspector Panel" = "檢查器面板";
 "Install" = "安裝";
 "Install in Claude Desktop" = "安裝到 Claude Desktop";
 "Install in Cursor" = "安裝到 Cursor";

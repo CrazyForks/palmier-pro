@@ -442,6 +442,7 @@
 "Indexing %lld/%lld" = "Indexando %lld/%lld";
 "Input" = "Entrada";
 "Inspector" = "Inspetor";
+"Inspector Panel" = "Painel do inspetor";
 "Install" = "Instalar";
 "Install in Claude Desktop" = "Instalar no Claude Desktop";
 "Install in Cursor" = "Instalar no Cursor";

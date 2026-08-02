@@ -442,6 +442,7 @@
 "Indexing %lld/%lld" = "جارٍ الفهرسة ⁨%lld/%lld⁩";
 "Input" = "الإدخال";
 "Inspector" = "لوحة الخصائص";
+"Inspector Panel" = "لوحة الخصائص";
 "Install" = "تثبيت";
 "Install in Claude Desktop" = "التثبيت في Claude Desktop";
 "Install in Cursor" = "التثبيت في Cursor";

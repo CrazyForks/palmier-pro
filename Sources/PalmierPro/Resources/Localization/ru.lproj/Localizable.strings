@@ -442,6 +442,7 @@
 "Indexing %lld/%lld" = "Индексация: %lld/%lld";
 "Input" = "Ввод";
 "Inspector" = "Инспектор";
+"Inspector Panel" = "Панель инспектора";
 "Install" = "Установить";
 "Install in Claude Desktop" = "Установить в Claude Desktop";
 "Install in Cursor" = "Установить в Cursor";

@@ -442,6 +442,7 @@
 "Indexing %lld/%lld" = "インデックス作成中 %lld/%lld";
 "Input" = "入力";
 "Inspector" = "インスペクタ";
+"Inspector Panel" = "インスペクタパネル";
 "Install" = "インストール";
 "Install in Claude Desktop" = "Claude Desktopにインストール";
 "Install in Cursor" = "Cursorにインストール";

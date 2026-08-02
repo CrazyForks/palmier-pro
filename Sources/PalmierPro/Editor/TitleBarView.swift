@@ -21,6 +21,23 @@ struct TitleBarLeadingView: View {
             }
             .buttonStyle(.plain)
             .help(L10n.string("Toggle Agent Panel"))
+
+            HStack(spacing: AppTheme.Spacing.xxs) {
+                PanelVisibilityButton(
+                    systemName: "sidebar.left",
+                    label: L10n.string("Media Panel"),
+                    isVisible: editor.mediaPanelVisible
+                ) {
+                    editor.mediaPanelVisible.toggle()
+                }
+                PanelVisibilityButton(
+                    systemName: "sidebar.right",
+                    label: L10n.string("Inspector Panel"),
+                    isVisible: editor.inspectorPanelVisible
+                ) {
+                    editor.inspectorPanelVisible.toggle()
+                }
+            }
         }
     }
 }
@@ -80,5 +97,26 @@ struct TitleBarTrailingView: View {
             .easeInOut(duration: AppTheme.Anim.pulse)
         }
         .accessibilityHidden(true)
+    }
+}
+
+private struct PanelVisibilityButton: View {
+    let systemName: String
+    let label: String
+    let isVisible: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: AppTheme.FontSize.md, weight: AppTheme.FontWeight.medium))
+                .foregroundStyle(isVisible ? AppTheme.Text.primaryColor : AppTheme.Text.tertiaryColor)
+                .frame(width: AppTheme.IconSize.lg, height: AppTheme.IconSize.lg)
+                .hoverHighlight()
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(verbatim: label))
+        .accessibilityAddTraits(isVisible ? .isSelected : [])
+        .help(label)
     }
 }

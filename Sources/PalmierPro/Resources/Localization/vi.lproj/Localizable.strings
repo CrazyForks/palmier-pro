@@ -442,6 +442,7 @@
 "Indexing %lld/%lld" = "Đang lập chỉ mục %lld/%lld";
 "Input" = "Đầu vào";
 "Inspector" = "Trình kiểm tra";
+"Inspector Panel" = "Bảng kiểm tra";
 "Install" = "Cài đặt";
 "Install in Claude Desktop" = "Cài đặt trong Claude Desktop";
 "Install in Cursor" = "Cài đặt trong Cursor";

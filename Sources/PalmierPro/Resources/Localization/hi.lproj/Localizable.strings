@@ -442,6 +442,7 @@
 "Indexing %lld/%lld" = "इंडेक्स हो रहा है %lld/%lld";
 "Input" = "इनपुट";
 "Inspector" = "इंस्पेक्टर";
+"Inspector Panel" = "इंस्पेक्टर पैनल";
 "Install" = "इंस्टॉल करें";
 "Install in Claude Desktop" = "Claude Desktop में इंस्टॉल करें";
 "Install in Cursor" = "Cursor में इंस्टॉल करें";

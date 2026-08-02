@@ -442,6 +442,7 @@
 "Indexing %lld/%lld" = "%lld/%lld 인덱싱 중";
 "Input" = "입력";
 "Inspector" = "인스펙터";
+"Inspector Panel" = "인스펙터 패널";
 "Install" = "설치";
 "Install in Claude Desktop" = "Claude Desktop에 설치";
 "Install in Cursor" = "Cursor에 설치";

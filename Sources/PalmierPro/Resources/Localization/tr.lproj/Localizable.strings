@@ -442,6 +442,7 @@
 "Indexing %lld/%lld" = "Dizine ekleniyor: %lld/%lld";
 "Input" = "Giriş";
 "Inspector" = "Denetçi";
+"Inspector Panel" = "Denetçi Paneli";
 "Install" = "Yükle";
 "Install in Claude Desktop" = "Claude Desktop'a Yükle";
 "Install in Cursor" = "Cursor'a Yükle";
