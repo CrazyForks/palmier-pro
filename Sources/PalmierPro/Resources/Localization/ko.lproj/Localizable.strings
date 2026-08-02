@@ -765,7 +765,6 @@
 "Select Forward on All Tracks" = "모든 트랙에서 이후 항목 선택";
 "Select Forward on Track" = "트랙에서 이후 항목 선택";
 "Select Range" = "범위 선택";
-"Select a range" = "범위 선택";
 "Select a single clip to enable" = "사용하려면 클립 하나 선택";
 "Select media files or folders to import" = "가져올 미디어 파일 또는 폴더 선택";
 "Selected" = "선택됨";
@@ -884,7 +883,6 @@
 "The selected projects will be moved to the Trash." = "선택한 프로젝트가 휴지통으로 이동됩니다.";
 "The timeline settings changed. Close this sheet and try again." = "타임라인 설정이 변경되었습니다. 이 시트를 닫고 다시 시도하세요.";
 "Theme" = "테마";
-"This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "타임라인 눈금자입니다. 눈금자에서 Shift+드래그하여 렌더링할 범위를 선택하세요. 원하는 슬롯을 선택해 AI로 편집하거나 해당 범위에 맞는 음악을 생성할 수 있습니다.";
 "This is where all your footage and assets live." = "모든 푸티지와 에셋이 보관되는 곳입니다.";
 "This is your preview panel to play a selected media or the whole timeline." = "선택한 미디어 또는 전체 타임라인을 재생하는 미리보기 패널입니다.";
 "This model cannot cap the output at 60 FPS." = "이 모델은 출력을 60 FPS로 제한할 수 없습니다.";

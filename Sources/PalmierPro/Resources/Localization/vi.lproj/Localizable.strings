@@ -765,7 +765,6 @@
 "Select Forward on All Tracks" = "Chọn về phía trước trên tất cả track";
 "Select Forward on Track" = "Chọn về phía trước trên track";
 "Select Range" = "Chọn vùng";
-"Select a range" = "Chọn một vùng";
 "Select a single clip to enable" = "Chọn một clip để bật";
 "Select media files or folders to import" = "Chọn tệp hoặc thư mục phương tiện để nhập";
 "Selected" = "Đã chọn";
@@ -884,7 +883,6 @@
 "The selected projects will be moved to the Trash." = "Các dự án đã chọn sẽ được chuyển vào Thùng rác.";
 "The timeline settings changed. Close this sheet and try again." = "Cài đặt timeline đã thay đổi. Đóng bảng này và thử lại.";
 "Theme" = "Chủ đề";
-"This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "Đây là thước timeline. Giữ Shift và kéo trên thước để chọn vùng cần kết xuất. Bạn có thể chọn bất kỳ khoảng nào để chỉnh sửa bằng AI hoặc tạo nhạc phù hợp với vùng đó.";
 "This is where all your footage and assets live." = "Đây là nơi chứa toàn bộ cảnh quay và tài nguyên của bạn.";
 "This is your preview panel to play a selected media or the whole timeline." = "Đây là bảng xem trước để phát phương tiện đã chọn hoặc toàn bộ timeline.";
 "This model cannot cap the output at 60 FPS." = "Mô hình này không thể giới hạn đầu ra ở 60 FPS.";

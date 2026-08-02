@@ -765,7 +765,6 @@
 "Select Forward on All Tracks" = "Tüm İzlerde İlerisini Seç";
 "Select Forward on Track" = "İzde İlerisini Seç";
 "Select Range" = "Aralık Seç";
-"Select a range" = "Bir aralık seçin";
 "Select a single clip to enable" = "Etkinleştirmek için tek bir klip seçin";
 "Select media files or folders to import" = "İçe aktarılacak medya dosyalarını veya klasörleri seçin";
 "Selected" = "Seçili";
@@ -884,7 +883,6 @@
 "The selected projects will be moved to the Trash." = "Seçili projeler Çöp Sepeti'ne taşınacak.";
 "The timeline settings changed. Close this sheet and try again." = "Zaman ekseni ayarları değişti. Bu sayfayı kapatıp yeniden deneyin.";
 "Theme" = "Tema";
-"This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "Bu, zaman ekseni cetvelidir. İşlenecek bir aralığı seçmek için cetvelde Shift tuşuna basarak sürükleyin. Yapay zekâyla düzenlemek veya bu aralığa uyan müzik oluşturmak için istediğiniz bölümü seçebilirsiniz.";
 "This is where all your footage and assets live." = "Tüm çekimleriniz ve varlıklarınız burada bulunur.";
 "This is your preview panel to play a selected media or the whole timeline." = "Bu, seçili medyayı veya tüm zaman eksenini oynatabileceğiniz önizleme panelinizdir.";
 "This model cannot cap the output at 60 FPS." = "Bu model çıktıyı 60 FPS ile sınırlayamaz.";

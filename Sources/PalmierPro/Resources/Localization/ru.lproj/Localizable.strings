@@ -765,7 +765,6 @@
 "Select Forward on All Tracks" = "Выбрать всё справа на всех дорожках";
 "Select Forward on Track" = "Выбрать всё справа на дорожке";
 "Select Range" = "Выбрать диапазон";
-"Select a range" = "Выберите диапазон";
 "Select a single clip to enable" = "Выберите один клип, чтобы включить";
 "Select media files or folders to import" = "Выберите медиафайлы или папки для импорта";
 "Selected" = "Выбрано";
@@ -884,7 +883,6 @@
 "The selected projects will be moved to the Trash." = "Выбранные проекты будут перемещены в Корзину.";
 "The timeline settings changed. Close this sheet and try again." = "Настройки таймлайна изменились. Закройте это окно и повторите попытку.";
 "Theme" = "Тема";
-"This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "Это линейка таймлайна. Перетаскивайте по ней с зажатой клавишей Shift, чтобы выбрать диапазон для рендеринга. Можно выбрать любой слот для AI-монтажа или создания музыки под этот диапазон.";
 "This is where all your footage and assets live." = "Здесь хранятся все ваши материалы и ресурсы.";
 "This is your preview panel to play a selected media or the whole timeline." = "Это панель предпросмотра для воспроизведения выбранного медиафайла или всего таймлайна.";
 "This model cannot cap the output at 60 FPS." = "Эта модель не может ограничить результат частотой 60 FPS.";

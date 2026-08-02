@@ -765,7 +765,6 @@
 "Select Forward on All Tracks" = "選擇所有軌道上的後續片段";
 "Select Forward on Track" = "選擇軌道上的後續片段";
 "Select Range" = "選擇範圍";
-"Select a range" = "選擇範圍";
 "Select a single clip to enable" = "選擇單個片段以啓用";
 "Select media files or folders to import" = "選擇要匯入的媒體檔案或資料夾";
 "Selected" = "已選擇";
@@ -884,7 +883,6 @@
 "The selected projects will be moved to the Trash." = "所選專案將被移到垃圾桶。";
 "The timeline settings changed. Close this sheet and try again." = "時間軸設定已更改。請關閉此表單後重試。";
 "Theme" = "主題";
-"This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "這是時間軸標尺。按住 Shift 在標尺上拖移以選擇算繪範圍。你可以選擇任意區段進行 AI 編輯，或產生適合該範圍的音樂。";
 "This is where all your footage and assets live." = "你的所有素材和資源都位於此處。";
 "This is your preview panel to play a selected media or the whole timeline." = "這是預覽面板，用於播放所選媒體或整個時間軸。";
 "This model cannot cap the output at 60 FPS." = "此模型無法將輸出限制為 60 FPS。";

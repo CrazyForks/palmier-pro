@@ -765,7 +765,6 @@
 "Select Forward on All Tracks" = "Seleziona in avanti su tutte le tracce";
 "Select Forward on Track" = "Seleziona in avanti sulla traccia";
 "Select Range" = "Seleziona intervallo";
-"Select a range" = "Seleziona un intervallo";
 "Select a single clip to enable" = "Seleziona una singola clip per abilitare";
 "Select media files or folders to import" = "Seleziona file o cartelle multimediali da importare";
 "Selected" = "Selezionato";
@@ -884,7 +883,6 @@
 "The selected projects will be moved to the Trash." = "I progetti selezionati verranno spostati nel Cestino.";
 "The timeline settings changed. Close this sheet and try again." = "Le impostazioni della timeline sono cambiate. Chiudi questo pannello e riprova.";
 "Theme" = "Tema";
-"This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "Questo è il righello della timeline. Tieni premuto Maiuscole e trascina sul righello per selezionare un intervallo da renderizzare. Puoi scegliere qualsiasi spazio per modificare con l'AI o generare musica adatta all'intervallo.";
 "This is where all your footage and assets live." = "Qui si trovano tutti i filmati e le risorse.";
 "This is your preview panel to play a selected media or the whole timeline." = "Questo è il pannello di anteprima per riprodurre i contenuti multimediali selezionati o l'intera timeline.";
 "This model cannot cap the output at 60 FPS." = "Questo modello non può limitare l'output a 60 FPS.";

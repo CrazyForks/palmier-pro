@@ -765,7 +765,6 @@
 "Select Forward on All Tracks" = "选择所有轨道上的后续片段";
 "Select Forward on Track" = "选择轨道上的后续片段";
 "Select Range" = "选择范围";
-"Select a range" = "选择范围";
 "Select a single clip to enable" = "选择单个片段以启用";
 "Select media files or folders to import" = "选择要导入的媒体文件或文件夹";
 "Selected" = "已选择";
@@ -884,7 +883,6 @@
 "The selected projects will be moved to the Trash." = "所选项目将被移到废纸篓。";
 "The timeline settings changed. Close this sheet and try again." = "时间线设置已更改。请关闭此表单后重试。";
 "Theme" = "主题";
-"This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "这是时间线标尺。按住 Shift 在标尺上拖移以选择渲染范围。你可以选择任意区段进行 AI 编辑，或生成适合该范围的音乐。";
 "This is where all your footage and assets live." = "你的所有素材和资源都位于此处。";
 "This is your preview panel to play a selected media or the whole timeline." = "这是预览面板，用于播放所选媒体或整个时间线。";
 "This model cannot cap the output at 60 FPS." = "此模型无法将输出限制为 60 FPS。";
