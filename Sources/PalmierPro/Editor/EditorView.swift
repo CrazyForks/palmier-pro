@@ -225,6 +225,10 @@ final class EditorSplitViewController: PaddedDividerSplitViewController {
 
         // Preset layout lives in an inner VC so the agent can be a sibling column.
         let presetRoot = makeChildSplit(isVertical: false, autosave: SplitAutosave.preset(preset))
+        presetRoot.view.wantsLayer = true
+        presetRoot.view.layer?.cornerRadius = AppTheme.Radius.sm
+        presetRoot.view.layer?.cornerCurve = .continuous
+        presetRoot.view.layer?.masksToBounds = true
         switch preset {
         case .default:  buildDefaultLayout(into: presetRoot)
         case .media:    buildMediaLayout(into: presetRoot)
@@ -406,12 +410,6 @@ final class EditorSplitViewController: PaddedDividerSplitViewController {
                 .environment(editor)
                 .appLocalization()
                 .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
-                .overlay(alignment: .trailing) {
-                    Rectangle()
-                        .fill(AppTheme.Border.subtleColor)
-                        .frame(width: AppTheme.BorderWidth.hairline)
-                        .allowsHitTesting(false)
-                }
         )
         hc.sizingOptions = []
         hc.view.setAccessibilityIdentifier(EditorViewModel.FocusedPanel.agent.accessibilityID)
