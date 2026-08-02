@@ -495,10 +495,11 @@ final class ScrubAudioEngine {
         defer { finishReading(session) }
 
         // Cancelling the reader forces a blocked copyNextSampleBuffer to return, freeing the decode queue.
+        // finishReading keeps the potentially blocking cancelReading() off the cancelling thread.
         return await withTaskCancellationHandler {
             await decodeSamples(session: session, startSample: startSample, frameCount: frameCount)
         } onCancel: {
-            session.cancel()
+            finishReading(session)
         }
     }
 
