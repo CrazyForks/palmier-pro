@@ -442,7 +442,6 @@
 "Indexing %lld/%lld" = "جارٍ الفهرسة ⁨%lld/%lld⁩";
 "Input" = "الإدخال";
 "Inspector" = "لوحة الخصائص";
-"Inspector Panel" = "لوحة الخصائص";
 "Install" = "تثبيت";
 "Install in Claude Desktop" = "التثبيت في Claude Desktop";
 "Install in Cursor" = "التثبيت في Cursor";
@@ -765,6 +764,7 @@
 "Select Forward on All Tracks" = "تحديد إلى الأمام على كل المسارات";
 "Select Forward on Track" = "تحديد إلى الأمام على المسار";
 "Select Range" = "تحديد نطاق";
+"Select a range" = "حدد نطاقًا";
 "Select a single clip to enable" = "حدد مقطعًا واحدًا للتمكين";
 "Select media files or folders to import" = "حدد ملفات الوسائط أو المجلدات لاستيرادها";
 "Selected" = "محدد";
@@ -883,6 +883,7 @@
 "The selected projects will be moved to the Trash." = "سيتم نقل المشاريع المحددة إلى سلة المهملات.";
 "The timeline settings changed. Close this sheet and try again." = "تغيرت إعدادات المخطط الزمني. أغلق هذه اللوحة وأعد المحاولة.";
 "Theme" = "السمة";
+"This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "هذه مسطرة المخطط الزمني. اضغط على Shift واسحب على المسطرة لتحديد نطاق للتصيير. يمكنك اختيار أي خانة للتحرير بالذكاء الاصطناعي أو إنشاء موسيقى تلائم ذلك النطاق.";
 "This is where all your footage and assets live." = "هنا توجد كل لقطاتك وأصولك.";
 "This is your preview panel to play a selected media or the whole timeline." = "هذه لوحة المعاينة لتشغيل الوسائط المحددة أو المخطط الزمني كاملاً.";
 "This model cannot cap the output at 60 FPS." = "لا يمكن لهذا النموذج تحديد سقف الإخراج عند ⁨60 FPS⁩.";

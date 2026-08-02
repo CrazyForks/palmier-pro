@@ -442,7 +442,6 @@
 "Indexing %lld/%lld" = "इंडेक्स हो रहा है %lld/%lld";
 "Input" = "इनपुट";
 "Inspector" = "इंस्पेक्टर";
-"Inspector Panel" = "इंस्पेक्टर पैनल";
 "Install" = "इंस्टॉल करें";
 "Install in Claude Desktop" = "Claude Desktop में इंस्टॉल करें";
 "Install in Cursor" = "Cursor में इंस्टॉल करें";
@@ -765,6 +764,7 @@
 "Select Forward on All Tracks" = "सभी ट्रैक पर आगे चुनें";
 "Select Forward on Track" = "ट्रैक पर आगे चुनें";
 "Select Range" = "रेंज चुनें";
+"Select a range" = "रेंज चुनें";
 "Select a single clip to enable" = "सक्षम करने के लिए एक क्लिप चुनें";
 "Select media files or folders to import" = "इम्पोर्ट करने के लिए मीडिया फ़ाइलें या फ़ोल्डर चुनें";
 "Selected" = "चयनित";
@@ -883,6 +883,7 @@
 "The selected projects will be moved to the Trash." = "चयनित प्रोजेक्ट ट्रैश में भेज दिए जाएँगे।";
 "The timeline settings changed. Close this sheet and try again." = "टाइमलाइन सेटिंग्स बदल गई हैं। यह शीट बंद करके फिर कोशिश करें।";
 "Theme" = "थीम";
+"This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "यह टाइमलाइन रूलर है। रेंडर करने के लिए रेंज चुनने हेतु रूलर पर Shift+ड्रैग करें। उस रेंज के अनुकूल AI एडिट या संगीत जेनरेट करने के लिए कोई भी स्लॉट चुन सकते हैं।";
 "This is where all your footage and assets live." = "आपका सारा फ़ुटेज और सभी एसेट यहाँ रहते हैं।";
 "This is your preview panel to play a selected media or the whole timeline." = "यह चयनित मीडिया या पूरी टाइमलाइन चलाने का प्रीव्यू पैनल है।";
 "This model cannot cap the output at 60 FPS." = "यह मॉडल आउटपुट को 60 FPS पर सीमित नहीं कर सकता।";

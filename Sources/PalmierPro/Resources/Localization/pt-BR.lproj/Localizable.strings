@@ -442,7 +442,6 @@
 "Indexing %lld/%lld" = "Indexando %lld/%lld";
 "Input" = "Entrada";
 "Inspector" = "Inspetor";
-"Inspector Panel" = "Painel do inspetor";
 "Install" = "Instalar";
 "Install in Claude Desktop" = "Instalar no Claude Desktop";
 "Install in Cursor" = "Instalar no Cursor";
@@ -765,6 +764,7 @@
 "Select Forward on All Tracks" = "Selecionar adiante em todas as faixas";
 "Select Forward on Track" = "Selecionar adiante na faixa";
 "Select Range" = "Selecionar intervalo";
+"Select a range" = "Selecionar um intervalo";
 "Select a single clip to enable" = "Selecione um único clipe para ativar";
 "Select media files or folders to import" = "Selecione arquivos de mídia ou pastas para importar";
 "Selected" = "Selecionado";
@@ -883,6 +883,7 @@
 "The selected projects will be moved to the Trash." = "Os projetos selecionados serão movidos para o Lixo.";
 "The timeline settings changed. Close this sheet and try again." = "Os ajustes da linha do tempo foram alterados. Feche esta janela e tente novamente.";
 "Theme" = "Tema";
+"This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "Esta é a régua da linha do tempo. Pressione Shift e arraste na régua para selecionar um intervalo a ser renderizado. Você pode escolher qualquer espaço para editar com AI ou gerar música adequada ao intervalo.";
 "This is where all your footage and assets live." = "Aqui ficam todas as suas filmagens e recursos.";
 "This is your preview panel to play a selected media or the whole timeline." = "Este é o painel de prévia para reproduzir uma mídia selecionada ou toda a linha do tempo.";
 "This model cannot cap the output at 60 FPS." = "Este modelo não pode limitar a saída a 60 FPS.";
