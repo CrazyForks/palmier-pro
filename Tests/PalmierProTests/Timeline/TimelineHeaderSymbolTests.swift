@@ -16,11 +16,16 @@ struct TimelineHeaderSymbolTests {
     ])
     func rendersDirectSymbolRepresentation(_ name: String) throws {
         let configuration = NSImage.SymbolConfiguration(pointSize: 11, weight: .regular)
+        let tint = NSColor.systemBlue.withAlphaComponent(0.4)
         let image = try #require(TimelineHeaderSymbol.image(
             named: name,
-            tint: .systemBlue.withAlphaComponent(0.4),
+            tint: tint,
             configuration: configuration
         ))
+        let expectedConfiguration = configuration.applying(
+            NSImage.SymbolConfiguration(paletteColors: [tint, tint, tint])
+        )
+        #expect(image.symbolConfiguration == expectedConfiguration)
         #expect(!image.representations.contains { $0 is NSCustomImageRep })
 
         let bitmap = try #require(NSBitmapImageRep(

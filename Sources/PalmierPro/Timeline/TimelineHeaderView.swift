@@ -6,7 +6,7 @@ enum TimelineHeaderSymbol {
         tint: NSColor,
         configuration: NSImage.SymbolConfiguration
     ) -> NSImage? {
-        let colorConfiguration = NSImage.SymbolConfiguration(paletteColors: [tint])
+        let colorConfiguration = NSImage.SymbolConfiguration(paletteColors: [tint, tint, tint])
         return NSImage(systemSymbolName: name, accessibilityDescription: nil)?
             .withSymbolConfiguration(configuration.applying(colorConfiguration))
     }
