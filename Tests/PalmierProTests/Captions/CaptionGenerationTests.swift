@@ -76,7 +76,8 @@ private func mediaAsset(_ id: String, hasAudio: Bool = true) -> MediaAsset {
     private func gapTarget(
         id: String,
         startFrame: Int,
-        durationFrames: Int
+        durationFrames: Int,
+        hasWordTiming: Bool = true
     ) -> CaptionSpecBuilder.Target {
         let clip = Fixtures.clip(
             id: id,
@@ -88,7 +89,7 @@ private func mediaAsset(_ id: String, hasAudio: Bool = true) -> MediaAsset {
         let result = TranscriptionResult(
             text: id,
             language: "en",
-            words: [TranscriptionWord(text: id, start: 0, end: 0.1)],
+            words: hasWordTiming ? [TranscriptionWord(text: id, start: 0, end: 0.1)] : [],
             segments: [TranscriptionSegment(text: id, start: 0, end: 0.2)]
         )
         return CaptionSpecBuilder.Target(
@@ -208,6 +209,19 @@ private func mediaAsset(_ id: String, hasAudio: Bool = true) -> MediaAsset {
 
         #expect(specs.map(\.durationFrames) == [28, 21])
         #expect(specs[0].words?.last?.endFrame == (preset == .wordCycle ? 28 : 3))
+    }
+
+    @Test func oneFrameAnimatedCaptionOwnsTheFollowingGap() async throws {
+        let specs = try await CaptionSpecBuilder.build(input(
+            targets: [
+                gapTarget(id: "one", startFrame: 0, durationFrames: 21),
+                gapTarget(id: "two", startFrame: 27, durationFrames: 1, hasWordTiming: false),
+                gapTarget(id: "three", startFrame: 33, durationFrames: 30),
+            ],
+            animation: TextAnimation(preset: .fadeIn)
+        ))
+
+        #expect(specs.map(\.durationFrames) == [28, 7, 21])
     }
 
     @Test func leavesOverlapsUnchanged() async throws {

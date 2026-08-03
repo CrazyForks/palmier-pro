@@ -135,8 +135,8 @@ enum CaptionSpecBuilder {
             let (nextEnd, nextEndOverflow) = next.startFrame.addingReportingOverflow(
                 next.durationFrames
             )
-            if !nextEndOverflow, nextEnd > coverageEnd {
-                coverageEnd = nextEnd
+            if !nextEndOverflow, nextEnd >= coverageEnd {
+                coverageEnd = max(coverageEnd, nextEnd)
                 coverageIndex = nextIndex
             }
         }
