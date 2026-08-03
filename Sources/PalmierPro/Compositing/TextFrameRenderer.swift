@@ -169,9 +169,9 @@ enum TextFrameRenderer {
                                       fontSize: CGFloat, anim: TextAnimation, frame: Int, renderSize: CGSize) -> CIImage? {
         guard let ctx = beginContext(style: style, backgroundBox: boxes.background, renderSize: renderSize) else { return nil }
 
-        let layoutAttrs = style.attributes(size: fontSize, outlinePass: .fill)
+        let fillAttrs = style.attributes(size: fontSize)
         let ctFrame = TextLayout.frame(
-            for: NSAttributedString(string: content, attributes: layoutAttrs),
+            for: NSAttributedString(string: content, attributes: fillAttrs),
             in: boxes.text
         )
         let lines = CTFrameGetLines(ctFrame) as? [CTLine] ?? []
@@ -182,9 +182,8 @@ enum TextFrameRenderer {
         let tokens = words(in: content)
         let timings = tokenTimings(tokens, clip.wordTimings, duration: clip.durationFrames)
         let rel = frame - clip.startFrame
-        let fillAttrs = layoutAttrs
         let undercoatAttrs = style.drawsGlyphOutline
-            ? style.attributes(size: fontSize, outlinePass: .undercoat)
+            ? style.outlineUndercoatAttributes(size: fontSize)
             : nil
         let font = fillAttrs[.font] as? NSFont
 
@@ -529,7 +528,7 @@ enum TextFrameRenderer {
 
     // MARK: - Shared drawing
 
-    /// Draws fill, or a 2× stroke undercoat then fill so the outline expands outward.
+    /// Outlined text draws undercoat then fill in one layer so the context shadow applies once.
     @discardableResult
     private static func drawText(
         _ ctx: CGContext,
@@ -540,25 +539,28 @@ enum TextFrameRenderer {
         alignment: NSTextAlignment? = nil,
         verticallySizedFor sizingContent: String? = nil
     ) -> CTFrame {
-        func attributed(_ pass: TextStyle.OutlinePass, string: String) -> NSAttributedString {
-            var attrs = style.attributes(size: fontSize, outlinePass: pass)
+        func attributed(_ attrs: [NSAttributedString.Key: Any], _ string: String) -> NSAttributedString {
+            var attrs = attrs
             if let alignment {
                 attrs[.paragraphStyle] = style.paragraphStyle(size: fontSize, alignment: alignment)
             }
             return NSAttributedString(string: string, attributes: attrs)
         }
 
-        let fill = attributed(.fill, string: content)
-        let sizing = sizingContent.map { attributed(.fill, string: $0) }
-        let fillFrame = TextLayout.frame(for: fill, in: box, verticallySizedFor: sizing)
+        let fillAttrs = style.attributes(size: fontSize)
+        let sizing = sizingContent.map { attributed(fillAttrs, $0) }
+        let fillFrame = TextLayout.frame(for: attributed(fillAttrs, content), in: box, verticallySizedFor: sizing)
 
         guard style.drawsGlyphOutline else {
             CTFrameDraw(fillFrame, ctx)
             return fillFrame
         }
 
-        let undercoat = attributed(.undercoat, string: content)
-        let undercoatFrame = TextLayout.frame(for: undercoat, in: box, verticallySizedFor: sizing)
+        let undercoatFrame = TextLayout.frame(
+            for: attributed(style.outlineUndercoatAttributes(size: fontSize), content),
+            in: box,
+            verticallySizedFor: sizing
+        )
         ctx.beginTransparencyLayer(auxiliaryInfo: nil)
         drawUndercoat(ctx) { CTFrameDraw(undercoatFrame, ctx) }
         CTFrameDraw(fillFrame, ctx)
