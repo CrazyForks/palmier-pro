@@ -1,24 +1,38 @@
 import Foundation
 
 extension EditSubmitter {
-    static func reframeSeed(for asset: MediaAsset) -> GenerationInput? {
-        guard asset.type == .video, let model = VideoModelConfig.reframe else { return nil }
+    static func reframeSeed(
+        for asset: MediaAsset,
+        trimmedSource: TrimmedSource? = nil
+    ) -> GenerationInput? {
+        guard let model = VideoModelConfig.reframe else { return nil }
+        return reframeSeed(for: asset, model: model, trimmedSource: trimmedSource)
+    }
+
+    static func reframeSeed(
+        for asset: MediaAsset,
+        model: VideoModelConfig,
+        trimmedSource: TrimmedSource? = nil
+    ) -> GenerationInput? {
+        guard asset.type == .video,
+              VideoModelConfig.isReframeModel(model) else { return nil }
         let isPortrait: Bool
         if let width = asset.sourceWidth, let height = asset.sourceHeight {
             isPortrait = height > width
         } else {
             isPortrait = false
         }
+        let sourceSeconds = trimmedSource?.hasTrim == true
+            ? trimmedSource?.durationSeconds ?? asset.resolvedDuration
+            : asset.resolvedDuration
         var stored = GenerationInput(
-            prompt: "",
+            prompt: VideoModelConfig.reframePrompt,
             model: model.id,
-            duration: 0,
+            duration: model.preferredReframeDuration(for: sourceSeconds),
             aspectRatio: isPortrait ? "16:9" : "9:16",
-            resolution: model.resolutions?.contains("1080p") == true
-                ? "1080p"
-                : model.resolutions?.first
+            resolution: model.preferredReframeResolution
         )
-        stored.imageURLAssetIds = [asset.id]
+        stored.referenceVideoAssetIds = [asset.id]
         return stored
     }
 

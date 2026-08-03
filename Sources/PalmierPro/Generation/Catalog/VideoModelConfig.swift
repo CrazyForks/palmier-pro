@@ -15,7 +15,65 @@ struct VideoModelConfig: Identifiable, Sendable {
 
     @MainActor
     static var reframe: VideoModelConfig? {
-        allModels.first(where: { $0.id.contains("reframe") })
+        allModels.first(where: isReframeModel)
+    }
+
+    static func isReframeModel(_ model: VideoModelConfig) -> Bool {
+        guard model.supportsPrompt,
+              !model.requiresSourceVideo,
+              model.maxReferenceVideos > 0 else { return false }
+        let id = model.id.lowercased()
+        return id == "minimax-h3"
+            || id.contains("minimax-h3")
+            || id.contains("hailuo-03")
+            || (id.contains("minimax") && id.contains("h3"))
+    }
+
+    static let reframePrompt =
+        "The exact same video but fill in to match the output aspect ratio. Keep movement, details, and audio the same as the original audio"
+
+    func preferredReframeDuration(for sourceSeconds: Double) -> Int {
+        let rounded = max(1, Int(sourceSeconds.rounded()))
+        guard !durations.isEmpty else { return rounded }
+        if durations.contains(rounded) { return rounded }
+        return durations.min(by: { abs($0 - rounded) < abs($1 - rounded) }) ?? rounded
+    }
+
+    var preferredReframeResolution: String? {
+        if let resolutions, resolutions.contains("2K") { return "2K" }
+        if let resolutions, resolutions.contains("1080p") { return "1080p" }
+        return resolutions?.first
+    }
+
+    var reframeDurationLimitLabel: String? {
+        if let maximum = maxCombinedVideoRefSeconds,
+           maximum.isFinite, maximum > 0,
+           let seconds = Int(exactly: maximum.rounded()) {
+            return Self.durationLimitLabel(seconds: seconds)
+        }
+        if let seconds = durations.max() {
+            return Self.durationLimitLabel(seconds: seconds)
+        }
+        return sourceDurationLimitLabel
+    }
+
+    func validateReframeDuration(_ duration: Double) -> String? {
+        guard duration.isFinite, duration > 0 else {
+            return "Loading video metadata…"
+        }
+        let maximum = maxCombinedVideoRefSeconds
+            ?? durations.max().map(Double.init)
+        guard let maximum, duration > maximum,
+              let limit = reframeDurationLimitLabel else { return nil }
+        return "\(displayName) supports source videos up to \(limit). Trim the clip to continue."
+    }
+
+    private static func durationLimitLabel(seconds: Int) -> String {
+        if seconds.isMultiple(of: 60) {
+            let minutes = seconds / 60
+            return minutes == 1 ? "1 minute" : "\(minutes) minutes"
+        }
+        return seconds == 1 ? "1 second" : "\(seconds) seconds"
     }
 
     @MainActor
@@ -64,11 +122,7 @@ struct VideoModelConfig: Identifiable, Sendable {
         guard let maximum = maxSourceVideoSeconds,
               maximum.isFinite, maximum > 0,
               let seconds = Int(exactly: maximum.rounded()) else { return nil }
-        if seconds.isMultiple(of: 60) {
-            let minutes = seconds / 60
-            return minutes == 1 ? "1 minute" : "\(minutes) minutes"
-        }
-        return seconds == 1 ? "1 second" : "\(seconds) seconds"
+        return Self.durationLimitLabel(seconds: seconds)
     }
 
     func validateSourceDuration(_ duration: Double) -> String? {

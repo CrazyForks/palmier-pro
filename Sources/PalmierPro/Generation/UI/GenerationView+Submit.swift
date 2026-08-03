@@ -331,10 +331,15 @@ extension GenerationView {
             let model = videoModel
             let inputAssets = videoInputAssets(for: model)
             let trimmedSource: TrimmedSource? = {
-                guard model.requiresSourceVideo,
-                      let trim = editor.pendingEditTrimmedSource,
-                      let sv = sourceVideo,
-                      trim.sourceURL == sv.url else { return nil }
+                guard let trim = editor.pendingEditTrimmedSource else { return nil }
+                if model.requiresSourceVideo {
+                    guard let sv = sourceVideo, trim.sourceURL == sv.url else { return nil }
+                    return trim
+                }
+                // GenerationService trims the first uploaded reference only.
+                guard let first = inputAssets.textToVideoReferences.first,
+                      first.type == .video,
+                      trim.sourceURL == first.url else { return nil }
                 return trim
             }()
             let placeholderDuration: Double
@@ -344,6 +349,8 @@ extension GenerationView {
                 } else {
                     placeholderDuration = sourceVideo?.duration ?? 5
                 }
+            } else if let trim = trimmedSource, trim.hasTrim {
+                placeholderDuration = trim.durationSeconds
             } else {
                 placeholderDuration = Double(selectedDuration)
             }
