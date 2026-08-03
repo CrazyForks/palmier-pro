@@ -96,6 +96,37 @@ struct TextRasterCacheTests {
         #expect(count == 1, "typewriter hold frames must reuse the raster, got \(count)")
     }
 
+    @Test func translucentFillBorderPadsRasterBeyondTextBox() throws {
+        // A border with a translucent fill strokes in a single pass (not drawsGlyphOutline);
+        // the raster must still pad for it or edge strokes clip.
+        var c = clip(content: uniqueContent("HHH"))
+        var style = TextStyle(fontSize: 48)
+        style.color.a = 0.5
+        style.alignment = .left
+        style.border = .init(enabled: true, color: .init(r: 1, g: 0, b: 0, a: 1), width: 40)
+        c.textStyle = style
+        c.transform = Transform(centerX: 0.5, centerY: 0.5, width: 0.5, height: 0.25)
+
+        let image = try #require(TextFrameRenderer.image(clip: c, frame: 0, renderSize: size))
+        let boxMinX = 0.25 * size.width
+        #expect(image.extent.minX <= boxMinX - 10,
+                "raster must pad for single-pass border strokes, got \(image.extent)")
+
+        let ctx = CIContext(options: [.workingColorSpace: NSNull(), .outputColorSpace: NSNull()])
+        let bg = CIImage(color: .black).cropped(to: CGRect(origin: .zero, size: size))
+        let w = Int(size.width), h = Int(size.height)
+        var px = [UInt8](repeating: 0, count: w * h * 4)
+        ctx.render(image.unpremultiplyingAlpha().composited(over: bg), toBitmap: &px, rowBytes: w * 4,
+                   bounds: CGRect(origin: .zero, size: size), format: .RGBA8, colorSpace: nil)
+        var strokePixelsOutsideBox = 0
+        for y in 0..<h {
+            for x in (Int(boxMinX) - 7)..<(Int(boxMinX) - 2) where px[(y * w + x) * 4] > 100 {
+                strokePixelsOutsideBox += 1
+            }
+        }
+        #expect(strokePixelsOutsideBox > 0, "border stroke left of the text box must survive the raster crop")
+    }
+
     @Test func reusedRasterCompositesAtTheClipPosition() throws {
         let ctx = CIContext(options: [.workingColorSpace: NSNull(), .outputColorSpace: NSNull()])
         var c = clip(content: uniqueContent("MOVE"))

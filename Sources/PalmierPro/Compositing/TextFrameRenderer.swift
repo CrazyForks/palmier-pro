@@ -94,7 +94,7 @@ enum TextFrameRenderer {
                 .insetBy(dx: -stroke, dy: -stroke)
             rect = rect.union(offset)
         }
-        if style.drawsGlyphOutline {
+        if style.border.enabled, style.border.width > 0 {
             let pad = style.glyphBorderPadding(fontSize: fontSize)
             rect = rect.insetBy(dx: -pad, dy: -pad)
         }
