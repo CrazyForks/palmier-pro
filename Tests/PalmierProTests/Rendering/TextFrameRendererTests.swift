@@ -168,6 +168,113 @@ struct TextFrameRendererTests {
         #expect(edgeRed < 50, "border should not render a rectangular clip box")
     }
 
+    @Test func glyphOutlineExpandsOutwardWithoutEatingFill() throws {
+        let size = CGSize(width: 640, height: 360)
+        var base = TextStyle()
+        base.fontName = "Helvetica-Bold"
+        base.fontSize = 240
+        base.color = .init(r: 1, g: 1, b: 1, a: 1)
+        base.shadow.enabled = false
+        let box = Transform(topLeft: (0.15, 0.15), width: 0.7, height: 0.7)
+
+        let plainPixels = rawPixels(
+            TextFrameRenderer.image(
+                clip: textClip(content: "O", style: base, transform: box),
+                frame: 0,
+                renderSize: size
+            )!,
+            size: size
+        )
+        var outlined = base
+        outlined.border = .init(enabled: true, color: .init(r: 1, g: 0, b: 0, a: 1), width: 24)
+        let outlinedPixels = rawPixels(
+            TextFrameRenderer.image(
+                clip: textClip(content: "O", style: outlined, transform: box),
+                frame: 0,
+                renderSize: size
+            )!,
+            size: size
+        )
+
+        func whiteFillCount(_ pixels: [UInt8]) -> Int {
+            var count = 0
+            for i in stride(from: 0, to: pixels.count, by: 4) {
+                if pixels[i] > 200, pixels[i + 1] > 200, pixels[i + 2] > 200, pixels[i + 3] > 200 {
+                    count += 1
+                }
+            }
+            return count
+        }
+
+        let plainWhite = whiteFillCount(plainPixels)
+        let outlinedWhite = whiteFillCount(outlinedPixels)
+        #expect(plainWhite > 100, "expected a solid white glyph fill")
+        #expect(
+            outlinedWhite >= plainWhite * 9 / 10,
+            "outline must not eat into the fill (\(outlinedWhite) vs \(plainWhite) white pixels)"
+        )
+
+        let plainBounds = try #require(alphaBounds(plainPixels, size: size))
+        let outlinedBounds = try #require(alphaBounds(outlinedPixels, size: size))
+        #expect(outlinedBounds.width > plainBounds.width + 8)
+        #expect(outlinedBounds.height > plainBounds.height + 8)
+    }
+
+    @Test func thickOutlineOnPointedGlyphsStaysWithinDeclaredPadding() throws {
+        let size = CGSize(width: 640, height: 360)
+        var base = TextStyle()
+        base.fontName = "Helvetica-Bold"
+        base.fontSize = 500
+        base.color = .init(r: 1, g: 1, b: 1, a: 1)
+        base.shadow.enabled = false
+        let box = Transform(topLeft: (0.05, 0.05), width: 0.9, height: 0.9)
+
+        let plainBounds = try #require(alphaBounds(
+            rawPixels(
+                TextFrameRenderer.image(
+                    clip: textClip(content: "VW", style: base, transform: box),
+                    frame: 0,
+                    renderSize: size
+                )!,
+                size: size
+            ),
+            size: size
+        ))
+        var outlined = base
+        outlined.border = .init(enabled: true, color: .init(r: 1, g: 0, b: 0, a: 1), width: 30)
+        let outlinedBounds = try #require(alphaBounds(
+            rawPixels(
+                TextFrameRenderer.image(
+                    clip: textClip(content: "VW", style: outlined, transform: box),
+                    frame: 0,
+                    renderSize: size
+                )!,
+                size: size
+            ),
+            size: size
+        ))
+
+        // Round joins keep corners inside width + antialias slack; miter spikes shoot far past it.
+        let scale = size.height / TextLayout.referenceCanvasHeight
+        let maxGrowth = CGFloat(outlined.border.width) * scale + 3
+        #expect(outlinedBounds.minX >= plainBounds.minX - maxGrowth)
+        #expect(outlinedBounds.maxX <= plainBounds.maxX + maxGrowth)
+        #expect(outlinedBounds.minY >= plainBounds.minY - maxGrowth)
+        #expect(outlinedBounds.maxY <= plainBounds.maxY + maxGrowth)
+    }
+
+    @Test func glyphOutlineUndercoatUsesDoubledPositiveStroke() {
+        var style = TextStyle()
+        style.fontSize = 100
+        style.border = .init(enabled: true, width: 5)
+        let undercoat = style.attributes(size: 100, outlinePass: .undercoat)
+        let fill = style.attributes(size: 100, outlinePass: .fill)
+
+        #expect((undercoat[.strokeWidth] as? NSNumber)?.doubleValue == 10)
+        #expect(fill[.strokeWidth] == nil)
+        #expect(style.glyphBorderPadding(fontSize: 100) == 5)
+    }
+
     @Test func backgroundRendersRoundedFillAndIndependentOutline() {
         let size = CGSize(width: 640, height: 360)
         var style = TextStyle()

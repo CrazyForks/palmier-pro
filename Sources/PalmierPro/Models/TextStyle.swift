@@ -309,30 +309,56 @@ extension TextStyle {
         fontCase.apply(to: text)
     }
 
+    /// Stroke is centered on the glyph path; render `.undercoat` then `.fill` so the outline expands outward.
+    enum OutlinePass: Sendable {
+        case fill
+        case undercoat
+    }
+
+    var drawsGlyphOutline: Bool {
+        border.enabled && border.width > 0
+    }
+
     /// `includeColor: false` for bounding measurement (color doesn't affect size).
-    func attributes(size: CGFloat, includeColor: Bool = true) -> [NSAttributedString.Key: Any] {
+    func attributes(
+        size: CGFloat,
+        includeColor: Bool = true,
+        outlinePass: OutlinePass = .fill
+    ) -> [NSAttributedString.Key: Any] {
         var attrs: [NSAttributedString.Key: Any] = [
             .font: resolvedFont(size: size),
             .paragraphStyle: paragraphStyle(size: size),
             .kern: tracking * Double(size) / max(1, fontSize * fontScale),
         ]
-        if isUnderlined { attrs[.underlineStyle] = NSUnderlineStyle.single.rawValue }
-        if isStruckThrough { attrs[.strikethroughStyle] = NSUnderlineStyle.single.rawValue }
-        if includeColor { attrs[.foregroundColor] = nsColor }
-        if border.enabled {
-            attrs[.strokeWidth] = NSNumber(value: glyphBorderStrokePercentage)
-            if includeColor { attrs[.strokeColor] = border.color.nsColor }
+        switch outlinePass {
+        case .fill:
+            if isUnderlined { attrs[.underlineStyle] = NSUnderlineStyle.single.rawValue }
+            if isStruckThrough { attrs[.strikethroughStyle] = NSUnderlineStyle.single.rawValue }
+            if includeColor { attrs[.foregroundColor] = nsColor }
+        case .undercoat:
+            guard drawsGlyphOutline else {
+                if includeColor { attrs[.foregroundColor] = nsColor }
+                break
+            }
+            // Positive = stroke only; 2× so the outer half equals `border.width` after fill covers the inside.
+            attrs[.strokeWidth] = NSNumber(value: glyphOutlineUndercoatStrokePercentage)
+            if includeColor {
+                let stroke = border.color.nsColor
+                attrs[.strokeColor] = stroke
+                attrs[.foregroundColor] = stroke
+            }
         }
         return attrs
     }
 
     func glyphBorderPadding(fontSize: CGFloat) -> CGFloat {
-        ceil(fontSize * CGFloat(abs(glyphBorderStrokePercentage)) / 100)
+        let unscaledFontSize = max(1, self.fontSize * fontScale)
+        return ceil(fontSize * CGFloat(max(0, border.width)) / CGFloat(unscaledFontSize))
     }
 
-    private var glyphBorderStrokePercentage: Double {
+    private var glyphOutlineUndercoatStrokePercentage: Double {
         let unscaledFontSize = max(1, fontSize * fontScale)
-        return -100 * max(0, border.width) / unscaledFontSize
+        return 200 * max(0, border.width) / unscaledFontSize
     }
 
     private static func font(_ font: NSFont, size: CGFloat, bold: Bool, italic: Bool) -> NSFont {
