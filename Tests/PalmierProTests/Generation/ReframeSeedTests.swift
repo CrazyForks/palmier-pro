@@ -22,6 +22,7 @@ struct ReframeSeedTests {
 
         #expect(seed.model == "minimax-h3")
         #expect(seed.prompt == VideoModelConfig.reframePrompt)
+        #expect(seed.prompt.contains("@Video1"))
         #expect(seed.aspectRatio == "9:16")
         #expect(seed.resolution == "2K")
         #expect(seed.duration == 8)

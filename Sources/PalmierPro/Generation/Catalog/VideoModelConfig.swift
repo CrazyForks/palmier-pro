@@ -30,7 +30,7 @@ struct VideoModelConfig: Identifiable, Sendable {
     }
 
     static let reframePrompt =
-        "The exact same video but fill in to match the output aspect ratio. Keep movement, details, and audio the same as the original audio"
+        "The exact same video as @Video1 but fill in to match the output aspect ratio. Keep movement, details, and audio the same as the original audio"
 
     func preferredReframeDuration(for sourceSeconds: Double) -> Int {
         let rounded = max(1, Int(sourceSeconds.rounded()))
