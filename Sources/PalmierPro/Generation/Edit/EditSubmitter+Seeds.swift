@@ -37,7 +37,7 @@ extension EditSubmitter {
         var stored = GenerationInput(
             prompt: reframePrompt,
             model: model.id,
-            duration: model.nearestSupportedDuration(for: sourceSeconds),
+            duration: model.supportedDuration(covering: sourceSeconds),
             aspectRatio: isPortrait ? "16:9" : "9:16",
             resolution: model.preferredHighResolution
         )

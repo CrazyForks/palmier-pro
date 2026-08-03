@@ -40,6 +40,14 @@ struct VideoModelConfig: Identifiable, Sendable {
         Self.nearestSupportedDuration(seconds: seconds, in: durations)
     }
 
+    /// Smallest supported duration that fully covers `seconds`, so generated
+    /// media is never shorter than the clip span it replaces.
+    func supportedDuration(covering seconds: Double) -> Int {
+        durations.filter { Double($0) >= seconds }.min()
+            ?? durations.max()
+            ?? max(1, Int(seconds.rounded(.up)))
+    }
+
     var preferredHighResolution: String? {
         if let resolutions, resolutions.contains("2K") { return "2K" }
         if let resolutions, resolutions.contains("1080p") { return "1080p" }

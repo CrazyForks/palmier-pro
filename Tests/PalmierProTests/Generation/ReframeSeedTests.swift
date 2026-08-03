@@ -25,7 +25,7 @@ struct ReframeSeedTests {
         #expect(seed.prompt.contains("@Video1"))
         #expect(seed.aspectRatio == "9:16")
         #expect(seed.resolution == "2K")
-        #expect(seed.duration == 8)
+        #expect(seed.duration == 9)
         #expect(seed.referenceVideoAssetIds == ["clip-1"])
         #expect(seed.imageURLAssetIds == nil)
     }
@@ -61,12 +61,14 @@ struct ReframeSeedTests {
         #expect(!VideoModelConfig.isReframeModel(model))
     }
 
-    @Test("Snaps duration to the nearest supported value")
-    func snapsDuration() throws {
+    @Test("Duration covers the source span so the replaced clip never outlives the media")
+    func durationCoversSourceSpan() throws {
         let model = try Self.minimaxH3()
-        #expect(model.nearestSupportedDuration(for: 7.6) == 8)
-        #expect(model.nearestSupportedDuration(for: 4.1) == 5)
-        #expect(model.nearestSupportedDuration(for: 20) == 15)
+        #expect(model.supportedDuration(covering: 7.6) == 8)
+        #expect(model.supportedDuration(covering: 8.5) == 9)
+        #expect(model.supportedDuration(covering: 4.1) == 5)
+        #expect(model.supportedDuration(covering: 10) == 10)
+        #expect(model.supportedDuration(covering: 20) == 15)
         #expect(model.validateReframeDuration(16) != nil)
         #expect(model.validateReframeDuration(10) == nil)
     }
