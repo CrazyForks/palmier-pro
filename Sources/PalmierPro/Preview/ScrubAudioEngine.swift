@@ -1,6 +1,29 @@
 import AppKit
 import AVFoundation
 
+struct ScrubAudioReaderLoop {
+    nonisolated static func run<Payload, Snapshot>(
+        next: () async throws -> Payload?,
+        process: (Payload) throws -> Void,
+        snapshot: () throws -> Snapshot,
+        teardown: () async -> Void
+    ) async throws -> Snapshot {
+        let result: Result<Snapshot, Error>
+        do {
+            while !Task.isCancelled, let payload = try await next() {
+                guard !Task.isCancelled else { break }
+                try process(payload)
+            }
+            result = .success(try snapshot())
+        } catch {
+            result = .failure(error)
+        }
+
+        await teardown()
+        return try result.get()
+    }
+}
+
 @MainActor
 final class ScrubAudioEngine {
     private enum Direction: Sendable {
@@ -443,8 +466,9 @@ final class ScrubAudioEngine {
         tracks: [AVAssetTrack],
         startSample: Int64,
         frameCount: Int64
-    ) -> ReaderSession? {
+    ) async -> ReaderSession? {
         guard let reader = try? AVAssetReader(asset: source.asset) else { return nil }
+        let readerHandle = ReaderHandle(reader)
         let output = AVAssetReaderAudioMixOutput(audioTracks: tracks, audioSettings: [
             AVFormatIDKey: kAudioFormatLinearPCM,
             AVSampleRateKey: sampleRate,
@@ -461,8 +485,13 @@ final class ScrubAudioEngine {
             duration: CMTime(value: frameCount, timescale: sampleTimescale)
         )
         let provider = reader.outputProvider(for: output)
-        guard (try? reader.start()) != nil else { return nil }
-        return ReaderSession(reader: ReaderHandle(reader), provider: provider)
+        do {
+            try reader.start()
+        } catch {
+            await finishReading(readerHandle)
+            return nil
+        }
+        return ReaderSession(reader: readerHandle, provider: provider)
     }
 
     @concurrent
@@ -478,7 +507,7 @@ final class ScrubAudioEngine {
             return PCMWindow(startSample: startSample, left: silence, right: silence, hasAudioTracks: false)
         }
 
-        guard let session = makeReader(
+        guard let session = await makeReader(
             source: source, tracks: tracks, startSample: startSample, frameCount: Int64(frameCount)
         ) else { return nil }
         return await decodeSamples(session: session, startSample: startSample, frameCount: frameCount)
@@ -493,8 +522,9 @@ final class ScrubAudioEngine {
         var rightSamples = [Int16](repeating: 0, count: frameCount)
 
         var runningOffset = 0
+        let status: AVAssetReader.Status
         do {
-            try await ScrubAudioReaderLoop.run(
+            status = try await ScrubAudioReaderLoop.run(
                 next: { try await session.provider.next() },
                 process: { payload in
                     payload.withUnsafeSampleBuffer { sampleBuffer in
@@ -538,13 +568,14 @@ final class ScrubAudioEngine {
                         runningOffset = max(runningOffset, destinationOffset + sampleCount)
                     }
                 },
+                snapshot: { session.reader.value.status },
                 teardown: { await finishReading(session.reader) }
             )
         } catch {
             return nil
         }
 
-        guard !Task.isCancelled, session.reader.value.status == .completed else { return nil }
+        guard !Task.isCancelled, status == .completed else { return nil }
         return PCMWindow(startSample: startSample, left: leftSamples, right: rightSamples, hasAudioTracks: true)
     }
 }
