@@ -54,7 +54,7 @@ enum TextAnimator {
             return WordState(opacity: Float(on), color: activeTint(anim, word, rel, base))
         case .highlightPop:
             let on = activeRamp(rel, word: word, ramp: min(hand, 4))
-            return WordState(scale: 1 + 0.15 * CGFloat(on), color: lerp(base, highlight, CGFloat(on)))
+            return WordState(color: lerp(base, highlight, CGFloat(on)))
         case .highlightBlock:
             let on = activeRamp(rel, word: word, ramp: min(hand, 4))
             var bg = highlight; bg.a *= Double(on)
