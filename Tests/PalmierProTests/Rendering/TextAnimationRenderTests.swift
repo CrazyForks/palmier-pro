@@ -62,6 +62,17 @@ struct TextAnimationRenderTests {
         #expect(yellow > 20, "active word should be highlighted yellow (\(yellow))")
     }
 
+    @Test func highlightBlockRemainsRenderedAcrossWordGap() {
+        var c = clip(TextAnimation(
+            preset: .highlightBlock,
+            highlight: .init(r: 1, g: 0.85, b: 0, a: 1)
+        ))
+        c.wordTimings?[0].endFrame = 10
+        c.wordTimings?[1].startFrame = 30
+
+        #expect(pixels(c, frame: 5) == pixels(c, frame: 20))
+    }
+
     @Test func typewriterShowsCompleteTextOnFinalFrame() {
         var animated = clip(TextAnimation(preset: .typewriter))
         animated.textStyle?.alignment = .left
