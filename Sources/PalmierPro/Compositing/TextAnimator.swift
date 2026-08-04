@@ -35,29 +35,39 @@ enum TextAnimator {
     }
 
     /// Per-word state. `base` is the clip's static text color.
-    static func wordState(_ anim: TextAnimation, word: WordTiming, rel: Int, base: TextStyle.RGBA) -> WordState {
+    static func wordState(
+        _ anim: TextAnimation,
+        word: WordTiming,
+        activeUntil: Int,
+        rel: Int,
+        base: TextStyle.RGBA
+    ) -> WordState {
         let highlight = anim.highlight ?? TextAnimation.defaultHighlight
         let hand = max(1, anim.perWordFrames)
         switch anim.preset {
         case .wordReveal:
             let t = progress(rel, start: word.startFrame, dur: hand)
-            return WordState(opacity: Float(t), color: activeTint(anim, word, rel, base))
+            return WordState(opacity: Float(t), color: activeTint(anim, word, activeUntil, rel, base))
         case .wordSlide:
             let t = progress(rel, start: word.startFrame, dur: hand)
-            return WordState(opacity: Float(t), dy: 0.5 * (1 - CGFloat(t)), color: activeTint(anim, word, rel, base))
+            return WordState(
+                opacity: Float(t),
+                dy: 0.5 * (1 - CGFloat(t)),
+                color: activeTint(anim, word, activeUntil, rel, base)
+            )
         case .wordPop:
             let u = linear(rel, start: word.startFrame, dur: hand)
             return WordState(opacity: Float(smoothstep(u)), scale: 0.6 + 0.4 * overshoot(u),
-                             color: activeTint(anim, word, rel, base))
+                             color: activeTint(anim, word, activeUntil, rel, base))
         case .wordCycle:
-            let on = activeRamp(rel, word: word, ramp: hand)
-            return WordState(opacity: Float(on), color: activeTint(anim, word, rel, base))
+            let on = activeProgress(rel, start: word.startFrame, until: activeUntil, duration: hand)
+            return WordState(opacity: Float(on), color: activeTint(anim, word, activeUntil, rel, base))
         case .highlightPop:
-            let on = activeRamp(rel, word: word, ramp: min(hand, 4))
-            return WordState(scale: 1 + 0.15 * CGFloat(on), color: lerp(base, highlight, CGFloat(on)))
+            let on = activeProgress(rel, start: word.startFrame, until: activeUntil, duration: hand)
+            let pulse = activePulse(rel, start: word.startFrame, until: activeUntil, duration: hand)
+            return WordState(scale: 1 + 0.15 * CGFloat(pulse), color: lerp(base, highlight, CGFloat(on)))
         case .highlightBlock:
-            let on = activeRamp(rel, word: word, ramp: min(hand, 4))
-            var bg = highlight; bg.a *= Double(on)
+            let bg = isActive(rel, start: word.startFrame, until: activeUntil) ? highlight : nil
             return WordState(color: base, bgColor: bg)
         default:
             return WordState(color: base)
@@ -65,9 +75,20 @@ enum TextAnimator {
     }
 
     /// Tints the active word if a highlight is set.
-    private static func activeTint(_ anim: TextAnimation, _ word: WordTiming, _ rel: Int, _ base: TextStyle.RGBA) -> TextStyle.RGBA {
+    private static func activeTint(
+        _ anim: TextAnimation,
+        _ word: WordTiming,
+        _ activeUntil: Int,
+        _ rel: Int,
+        _ base: TextStyle.RGBA
+    ) -> TextStyle.RGBA {
         guard let hl = anim.highlight else { return base }
-        let on = activeRamp(rel, word: word, ramp: max(1, anim.perWordFrames))
+        let on = activeProgress(
+            rel,
+            start: word.startFrame,
+            until: activeUntil,
+            duration: max(1, anim.perWordFrames)
+        )
         return lerp(base, hl, CGFloat(on))
     }
 
@@ -91,15 +112,20 @@ enum TextAnimator {
         return CGFloat(1 + (s + 1) * p * p * p + s * p * p)
     }
 
-    /// 0 outside the active span, with the ramp shortened so fast words reach 1.
-    private static func activeRamp(_ rel: Int, word: WordTiming, ramp: Int) -> Double {
-        guard rel >= word.startFrame, rel < word.endFrame else { return 0 }
-        let span = max(1, word.endFrame - word.startFrame)
-        guard span > 1 else { return 1 }
-        let r = min(max(1, ramp), max(1, span / 2))
-        let rampIn = smoothstep(min(1, Double(rel - word.startFrame) / Double(r)))
-        let rampOut = smoothstep(min(1, Double(word.endFrame - rel) / Double(r)))
-        return min(rampIn, rampOut)
+    private static func activeProgress(_ rel: Int, start: Int, until: Int, duration: Int) -> Double {
+        guard isActive(rel, start: start, until: until) else { return 0 }
+        return progress(rel, start: start, dur: max(1, duration))
+    }
+
+    private static func activePulse(_ rel: Int, start: Int, until: Int, duration: Int) -> Double {
+        guard isActive(rel, start: start, until: until) else { return 0 }
+        let t = linear(rel, start: start, dur: max(1, duration))
+        guard t < 1 else { return 0 }
+        return t <= 0.5 ? smoothstep(t * 2) : smoothstep((1 - t) * 2)
+    }
+
+    private static func isActive(_ rel: Int, start: Int, until: Int) -> Bool {
+        until > start && rel >= start && rel < until
     }
 
     private static func lerp(_ a: TextStyle.RGBA, _ b: TextStyle.RGBA, _ t: CGFloat) -> TextStyle.RGBA {
