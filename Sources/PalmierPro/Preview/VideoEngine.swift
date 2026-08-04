@@ -314,8 +314,6 @@ final class VideoEngine {
             if needsApply {
                 apply(cached.result, editor: editor)
             }
-            // Empty mappings = trackless composition: nothing to refresh, and
-            // refreshVisuals would fall back into rebuild and recurse.
             if !trackMappings.isEmpty, needsApply || !visualsCurrent {
                 refreshVisuals()
             }
