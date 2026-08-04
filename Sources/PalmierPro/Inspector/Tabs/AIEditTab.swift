@@ -55,6 +55,7 @@ struct AIEditTab: View {
                     if clipId != nil { replaceToggle }
                     visualActionGrid
                 }
+                .padding(.top, AppTheme.Spacing.xxs)
             }
 
             if asset.type == .video || asset.type == .audio {
@@ -69,6 +70,7 @@ struct AIEditTab: View {
                     }
                     audioActionGrid
                 }
+                .padding(.top, AppTheme.Spacing.xxs)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -76,9 +78,9 @@ struct AIEditTab: View {
 
     private var actionGroupInsets: EdgeInsets {
         EdgeInsets(
-            top: AppTheme.Spacing.zero,
+            top: AppTheme.Spacing.xxs,
             leading: AppTheme.Spacing.smMd,
-            bottom: AppTheme.Spacing.smMd,
+            bottom: AppTheme.Spacing.md,
             trailing: AppTheme.Spacing.smMd
         )
     }
@@ -357,7 +359,11 @@ struct AIEditTab: View {
                 Image(systemName: icon)
                     .font(.system(size: AppTheme.FontSize.smMd, weight: AppTheme.FontWeight.medium))
                     .foregroundStyle(isEnabled ? AppTheme.Text.secondaryColor : AppTheme.Text.mutedColor)
-                    .frame(width: AppTheme.IconSize.xs, alignment: .center)
+                    .frame(
+                        width: AppTheme.IconSize.xs,
+                        height: AppTheme.IconSize.xs,
+                        alignment: .center
+                    )
                 Text(verbatim: title)
                     .font(.system(size: AppTheme.FontSize.sm, weight: AppTheme.FontWeight.medium))
                     .foregroundStyle(isEnabled ? AppTheme.Text.primaryColor : AppTheme.Text.mutedColor)
@@ -376,7 +382,7 @@ struct AIEditTab: View {
                 }
             }
             .padding(.horizontal, AppTheme.Spacing.smMd)
-            .padding(.vertical, AppTheme.Spacing.smMd)
+            .padding(.vertical, AppTheme.Spacing.sm)
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(
                 RoundedRectangle(cornerRadius: AppTheme.Radius.sm, style: .continuous)

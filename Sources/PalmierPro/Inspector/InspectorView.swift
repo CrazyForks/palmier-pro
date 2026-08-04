@@ -1108,12 +1108,12 @@ struct InspectorView: View {
         let hasReferences = GenerationReferencesStrip.hasResolvableReferences(gen, in: editor.mediaAssets)
         let metadata = inputMetadataSummary(gen)
         return EditorPanelGroup(
-            L10n.string("Input"),
+            L10n.string("Generation Input"),
             contentSpacing: AppTheme.Spacing.zero,
             contentInsets: EdgeInsets(
-                top: AppTheme.Spacing.xs,
+                top: AppTheme.Spacing.xxs,
                 leading: AppTheme.Spacing.smMd,
-                bottom: AppTheme.Spacing.smMd,
+                bottom: AppTheme.Spacing.md,
                 trailing: AppTheme.Spacing.smMd
             )
         ) {
@@ -1151,6 +1151,7 @@ struct InspectorView: View {
                 .padding(.top, hasReferences ? AppTheme.Spacing.md : AppTheme.Spacing.zero)
             }
         }
+        .padding(.top, AppTheme.Spacing.xxs)
     }
 
     private func promptSection(prompt: String) -> some View {
