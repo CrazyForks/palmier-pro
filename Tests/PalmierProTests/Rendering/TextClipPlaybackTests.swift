@@ -137,6 +137,17 @@ struct TextClipPlaybackTests {
         #expect(playerBackground.enabled == editorBackground.enabled)
         #expect(playerBackground.paddingX == editorBackground.paddingX)
         #expect(playerBackground.paddingY == editorBackground.paddingY)
+
+        engine.player.replaceCurrentItem(with: AVPlayerItem(asset: AVMutableComposition()))
+        engine.rebuild()
+        #expect(engine.rebuildTask == nil)
+
+        let cacheHitPlayerClip = try self.playerClip(id: text.id, engine: engine)
+        let cacheHitBackground = try #require(cacheHitPlayerClip.textStyle).background
+        #expect(cacheHitPlayerClip.textFillMode == editorClip.textFillMode)
+        #expect(cacheHitBackground.enabled == editorBackground.enabled)
+        #expect(cacheHitBackground.paddingX == editorBackground.paddingX)
+        #expect(cacheHitBackground.paddingY == editorBackground.paddingY)
     }
 
     private func playerClip(id: String, engine: VideoEngine) throws -> Clip {
