@@ -278,7 +278,19 @@ enum TextFrameRenderer {
         let layout = perWordLayout(clip: clip, content: content, style: style, boxes: boxes,
                                    raster: raster, fontSize: fontSize, renderSize: renderSize)
         let rel = frame - clip.startFrame
-        let states = layout.timings.map { TextAnimator.wordState(anim, word: $0, rel: rel, base: style.color) }
+        let states = layout.timings.enumerated().map { index, timing in
+            let nextWordStart = layout.timings.indices.contains(index + 1)
+                ? layout.timings[index + 1].startFrame
+                : nil
+            return TextAnimator.wordState(
+                anim,
+                word: timing,
+                nextWordStart: nextWordStart,
+                duration: clip.durationFrames,
+                rel: rel,
+                base: style.color
+            )
+        }
 
         // The output depends on the frame only through the word states.
         return cachedImage(content: content, style: style, boxes: boxes, raster: raster,

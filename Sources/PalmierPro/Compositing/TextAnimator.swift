@@ -35,7 +35,14 @@ enum TextAnimator {
     }
 
     /// Per-word state. `base` is the clip's static text color.
-    static func wordState(_ anim: TextAnimation, word: WordTiming, rel: Int, base: TextStyle.RGBA) -> WordState {
+    static func wordState(
+        _ anim: TextAnimation,
+        word: WordTiming,
+        nextWordStart: Int?,
+        duration: Int,
+        rel: Int,
+        base: TextStyle.RGBA
+    ) -> WordState {
         let highlight = anim.highlight ?? TextAnimation.defaultHighlight
         let hand = max(1, anim.perWordFrames)
         switch anim.preset {
@@ -53,10 +60,24 @@ enum TextAnimator {
             let on = activeRamp(rel, word: word, ramp: hand)
             return WordState(opacity: Float(on), color: activeTint(anim, word, rel, base))
         case .highlightPop:
-            let on = activeRamp(rel, word: word, ramp: min(hand, 4))
+            let ramp = min(hand, 4)
+            let timing = heldHighlightTiming(
+                word,
+                nextWordStart: nextWordStart,
+                duration: duration,
+                transitionFrames: ramp
+            )
+            let on = activeRamp(rel, word: timing, ramp: ramp)
             return WordState(color: lerp(base, highlight, CGFloat(on)))
         case .highlightBlock:
-            let on = activeRamp(rel, word: word, ramp: min(hand, 4))
+            let ramp = min(hand, 4)
+            let timing = heldHighlightTiming(
+                word,
+                nextWordStart: nextWordStart,
+                duration: duration,
+                transitionFrames: ramp
+            )
+            let on = activeRamp(rel, word: timing, ramp: ramp)
             var bg = highlight; bg.a *= Double(on)
             return WordState(color: base, bgColor: bg)
         default:
@@ -69,6 +90,21 @@ enum TextAnimator {
         guard let hl = anim.highlight else { return base }
         let on = activeRamp(rel, word: word, ramp: max(1, anim.perWordFrames))
         return lerp(base, hl, CGFloat(on))
+    }
+
+    private static func heldHighlightTiming(
+        _ word: WordTiming,
+        nextWordStart: Int?,
+        duration: Int,
+        transitionFrames: Int
+    ) -> WordTiming {
+        let holdEnd = max(word.startFrame, nextWordStart ?? duration)
+        let (endFrame, overflow) = holdEnd.addingReportingOverflow(transitionFrames)
+        return WordTiming(
+            text: word.text,
+            startFrame: word.startFrame,
+            endFrame: overflow ? Int.max : endFrame
+        )
     }
 
     // MARK: - Helpers
