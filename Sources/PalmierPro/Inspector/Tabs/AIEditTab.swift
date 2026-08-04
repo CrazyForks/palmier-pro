@@ -46,14 +46,24 @@ struct AIEditTab: View {
             }
 
             if isVisualClipContext {
-                EditorPanelGroup(L10n.string("AI Enhance"), isExpanded: $aiEnhanceExpanded, contentSpacing: AppTheme.Spacing.smMd) {
+                EditorPanelGroup(
+                    L10n.string("AI Enhance"),
+                    isExpanded: $aiEnhanceExpanded,
+                    contentSpacing: AppTheme.Spacing.smMd,
+                    contentInsets: actionGroupInsets
+                ) {
                     if clipId != nil { replaceToggle }
                     visualActionGrid
                 }
             }
 
             if asset.type == .video || asset.type == .audio {
-                EditorPanelGroup(L10n.string("AI Audio"), isExpanded: $aiAudioExpanded, contentSpacing: AppTheme.Spacing.smMd) {
+                EditorPanelGroup(
+                    L10n.string("AI Audio"),
+                    isExpanded: $aiAudioExpanded,
+                    contentSpacing: AppTheme.Spacing.smMd,
+                    contentInsets: actionGroupInsets
+                ) {
                     if clipId != nil {
                         audioPlacementToggle
                     }
@@ -62,6 +72,15 @@ struct AIEditTab: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var actionGroupInsets: EdgeInsets {
+        EdgeInsets(
+            top: AppTheme.Spacing.zero,
+            leading: AppTheme.Spacing.smMd,
+            bottom: AppTheme.Spacing.smMd,
+            trailing: AppTheme.Spacing.smMd
+        )
     }
 
     private var actionGridColumns: [GridItem] {
