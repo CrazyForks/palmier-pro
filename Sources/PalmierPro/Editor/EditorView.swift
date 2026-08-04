@@ -57,10 +57,10 @@ private enum SplitAutosave {
     static let root         = "editor.root"
     static let defaultH     = "editor.default.h"
     static let mediaTop     = "editor.media.top"
-    static let mediaRight   = "editor.media.right.v2"
+    static let mediaRight   = "editor.media.right"
     static let verticalTop  = "editor.vertical.top"
-    static let verticalLeft = "editor.vertical.left.v2"
-    static func preset(_ p: LayoutPreset) -> String { "editor.\(p.rawValue).preset.v2" }
+    static let verticalLeft = "editor.vertical.left"
+    static func preset(_ p: LayoutPreset) -> String { "editor.\(p.rawValue).preset" }
 
     /// AppKit persists divider frames under this key; no public API queries it.
     static func hasSavedFrames(_ name: String?) -> Bool {
@@ -302,7 +302,7 @@ final class EditorSplitViewController: PaddedDividerSplitViewController {
             let rightH = rightSplit.view.bounds.height
             let topW = topSplit.view.bounds.width
             self.positionIfUnsaved(target) { $0.setPosition(round(targetW * 0.3), ofDividerAt: 0) }
-            self.positionIfUnsaved(rightSplit) { $0.setPosition(round(rightH * (1 - Layout.timelineDefaultHeightFraction)), ofDividerAt: 0) }
+            self.positionIfUnsaved(rightSplit) { $0.setPosition(round(rightH * 0.55), ofDividerAt: 0) }
             self.positionIfUnsaved(topSplit) { $0.setPosition(topW - Layout.inspectorDefault, ofDividerAt: 0) }
         }
     }
@@ -329,7 +329,7 @@ final class EditorSplitViewController: PaddedDividerSplitViewController {
             let targetW = target.view.bounds.width
             let leftH = leftSplit.view.bounds.height
             self.positionIfUnsaved(target) { $0.setPosition(round(targetW * 0.5), ofDividerAt: 0) }
-            self.positionIfUnsaved(leftSplit) { $0.setPosition(round(leftH * (1 - Layout.timelineDefaultHeightFraction)), ofDividerAt: 0) }
+            self.positionIfUnsaved(leftSplit) { $0.setPosition(round(leftH * 0.55), ofDividerAt: 0) }
             self.positionIfUnsaved(topSplit) { $0.setPosition(Layout.mediaPanelDefault, ofDividerAt: 0) }
         }
     }
