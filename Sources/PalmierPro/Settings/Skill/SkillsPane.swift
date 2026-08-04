@@ -66,14 +66,18 @@ struct SkillsPane: View {
             case .installed(let skillID):
                 SkillDetailSheet(skillID: skillID)
             case .catalog(let entry):
-                CommunitySkillPreviewSheet(entry: entry) { installedID in
-                    collection = .installed
-                    query = ""
-                    presentedSkill = nil
-                    Task { @MainActor in
-                        presentInstalled(installedID)
+                SkillDetailSheet(
+                    skillID: entry.id,
+                    catalogEntry: entry,
+                    onInstalled: { installedID in
+                        collection = .installed
+                        query = ""
+                        presentedSkill = nil
+                        Task { @MainActor in
+                            presentInstalled(installedID)
+                        }
                     }
-                }
+                )
             }
         }
     }
