@@ -310,10 +310,13 @@ final class VideoEngine {
             missingMediaRefs: missingMediaRefs
         )
         if let cached = compositionCache[timelineId], cached.inputs == inputs {
-            if player.currentItem?.asset === cached.result.composition {
-                if !visualsCurrent { refreshVisuals() }
-            } else {
+            let needsApply = player.currentItem?.asset !== cached.result.composition
+            if needsApply {
                 apply(cached.result, editor: editor)
+            }
+            // Empty mappings = trackless composition: nothing to refresh, and
+            // refreshVisuals would fall back into rebuild and recurse.
+            if !trackMappings.isEmpty, needsApply || !visualsCurrent {
                 refreshVisuals()
             }
             return
