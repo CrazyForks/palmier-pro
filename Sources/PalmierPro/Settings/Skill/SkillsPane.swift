@@ -20,8 +20,16 @@ struct SkillsPane: View {
         }
     }
 
-    private struct PresentedSkill: Identifiable {
-        let id: String
+    private enum PresentedSkill: Identifiable {
+        case installed(String)
+        case catalog(SkillCatalogEntry)
+
+        var id: String {
+            switch self {
+            case .installed(let skillID): "installed:\(skillID)"
+            case .catalog(let entry): "catalog:\(entry.id)"
+            }
+        }
     }
 
     private var installedSkills: [Skill] {
@@ -54,7 +62,19 @@ struct SkillsPane: View {
             Task { await catalog.refresh() }
         }
         .sheet(item: $presentedSkill) { item in
-            SkillDetailSheet(skillID: item.id)
+            switch item {
+            case .installed(let skillID):
+                SkillDetailSheet(skillID: skillID)
+            case .catalog(let entry):
+                CommunitySkillPreviewSheet(entry: entry) { installedID in
+                    collection = .installed
+                    query = ""
+                    presentedSkill = nil
+                    Task { @MainActor in
+                        presentInstalled(installedID)
+                    }
+                }
+            }
         }
     }
 
@@ -195,8 +215,8 @@ struct SkillsPane: View {
                         actionTitle: state == .update ? L10n.string("Update") : L10n.string("Open"),
                         primaryAction: false,
                         working: working.contains(skill.id),
-                        summaryAction: { present(skill.id) },
-                        action: { state == .update ? update(skill) : present(skill.id) }
+                        summaryAction: { presentInstalled(skill.id) },
+                        action: { state == .update ? update(skill) : presentInstalled(skill.id) }
                     )
                 }
             }
@@ -268,12 +288,16 @@ struct SkillsPane: View {
                 : state == .update ? L10n.string("Update") : L10n.string("Open"),
             primaryAction: skill == nil,
             working: working.contains(entry.id),
-            summaryAction: skill.map { installedSkill in
-                { present(installedSkill.id) }
+            summaryAction: {
+                if let skill {
+                    presentInstalled(skill.id)
+                } else {
+                    presentCatalog(entry)
+                }
             },
             action: {
                 if let skill {
-                    state == .update ? update(skill) : present(skill.id)
+                    state == .update ? update(skill) : presentInstalled(skill.id)
                 } else {
                     install(entry)
                 }
@@ -292,7 +316,7 @@ struct SkillsPane: View {
         guard let id = store.newSkill() else { return }
         collection = .installed
         query = ""
-        present(id)
+        presentInstalled(id)
     }
 
     private func install(_ entry: SkillCatalogEntry) {
@@ -303,7 +327,7 @@ struct SkillsPane: View {
             if installed {
                 collection = .installed
                 query = ""
-                present(entry.id)
+                presentInstalled(entry.id)
             }
         }
     }
@@ -317,7 +341,11 @@ struct SkillsPane: View {
         }
     }
 
-    private func present(_ id: String) {
-        presentedSkill = PresentedSkill(id: id)
+    private func presentInstalled(_ id: String) {
+        presentedSkill = .installed(id)
+    }
+
+    private func presentCatalog(_ entry: SkillCatalogEntry) {
+        presentedSkill = .catalog(entry)
     }
 }

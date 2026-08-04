@@ -460,6 +460,7 @@
 "Install update" = "Install update";
 "Install update v%@" = "Install update v%@";
 "Installed" = "Installed";
+"Installing %@" = "Installing %@";
 "Instructions" = "Instructions";
 "Instrumental" = "Instrumental";
 "Integration with your own agent" = "Integration with your own agent";
@@ -505,6 +506,8 @@
 "Loading community skills…" = "Loading community skills…";
 "Loading media metadata…" = "Loading media metadata…";
 "Loading models…" = "Loading models…";
+"Loading skill preview" = "Loading skill preview";
+"Loading skill preview…" = "Loading skill preview…";
 "Loading source dimensions…" = "Loading source dimensions…";
 "Loading source frame rate…" = "Loading source frame rate…";
 "Loading video metadata…" = "Loading video metadata…";
@@ -939,6 +942,7 @@
 "Type" = "Type";
 "Typewriter" = "Typewriter";
 "UPPERCASE" = "UPPERCASE";
+"Unable to load skill preview." = "Unable to load skill preview.";
 "Unable to open Claude Desktop" = "Unable to open Claude Desktop";
 "Unable to save skill" = "Unable to save skill";
 "Underline" = "Underline";

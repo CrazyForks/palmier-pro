@@ -10,6 +10,13 @@ struct SkillCatalogEntry: Codable, Identifiable, Sendable {
     let path: String
 }
 
+/// Read-only community skill content resolved from a catalog SKILL.md.
+struct SkillCatalogPreview: Sendable, Equatable {
+    let name: String
+    let description: String
+    let body: String
+}
+
 /// Fetches the community skill catalog from the palmier-skills repo (raw GitHub CDN)
 @Observable
 @MainActor
@@ -71,5 +78,32 @@ final class SkillCatalog {
             throw URLError(.badServerResponse)
         }
         return data
+    }
+
+    /// Fetches SKILL.md for a catalog entry and resolves display fields for preview.
+    static func loadPreview(for entry: SkillCatalogEntry) async throws -> SkillCatalogPreview {
+        guard let url = bodyURL(path: entry.path) else { throw URLError(.badURL) }
+        let data = try await fetch(url)
+        guard let text = String(data: data, encoding: .utf8) else {
+            throw URLError(.cannotDecodeContentData)
+        }
+        return preview(for: entry, text: text)
+    }
+
+    /// Prefers frontmatter name/description when present; otherwise uses catalog metadata.
+    nonisolated static func preview(for entry: SkillCatalogEntry, text: String) -> SkillCatalogPreview {
+        if let fields = SkillFrontmatter.requiredFields(text) {
+            return SkillCatalogPreview(
+                name: fields.name,
+                description: fields.description,
+                body: fields.body
+            )
+        }
+        let parsed = SkillFrontmatter.parse(text)
+        return SkillCatalogPreview(
+            name: entry.name,
+            description: entry.description,
+            body: parsed.body
+        )
     }
 }
