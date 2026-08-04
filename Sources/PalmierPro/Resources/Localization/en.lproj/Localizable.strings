@@ -459,6 +459,7 @@
 "Install update" = "Install update";
 "Install update v%@" = "Install update v%@";
 "Installed" = "Installed";
+"Installing %@" = "Installing %@";
 "Instructions" = "Instructions";
 "Instrumental" = "Instrumental";
 "Integration with your own agent" = "Integration with your own agent";
@@ -504,6 +505,7 @@
 "Loading community skills…" = "Loading community skills…";
 "Loading media metadata…" = "Loading media metadata…";
 "Loading models…" = "Loading models…";
+"Loading skill…" = "Loading skill…";
 "Loading source dimensions…" = "Loading source dimensions…";
 "Loading source frame rate…" = "Loading source frame rate…";
 "Loading video metadata…" = "Loading video metadata…";
@@ -899,6 +901,7 @@
 "The project will be moved to the Trash." = "The project will be moved to the Trash.";
 "The selected model refused this request. Revise the prompt and try again." = "The selected model refused this request. Revise the prompt and try again.";
 "The selected projects will be moved to the Trash." = "The selected projects will be moved to the Trash.";
+"The skill could not be downloaded or is invalid." = "The skill could not be downloaded or is invalid.";
 "The timeline settings changed. Close this sheet and try again." = "The timeline settings changed. Close this sheet and try again.";
 "Theme" = "Theme";
 "This is where all your footage and assets live." = "This is where all your footage and assets live.";
@@ -941,6 +944,7 @@
 "Type" = "Type";
 "Typewriter" = "Typewriter";
 "UPPERCASE" = "UPPERCASE";
+"Unable to install skill" = "Unable to install skill";
 "Unable to open Claude Desktop" = "Unable to open Claude Desktop";
 "Unable to save skill" = "Unable to save skill";
 "Underline" = "Underline";

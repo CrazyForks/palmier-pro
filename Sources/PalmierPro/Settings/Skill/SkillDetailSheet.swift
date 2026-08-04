@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SkillDetailSheet: View {
     let skillID: String
+    var catalogEntry: SkillCatalogEntry?
 
     @Bindable private var store = SkillStore.shared
     @Bindable private var catalog = SkillCatalog.shared
@@ -16,10 +17,19 @@ struct SkillDetailSheet: View {
     @State private var copyToast: CopyToast?
     @State private var showingSaveError = false
     @State private var failedExit: ExitAction?
+    @State private var catalogInstructions: CatalogInstructions = .loading
+    @State private var isInstalling = false
+    @State private var showingInstallError = false
     @FocusState private var titleFocused: Bool
 
     private enum ExitAction {
         case close, preview
+    }
+
+    private enum CatalogInstructions {
+        case loading
+        case ready(String)
+        case failed(String)
     }
 
     private struct CopyToast: Equatable {
@@ -44,6 +54,8 @@ struct SkillDetailSheet: View {
         Group {
             if let skill {
                 content(skill)
+            } else if let catalogEntry {
+                catalogContent(catalogEntry)
             } else {
                 Text(L10n.string("Skill unavailable."))
                     .font(.system(size: AppTheme.FontSize.sm))
@@ -83,16 +95,10 @@ struct SkillDetailSheet: View {
             if editing {
                 editContent
             } else {
-                ScrollView {
-                    viewContent(skill)
-                        .padding(AppTheme.Spacing.xlXxl)
-                }
-                .scrollEdgeEffectStyle(.soft, for: .top)
-                .themedSurface(AppTheme.Background.raisedColor, cornerRadius: AppTheme.Radius.md)
-                .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
-                .padding(.horizontal, AppTheme.Spacing.xlXxl)
-                .padding(.top, AppTheme.Spacing.mdLg)
-                .padding(.bottom, AppTheme.Spacing.xlXxl)
+                instructionsView(
+                    description: skill.description,
+                    instructions: store.body(for: skill.id) ?? ""
+                )
             }
         }
         .frame(width: AppTheme.Settings.skillDetailWidth)
@@ -118,6 +124,109 @@ struct SkillDetailSheet: View {
             Button(L10n.string("Keep Skill"), role: .cancel) {}
         } message: { skill in
             Text(L10n.string("This permanently removes \(displayPath(skill))."))
+        }
+    }
+
+    private func catalogContent(_ entry: SkillCatalogEntry) -> some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.zero) {
+            catalogHeader(entry)
+            Divider().overlay(AppTheme.Border.subtleColor)
+
+            switch catalogInstructions {
+            case .loading:
+                catalogStatus {
+                    ProgressView().controlSize(.small)
+                    Text(L10n.string("Loading skill…"))
+                        .font(.system(size: AppTheme.FontSize.sm))
+                        .foregroundStyle(AppTheme.Text.tertiaryColor)
+                }
+            case .failed(let message):
+                catalogStatus {
+                    Text(verbatim: message)
+                        .font(.system(size: AppTheme.FontSize.sm))
+                        .foregroundStyle(AppTheme.Text.tertiaryColor)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button(L10n.string("Try Again")) {
+                        Task { await loadCatalogInstructions(entry) }
+                    }
+                    .buttonStyle(.capsule(.secondary, fill: AnyShapeStyle(AppTheme.Background.raisedColor)))
+                }
+            case .ready(let instructions):
+                instructionsView(description: entry.description, instructions: instructions)
+            }
+        }
+        .frame(width: AppTheme.Settings.skillDetailWidth)
+        .frame(minHeight: AppTheme.Settings.skillDetailMinHeight)
+        .background(AppTheme.Background.prominentColor)
+        .task { await loadCatalogInstructions(entry) }
+        .alert(L10n.string("Unable to install skill"), isPresented: $showingInstallError) {
+            Button(L10n.string("Try Again")) { install(entry) }
+            Button(L10n.string("Cancel"), role: .cancel) {}
+        } message: {
+            Text(L10n.string("The skill could not be downloaded or is invalid."))
+        }
+    }
+
+    private func catalogHeader(_ entry: SkillCatalogEntry) -> some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            HStack(spacing: AppTheme.Spacing.md) {
+                Text(verbatim: entry.name)
+                    .font(.system(size: AppTheme.FontSize.xl, weight: AppTheme.FontWeight.regular))
+                    .foregroundStyle(AppTheme.Text.primaryColor)
+                    .lineLimit(1)
+                Spacer(minLength: AppTheme.Spacing.md)
+                closeButton
+            }
+
+            HStack(spacing: AppTheme.Spacing.smMd) {
+                Text(L10n.string("Available"))
+                    .font(.system(size: AppTheme.FontSize.xs))
+                    .foregroundStyle(AppTheme.Text.tertiaryColor)
+
+                Spacer(minLength: AppTheme.Spacing.md)
+
+                if isInstalling {
+                    ProgressView()
+                        .controlSize(.small)
+                        .accessibilityLabel(L10n.string("Installing \(entry.name)"))
+                } else {
+                    Button(L10n.string("Install")) { install(entry) }
+                        .buttonStyle(.capsule(.prominent))
+                }
+            }
+        }
+        .padding(.horizontal, AppTheme.Spacing.xlXxl)
+        .padding(.vertical, AppTheme.Spacing.mdLg)
+    }
+
+    private func catalogStatus<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        VStack(spacing: AppTheme.Spacing.smMd) {
+            content()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(AppTheme.Spacing.xlXxl)
+    }
+
+    private func loadCatalogInstructions(_ entry: SkillCatalogEntry) async {
+        catalogInstructions = .loading
+        do {
+            let instructions = try await SkillCatalog.fetchInstructions(for: entry)
+            catalogInstructions = .ready(instructions)
+        } catch {
+            guard !Task.isCancelled else { return }
+            catalogInstructions = .failed(error.localizedDescription)
+            Log.agent.error("skill preview \(entry.id) failed: \(error.localizedDescription)")
+        }
+    }
+
+    private func install(_ entry: SkillCatalogEntry) {
+        guard !isInstalling else { return }
+        isInstalling = true
+        Task {
+            let installed = await store.install(entry)
+            isInstalling = false
+            showingInstallError = !installed
         }
     }
 
@@ -322,32 +431,41 @@ struct SkillDetailSheet: View {
             .replacingOccurrences(of: NSHomeDirectory(), with: "~")
     }
 
-    private func viewContent(_ skill: Skill) -> some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
-                Text(L10n.string("Description"))
-                    .font(.system(size: AppTheme.FontSize.smMd, weight: AppTheme.FontWeight.regular))
-                    .foregroundStyle(AppTheme.Text.primaryColor)
-                Text(skill.description)
-                    .font(.system(size: AppTheme.FontSize.smMd))
-                    .foregroundStyle(AppTheme.Text.secondaryColor)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+    private func instructionsView(description: String, instructions: String) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
+                    Text(L10n.string("Description"))
+                        .font(.system(size: AppTheme.FontSize.smMd, weight: AppTheme.FontWeight.regular))
+                        .foregroundStyle(AppTheme.Text.primaryColor)
+                    Text(verbatim: description)
+                        .font(.system(size: AppTheme.FontSize.smMd))
+                        .foregroundStyle(AppTheme.Text.secondaryColor)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
 
-            Divider().overlay(AppTheme.Border.subtleColor)
+                Divider().overlay(AppTheme.Border.subtleColor)
 
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                Text(L10n.string("Instructions"))
-                    .font(.system(size: AppTheme.FontSize.smMd, weight: AppTheme.FontWeight.regular))
-                    .foregroundStyle(AppTheme.Text.primaryColor)
-                MarkdownText(
-                    text: store.body(for: skill.id) ?? "",
-                    proseFont: .system(size: AppTheme.FontSize.smMd),
-                    blockSpacing: AppTheme.Spacing.sm
-                )
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                    Text(L10n.string("Instructions"))
+                        .font(.system(size: AppTheme.FontSize.smMd, weight: AppTheme.FontWeight.regular))
+                        .foregroundStyle(AppTheme.Text.primaryColor)
+                    MarkdownText(
+                        text: instructions,
+                        proseFont: .system(size: AppTheme.FontSize.smMd),
+                        blockSpacing: AppTheme.Spacing.sm
+                    )
+                }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(AppTheme.Spacing.xlXxl)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .scrollEdgeEffectStyle(.soft, for: .top)
+        .themedSurface(AppTheme.Background.raisedColor, cornerRadius: AppTheme.Radius.md)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
+        .padding(.horizontal, AppTheme.Spacing.xlXxl)
+        .padding(.top, AppTheme.Spacing.mdLg)
+        .padding(.bottom, AppTheme.Spacing.xlXxl)
     }
 
     private var editContent: some View {

@@ -72,4 +72,17 @@ final class SkillCatalog {
         }
         return data
     }
+
+    static func fetchInstructions(for entry: SkillCatalogEntry) async throws -> String {
+        guard let url = bodyURL(path: entry.path) else { throw URLError(.badURL) }
+        let data = try await fetch(url)
+        guard let text = String(data: data, encoding: .utf8) else {
+            throw URLError(.cannotDecodeContentData)
+        }
+        return instructions(fromSkillFile: text)
+    }
+
+    nonisolated static func instructions(fromSkillFile text: String) -> String {
+        SkillFrontmatter.parse(text).body
+    }
 }
