@@ -279,14 +279,13 @@ enum TextFrameRenderer {
                                    raster: raster, fontSize: fontSize, renderSize: renderSize)
         let rel = frame - clip.startFrame
         let states = layout.timings.enumerated().map { index, timing in
-            let nextWordStart = layout.timings.indices.contains(index + 1)
-                ? layout.timings[index + 1].startFrame
+            let nextWord = layout.timings.indices.contains(index + 1)
+                ? layout.timings[index + 1]
                 : nil
             return TextAnimator.wordState(
                 anim,
                 word: timing,
-                nextWordStart: nextWordStart,
-                duration: clip.durationFrames,
+                nextWord: nextWord,
                 rel: rel,
                 base: style.color
             )

@@ -38,8 +38,7 @@ enum TextAnimator {
     static func wordState(
         _ anim: TextAnimation,
         word: WordTiming,
-        nextWordStart: Int?,
-        duration: Int,
+        nextWord: WordTiming?,
         rel: Int,
         base: TextStyle.RGBA
     ) -> WordState {
@@ -61,23 +60,11 @@ enum TextAnimator {
             return WordState(opacity: Float(on), color: activeTint(anim, word, rel, base))
         case .highlightPop:
             let ramp = min(hand, 4)
-            let timing = heldHighlightTiming(
-                word,
-                nextWordStart: nextWordStart,
-                duration: duration,
-                transitionFrames: ramp
-            )
-            let on = activeRamp(rel, word: timing, ramp: ramp)
+            let on = heldHighlightAmount(rel, word: word, nextWord: nextWord, ramp: ramp)
             return WordState(color: lerp(base, highlight, CGFloat(on)))
         case .highlightBlock:
             let ramp = min(hand, 4)
-            let timing = heldHighlightTiming(
-                word,
-                nextWordStart: nextWordStart,
-                duration: duration,
-                transitionFrames: ramp
-            )
-            let on = activeRamp(rel, word: timing, ramp: ramp)
+            let on = heldHighlightAmount(rel, word: word, nextWord: nextWord, ramp: ramp)
             var bg = highlight; bg.a *= Double(on)
             return WordState(color: base, bgColor: bg)
         default:
@@ -92,19 +79,28 @@ enum TextAnimator {
         return lerp(base, hl, CGFloat(on))
     }
 
-    private static func heldHighlightTiming(
-        _ word: WordTiming,
-        nextWordStart: Int?,
-        duration: Int,
-        transitionFrames: Int
-    ) -> WordTiming {
-        let holdEnd = max(word.startFrame, nextWordStart ?? duration)
-        let (endFrame, overflow) = holdEnd.addingReportingOverflow(transitionFrames)
-        return WordTiming(
-            text: word.text,
-            startFrame: word.startFrame,
-            endFrame: overflow ? Int.max : endFrame
-        )
+    private static func heldHighlightAmount(
+        _ rel: Int,
+        word: WordTiming,
+        nextWord: WordTiming?,
+        ramp: Int
+    ) -> Double {
+        guard rel >= word.startFrame else { return 0 }
+        let rampIn: Double
+        if let duration = rampDuration(for: word, maximum: ramp) {
+            let elapsed = rel.subtractingReportingOverflow(word.startFrame)
+            guard !elapsed.overflow else { return 1 }
+            rampIn = smoothstep(min(1, Double(elapsed.partialValue) / Double(duration)))
+        } else {
+            rampIn = 1
+        }
+
+        guard let nextWord, rel >= nextWord.startFrame else { return rampIn }
+        guard let duration = rampDuration(for: nextWord, maximum: ramp) else { return 0 }
+        let elapsed = rel.subtractingReportingOverflow(nextWord.startFrame)
+        guard !elapsed.overflow else { return 0 }
+        let rampOut = smoothstep(1 - min(1, Double(elapsed.partialValue) / Double(duration)))
+        return min(rampIn, rampOut)
     }
 
     // MARK: - Helpers
@@ -130,12 +126,16 @@ enum TextAnimator {
     /// 0 outside the active span, with the ramp shortened so fast words reach 1.
     private static func activeRamp(_ rel: Int, word: WordTiming, ramp: Int) -> Double {
         guard rel >= word.startFrame, rel < word.endFrame else { return 0 }
-        let span = max(1, word.endFrame - word.startFrame)
-        guard span > 1 else { return 1 }
-        let r = min(max(1, ramp), max(1, span / 2))
+        guard let r = rampDuration(for: word, maximum: ramp) else { return 1 }
         let rampIn = smoothstep(min(1, Double(rel - word.startFrame) / Double(r)))
         let rampOut = smoothstep(min(1, Double(word.endFrame - rel) / Double(r)))
         return min(rampIn, rampOut)
+    }
+
+    private static func rampDuration(for word: WordTiming, maximum: Int) -> Int? {
+        let span = word.endFrame.subtractingReportingOverflow(word.startFrame)
+        guard !span.overflow, span.partialValue > 1 else { return nil }
+        return min(max(1, maximum), max(1, span.partialValue / 2))
     }
 
     private static func lerp(_ a: TextStyle.RGBA, _ b: TextStyle.RGBA, _ t: CGFloat) -> TextStyle.RGBA {
