@@ -31,6 +31,19 @@ struct SkillScan: Sendable {
     let shas: [String: String]
 }
 
+struct SkillLedger: Equatable, Sendable {
+    var installed: [String: String] = [:]
+    var suppressed: Set<String> = []
+}
+
+private struct PersistedSkillLedger: Codable {
+    static let currentVersion = 1
+
+    let version: Int
+    let installed: [String: String]
+    let suppressed: [String]
+}
+
 /// Reads skills from `~/.palmier/skills/` — the single source of truth.
 @Observable
 @MainActor
@@ -39,10 +52,10 @@ final class SkillStore {
 
     private(set) var skills: [Skill] = []
 
-    /// Catalog-installed skills: id → the sha installed. A skill here is "community"; one
-    /// in the folder but not here is the user's own.
-    private(set) var installed: [String: String] = [:]
-    private var suppressed: Set<String>?
+    private var ledger: SkillLedger?
+
+    /// Catalog-installed skills: id → the sha installed.
+    var installed: [String: String] { ledger?.installed ?? [:] }
 
     // Filled by a scan so body and content hash are cache lookups, not per-render disk reads.
     private var bodyCache: [String: String] = [:]
@@ -54,14 +67,12 @@ final class SkillStore {
     }
 
     nonisolated private static var ledgerURL: URL { directory.appendingPathComponent(".installed.json") }
-    nonisolated private static var suppressedURL: URL { directory.appendingPathComponent(".suppressed.json") }
 
     private var reloadGeneration = 0
     private var syncTask: Task<Void, Never>?
     private var mutationTask: Task<Void, Never>?
 
     private init() {
-        installed = Self.loadLedger()
         Task { await reloadInBackground() }
     }
 
@@ -69,13 +80,13 @@ final class SkillStore {
         reloadGeneration += 1
         let generation = reloadGeneration
         let result = await Task.detached(priority: .utility) {
-            (Self.scan(), Self.loadSuppressed())
+            (Self.scan(), Self.loadLedger())
         }.value
         guard generation == reloadGeneration else { return }
         apply(result.0)
-        suppressed = result.1
-        if suppressed == nil {
-            Log.agent.error("load suppressed community skills failed")
+        ledger = result.1
+        if ledger == nil {
+            Log.agent.error("load skill ledger failed")
         }
     }
 
@@ -124,15 +135,22 @@ final class SkillStore {
 
     func localSha(_ skill: Skill) -> String? { shaCache[skill.id] }
 
-    func syncSkills() async {
-        if let syncTask {
-            await syncTask.value
-            return
+    func startSkillSync() {
+        guard syncTask == nil else { return }
+        syncTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            await self.performSkillSync()
+            self.syncTask = nil
         }
-        let task = Task { await performSkillSync() }
-        syncTask = task
-        await task.value
-        syncTask = nil
+    }
+
+    func syncSkills() async {
+        startSkillSync()
+        await syncTask?.value
+    }
+
+    func waitForSkillSync() async {
+        await syncTask?.value
     }
 
     func prepareForTermination() async {
@@ -143,24 +161,24 @@ final class SkillStore {
 
     private func performSkillSync() async {
         await reloadInBackground()
-        guard let suppressed, !Task.isCancelled else { return }
+        guard let ledger, !Task.isCancelled else { return }
         guard await SkillCatalog.shared.refresh() else { return }
         guard !Task.isCancelled else { return }
 
         for entry in SkillCatalog.shared.entries {
             guard !Task.isCancelled else { return }
-            guard automaticallyInstalls(entry, suppressed: suppressed) else { continue }
+            guard automaticallyInstalls(entry, ledger: ledger) else { continue }
             _ = await install(entry, automatically: true)
         }
     }
 
-    private func automaticallyInstalls(_ entry: SkillCatalogEntry, suppressed: Set<String>) -> Bool {
+    private func automaticallyInstalls(_ entry: SkillCatalogEntry, ledger: SkillLedger) -> Bool {
         let skill = skills.first { $0.id == entry.id }
         return Self.shouldAutomaticallyInstall(
             localSHA: skill.flatMap(localSha),
-            installedSHA: installed[entry.id],
+            installedSHA: ledger.installed[entry.id],
             catalogSHA: entry.sha,
-            isSuppressed: suppressed.contains(entry.id)
+            isSuppressed: ledger.suppressed.contains(entry.id)
         )
     }
 
@@ -178,7 +196,7 @@ final class SkillStore {
 
     @discardableResult
     func install(_ entry: SkillCatalogEntry, automatically: Bool = false) async -> Bool {
-        guard suppressed != nil else { return false }
+        guard ledger != nil else { return false }
         guard let url = SkillCatalog.bodyURL(path: entry.path) else { return false }
         guard let dir = Self.skillDirectory(for: entry.id) else {
             Log.agent.error("install skill \(entry.id) rejected: invalid id")
@@ -204,11 +222,17 @@ final class SkillStore {
                 if automatically {
                     await reloadInBackground()
                 }
-                guard var suppressed else { return false }
+                guard var ledger else { return false }
                 if automatically {
                     guard !Task.isCancelled,
-                          automaticallyInstalls(entry, suppressed: suppressed)
+                          automaticallyInstalls(entry, ledger: ledger)
                     else { return false }
+                }
+                let previous = try await Self.performFileOperation {
+                    let fm = FileManager.default
+                    let directoryExisted = fm.fileExists(atPath: dir.path)
+                    let data = fm.fileExists(atPath: md.path) ? try Data(contentsOf: md) : nil
+                    return (directoryExisted, data)
                 }
                 try await Self.performFileOperation {
                     try FileManager.default.createDirectory(
@@ -218,14 +242,31 @@ final class SkillStore {
                 }
                 await reloadInBackground()
                 guard skills.contains(where: { $0.id == entry.id }) else {
-                    try? await Self.performFileOperation { try FileManager.default.removeItem(at: dir) }
+                    await Self.restoreSkill(
+                        directory: dir,
+                        document: md,
+                        directoryExisted: previous.0,
+                        data: previous.1
+                    )
+                    await reloadInBackground()
                     Log.agent.error("install skill \(entry.id) rejected: SKILL.md not recognized after install")
                     return false
                 }
-                installed[entry.id] = entry.sha
-                suppressed.remove(entry.id)
-                self.suppressed = suppressed
-                await Self.persistState(installed, suppressed)
+                ledger.installed[entry.id] = entry.sha
+                ledger.suppressed.remove(entry.id)
+                do {
+                    try await Self.persistLedger(ledger)
+                } catch {
+                    await Self.restoreSkill(
+                        directory: dir,
+                        document: md,
+                        directoryExisted: previous.0,
+                        data: previous.1
+                    )
+                    await reloadInBackground()
+                    throw error
+                }
+                self.ledger = ledger
                 return true
             } ?? false
         } catch {
@@ -283,31 +324,53 @@ final class SkillStore {
         try operation()
     }
 
-    private static func loadLedger() -> [String: String] {
-        guard let data = try? Data(contentsOf: ledgerURL),
-              let map = try? JSONDecoder().decode([String: String].self, from: data)
-        else { return [:] }
-        return map
+    @concurrent
+    private static func restoreSkill(
+        directory: URL,
+        document: URL,
+        directoryExisted: Bool,
+        data: Data?
+    ) async {
+        let fm = FileManager.default
+        if let data {
+            try? data.write(to: document, options: .atomic)
+        } else if directoryExisted {
+            if fm.fileExists(atPath: document.path) { try? fm.removeItem(at: document) }
+        } else if fm.fileExists(atPath: directory.path) {
+            try? fm.removeItem(at: directory)
+        }
     }
 
-    nonisolated private static func loadSuppressed() -> Set<String>? {
-        guard FileManager.default.fileExists(atPath: suppressedURL.path) else { return [] }
-        guard let data = try? Data(contentsOf: suppressedURL) else { return nil }
-        return decodeSuppressed(data)
+    nonisolated private static func loadLedger() -> SkillLedger? {
+        guard FileManager.default.fileExists(atPath: ledgerURL.path) else { return SkillLedger() }
+        guard let data = try? Data(contentsOf: ledgerURL) else { return nil }
+        return decodeLedger(data)
     }
 
-    nonisolated static func decodeSuppressed(_ data: Data) -> Set<String>? {
-        (try? JSONDecoder().decode([String].self, from: data)).map(Set.init)
+    nonisolated static func decodeLedger(_ data: Data) -> SkillLedger? {
+        if let persisted = try? JSONDecoder().decode(PersistedSkillLedger.self, from: data),
+           persisted.version == PersistedSkillLedger.currentVersion {
+            return SkillLedger(
+                installed: persisted.installed,
+                suppressed: Set(persisted.suppressed)
+            )
+        }
+        guard let installed = try? JSONDecoder().decode([String: String].self, from: data) else {
+            return nil
+        }
+        return SkillLedger(installed: installed)
     }
 
     @concurrent
-    private static func persistState(
-        _ installed: [String: String],
-        _ suppressed: Set<String>
-    ) async {
-        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        try? JSONEncoder().encode(installed).write(to: ledgerURL, options: .atomic)
-        try? JSONEncoder().encode(suppressed.sorted()).write(to: suppressedURL, options: .atomic)
+    private static func persistLedger(_ ledger: SkillLedger) async throws {
+        let persisted = PersistedSkillLedger(
+            version: PersistedSkillLedger.currentVersion,
+            installed: ledger.installed,
+            suppressed: ledger.suppressed.sorted()
+        )
+        let data = try JSONEncoder().encode(persisted)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try data.write(to: ledgerURL, options: .atomic)
     }
 
     func body(for id: String) -> String? { bodyCache[id] }
@@ -360,13 +423,32 @@ final class SkillStore {
     @discardableResult
     func delete(_ skill: Skill) async -> Bool {
         await serializeMutation("delete skill \(skill.id)") { [self] in
-            guard var suppressed else { return false }
+            guard var ledger else { return false }
+            let directory = skill.path.deletingLastPathComponent()
+            let staged = Self.directory.deletingLastPathComponent()
+                .appendingPathComponent(".skill-delete-\(UUID().uuidString)", isDirectory: true)
             try await Self.performFileOperation {
-                try FileManager.default.removeItem(at: skill.path.deletingLastPathComponent())
+                try FileManager.default.moveItem(at: directory, to: staged)
             }
-            if installed.removeValue(forKey: skill.id) != nil { suppressed.insert(skill.id) }
-            self.suppressed = suppressed
-            await Self.persistState(installed, suppressed)
+            if ledger.installed.removeValue(forKey: skill.id) != nil {
+                ledger.suppressed.insert(skill.id)
+                do {
+                    try await Self.persistLedger(ledger)
+                } catch {
+                    try? await Self.performFileOperation {
+                        try FileManager.default.moveItem(at: staged, to: directory)
+                    }
+                    throw error
+                }
+                self.ledger = ledger
+            }
+            do {
+                try await Self.performFileOperation {
+                    try FileManager.default.removeItem(at: staged)
+                }
+            } catch {
+                Log.agent.warning("deleted skill cleanup failed: \(error.localizedDescription)")
+            }
             await reloadInBackground()
             return true
         } ?? false

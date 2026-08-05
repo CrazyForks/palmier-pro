@@ -73,10 +73,20 @@ struct CommunitySkillAutoInstallTests {
         )
     }
 
-    @Test func malformedSuppressionStateFailsClosed() throws {
-        let valid = try JSONEncoder().encode(["captions", "grading"])
+    @Test func decodesCurrentAndLegacyLedgers() throws {
+        let current = Data(
+            #"{"version":1,"installed":{"captions":"abc123"},"suppressed":["grading"]}"#.utf8
+        )
+        let legacy = try JSONEncoder().encode(["captions": "abc123"])
 
-        #expect(SkillStore.decodeSuppressed(valid) == ["captions", "grading"])
-        #expect(SkillStore.decodeSuppressed(Data("not json".utf8)) == nil)
+        #expect(
+            SkillStore.decodeLedger(current)
+                == SkillLedger(installed: ["captions": "abc123"], suppressed: ["grading"])
+        )
+        #expect(
+            SkillStore.decodeLedger(legacy)
+                == SkillLedger(installed: ["captions": "abc123"])
+        )
+        #expect(SkillStore.decodeLedger(Data("not json".utf8)) == nil)
     }
 }
