@@ -36,6 +36,7 @@
 "%lld text clips are ready in Palmier Pro." = "%lld個のテキストクリップをPalmier Proで使用できます。";
 "%lld videos are ready in Palmier Pro." = "%lld本のビデオをPalmier Proで使用できます。";
 "%lldk credits" = "%lldkクレジット";
+"(Recommended)" = "(おすすめ)";
 "(image payload)" = "（画像ペイロード）";
 "/ month" = "/ 月";
 "0 credits" = "0クレジット";
@@ -67,6 +68,8 @@
 "Activity unavailable" = "アクティビティを利用できません";
 "Add Range to Chat" = "範囲をチャットに追加";
 "Add Text" = "テキストを追加";
+"Add an Anthropic API key or credits to use this model." = "このモデルを使うには、Anthropic APIキーまたはクレジットを追加してください。";
+"Add an OpenAI API key or credits to use this model." = "このモデルを使うには、OpenAI APIキーまたはクレジットを追加してください。";
 "Add an email above to enable a reply" = "返信を受け取るには上にメールアドレスを追加してください";
 "Add captions" = "キャプションを追加";
 "Add credits" = "クレジットを追加";
@@ -158,10 +161,10 @@
 "Change to Match" = "設定を一致させる";
 "Changes take effect after restarting Palmier Pro." = "変更はPalmier Proの再起動後に反映されます。";
 "Changing the ratio preserves the shorter edge." = "比率を変更しても短い辺の長さは維持されます。";
+"Chat" = "チャット";
 "Chat history" = "チャット履歴";
 "Chat with your agent! It can generate content, edit clips, organize your assets, and much more. Start by signing in, or bring your own Anthropic API key." = "エージェントとチャットできます。コンテンツの生成、クリップの編集、アセットの整理などが可能です。まずサインインするか、ご自身のAnthropic APIキーを使用してください。";
 "Check for Updates…" = "アップデートを確認…";
-"Choose Audio" = "オーディオを選択";
 "Choose a .cube LUT file" = ".cube LUTファイルを選択";
 "Choose a crop aspect" = "クロップのアスペクトを選択";
 "Choose animation clip color" = "アニメーションクリップのカラーを選択";
@@ -195,6 +198,7 @@
 "Close All Tabs" = "すべてのタブを閉じる";
 "Close Other Tabs" = "ほかのタブを閉じる";
 "Close Tab" = "タブを閉じる";
+"Close gaps" = "隙間を埋める";
 "Cloud" = "クラウド";
 "Cloud auto-detects languages, produces more accurate transcripts, can identify speakers, and uses 25 credits/hr when a transcript is not cached." = "Cloudは言語を自動検出し、より正確な文字起こしと話者の識別が可能です。文字起こしがキャッシュされていない場合は1時間あたり25クレジットを使用します。";
 "Codec" = "コーデック";
@@ -282,7 +286,6 @@
 "Designer" = "デザイナー";
 "Destination" = "書き出し先";
 "Detail" = "ディテール";
-"Details" = "詳細";
 "Detect Beats" = "ビートを検出";
 "Detected %lld beats at %lld BPM." = "%lld個のビートを%lld BPMで検出しました。";
 "Detected %lld beats." = "%lld個のビートを検出しました。";
@@ -344,6 +347,7 @@
 "Exporting…" = "書き出し中…";
 "Export…" = "書き出す…";
 "Exposure" = "露出";
+"Extends a caption to close gaps up to this duration." = "この長さまでの隙間を埋めるようキャプションを延長します。";
 "Extra Large" = "特大";
 "Fade In" = "フェードイン";
 "Fade Out" = "フェードアウト";
@@ -398,13 +402,14 @@
 "Generate video, image, or audio with different models and settings. Drag assets from the media panel above into the reference frame." = "さまざまなモデルと設定でビデオ、画像、オーディオを生成します。上のメディアパネルから参照フレームへアセットをドラッグしてください。";
 "Generate · %lld credits" = "生成 · %lldクレジット";
 "Generate · 1 credit" = "生成 · 1クレジット";
-"Generated" = "生成済み";
 "Generating…" = "生成中…";
 "Generation Failed" = "生成に失敗しました";
+"Generation Input" = "生成入力";
 "Generation complete" = "生成完了";
 "Generation in progress" = "生成中";
 "Generation panel" = "生成パネル";
 "Get Anthropic API key" = "Anthropic APIキーを取得";
+"Get OpenAI API key" = "OpenAI APIキーを取得";
 "Get a notification when a generation finishes." = "生成の完了時に通知を受け取ります。";
 "Getting the search model ready." = "検索モデルを準備しています。";
 "Glow" = "グロー";
@@ -417,7 +422,10 @@
 "Hard Light" = "ハードライト";
 "Height" = "高さ";
 "Help" = "ヘルプ";
+"Hide Info" = "情報を隠す";
 "Hide keyframe timeline" = "キーフレームタイムラインを非表示";
+"Hide reasoning" = "推論を隠す";
+"High" = "高";
 "Highlight" = "ハイライト";
 "Highlight Block" = "ハイライトブロック";
 "Highlights" = "ハイライト";
@@ -442,6 +450,7 @@
 "Indexing %lld/%lld" = "インデックス作成中 %lld/%lld";
 "Input" = "入力";
 "Inspector" = "インスペクタ";
+"Inspector Panel" = "インスペクタパネル";
 "Install" = "インストール";
 "Install in Claude Desktop" = "Claude Desktopにインストール";
 "Install in Cursor" = "Cursorにインストール";
@@ -504,6 +513,7 @@
 "Local runs with Apple's SpeechAnalyzer." = "ローカルではAppleのSpeechAnalyzerを使用します。";
 "Local runs with Apple's SpeechAnalyzer. Cloud uses credits and a more accurate model with more capabilities." = "ローカルではAppleのSpeechAnalyzerを使用します。Cloudではクレジットを使用し、より高精度で多機能なモデルを利用します。";
 "Log in for 250 free credits" = "ログインして250無料クレジットを獲得";
+"Low" = "低";
 "Luma" = "輝度";
 "Luminosity" = "光度";
 "Lyrics (optional). [Verse] and [Chorus] tags supported." = "歌詞（任意）。[Verse]タグと[Chorus]タグを使用できます。";
@@ -526,6 +536,7 @@
 "Match Timeline" = "タイムラインに合わせる";
 "Match mouth movement to replacement audio" = "口の動きを差し替えオーディオに合わせる";
 "Matches voices across clips, transcribing untranscribed timeline clips first (uses credits). Transcripts and voice fingerprints are cached, so re-runs are fast." = "クリップ間で声を照合します。文字起こしされていないタイムラインクリップは先に文字起こしされます（クレジットを使用）。文字起こしと声紋はキャッシュされるため、再実行は高速です。";
+"Max" = "最大";
 "Max plan" = "Maxプラン";
 "Max words" = "最大単語数";
 "Maximize Focused Panel" = "フォーカス中のパネルを最大化";
@@ -539,6 +550,7 @@
 "Medium" = "中";
 "Mic" = "マイク";
 "Midpoint" = "中間点";
+"Minimal" = "最小";
 "Minimum Pause" = "最小の間隔";
 "Mixed" = "混在";
 "Mode" = "モード";
@@ -617,6 +629,7 @@
 "Open Skills to browse community playbooks, create your own, or add them to other agents." = "スキルを開いてコミュニティのプレイブックを参照したり、独自のスキルを作成したり、ほかのエージェントに追加したりできます。";
 "Open Timeline" = "タイムラインを開く";
 "Open the AI Edit tab to upscale, prompt-edit, create video from a frame, or generate music, SFX, cleanup, and dubbing from the clip." = "「AI編集」タブを開いて、アップスケール、プロンプト編集、フレームからのビデオ作成、またはクリップからの音楽・SFX・クリーンアップ・吹き替え生成を行えます。";
+"OpenAI API Key" = "OpenAI APIキー";
 "Opening Google" = "Googleを開いています";
 "Opening Google…" = "Googleを開いています…";
 "Open…" = "開く…";
@@ -671,6 +684,7 @@
 "Range" = "範囲";
 "Razor (C)" = "レーザー（C）";
 "Razor Tool" = "レーザーツール";
+"Reasoning effort" = "推論の強さ";
 "Redetect Beats" = "ビートを再検出";
 "Redo" = "やり直す";
 "Redo (⇧⌘Z)" = "やり直す（⇧⌘Z）";
@@ -764,7 +778,6 @@
 "Select Forward on All Tracks" = "すべてのトラックで前方を選択";
 "Select Forward on Track" = "トラック上の前方を選択";
 "Select Range" = "範囲を選択";
-"Select a range" = "範囲を選択";
 "Select a single clip to enable" = "有効にするにはクリップを1つ選択してください";
 "Select media files or folders to import" = "読み込むメディアファイルまたはフォルダを選択";
 "Selected" = "選択中";
@@ -791,9 +804,11 @@
 "Sharpen" = "シャープ";
 "Short-form and social" = "ショート動画・SNS";
 "Shortcuts" = "ショートカット";
+"Show Info" = "情報を表示";
 "Show in Finder" = "Finderに表示";
 "Show keyframe timeline" = "キーフレームタイムラインを表示";
 "Show notifications" = "通知を表示";
+"Show reasoning" = "推論を表示";
 "Side by Side" = "左右に並べる";
 "Sign In" = "サインイン";
 "Sign in" = "サインイン";
@@ -801,6 +816,7 @@
 "Sign in to receive 250 free credits for AI chat and generation." = "サインインすると、AIチャットと生成に使える250クレジットを無料で獲得できます。";
 "Sign in to subscribe and use AI generation." = "サブスクリプションに登録してAI生成を使用するには、サインインしてください。";
 "Sign in to use AI" = "AIを使用するにはサインイン";
+"Sign in to use AI chat." = "AIチャットを使うにはサインインしてください。";
 "Sign in to use Cloud transcription." = "Cloud文字起こしを使用するにはサインインしてください。";
 "Sign in to use Cloud." = "Cloudを使用するにはサインインしてください。";
 "Sign in with Google" = "Googleでサインイン";
@@ -848,11 +864,13 @@
 "Stopped" = "停止済み";
 "Storage" = "ストレージ";
 "Streaming through your Anthropic API key (BYOK)" = "Anthropic APIキー（BYOK）でストリーミング中";
+"Streaming through your OpenAI API key (BYOK)" = "OpenAI APIキー（BYOK）でストリーミング中";
 "Strikethrough" = "取り消し線";
 "Student" = "学生";
 "Style" = "スタイル";
 "Style instructions (optional). e.g., warm and slow, British accent." = "スタイルの指示（任意）。例：暖かくゆっくり、イギリス英語のアクセント。";
 "Subscribe" = "登録";
+"Subscribe or add your own API key to use this model." = "このモデルを使うには、登録するか独自のAPIキーを追加してください。";
 "Subscription" = "サブスクリプション";
 "Swap Media" = "メディアを入れ替え";
 "Swap the clip's media when generation completes. Speed, volume, trim, and transform are preserved." = "生成が完了したらクリップのメディアを入れ替えます。速度、音量、トリム、トランスフォームは維持されます。";
@@ -880,14 +898,15 @@
 "The clip you're adding has different settings than the current project." = "追加しようとしているクリップの設定が現在のプロジェクトと異なります。";
 "The export" = "書き出し";
 "The project will be moved to the Trash." = "プロジェクトはゴミ箱に移動されます。";
+"The selected model refused this request. Revise the prompt and try again." = "選択したモデルがこのリクエストを拒否しました。プロンプトを見直して再試行してください。";
 "The selected projects will be moved to the Trash." = "選択したプロジェクトはゴミ箱に移動されます。";
 "The timeline settings changed. Close this sheet and try again." = "タイムライン設定が変更されました。このシートを閉じてもう一度お試しください。";
 "Theme" = "テーマ";
-"This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "これはタイムラインルーラーです。ルーラー上でShiftキーを押しながらドラッグすると、レンダリングする範囲を選択できます。任意のスロットを選び、その範囲に合うAI編集や音楽生成を行えます。";
 "This is where all your footage and assets live." = "すべての映像素材とアセットはここに表示されます。";
 "This is your preview panel to play a selected media or the whole timeline." = "これは選択したメディアまたはタイムライン全体を再生するプレビューパネルです。";
 "This model cannot cap the output at 60 FPS." = "このモデルでは出力を60 FPSに制限できません。";
 "This permanently removes %@." = "%@を完全に削除します。";
+"Three-Stack" = "スリースタック";
 "Three-Up" = "3分割";
 "Threshold" = "しきい値";
 "Thumbnail Size" = "サムネイルサイズ";
@@ -895,6 +914,7 @@
 "Timeline" = "タイムライン";
 "Timeline Format" = "タイムライン形式";
 "Timeline colors" = "タイムラインのカラー";
+"Timelines" = "タイムライン";
 "Tint" = "色合い";
 "Tints waveforms by speaker. Voices are matched across clips using cloud transcripts." = "話者ごとに波形を色分けします。Cloud文字起こしを使用して、クリップ間で声を照合します。";
 "Toggle Agent Panel" = "エージェントパネルを切り替え";
@@ -930,7 +950,6 @@
 "Ungroup Multicam" = "マルチカムのグループ化を解除";
 "Unlink" = "リンクを解除";
 "Untitled" = "名称未設定";
-"Up to %@" = "最大%@";
 "Update" = "アップデート";
 "Update available" = "アップデートがあります";
 "Updating %@" = "%@をアップデート中";
@@ -997,6 +1016,7 @@
 "Word Slide" = "単語スライド";
 "Working on %@" = "%@を処理中";
 "Workspace layout" = "ワークスペースレイアウト";
+"X High" = "最高";
 "You're all set" = "準備ができました";
 "YouTube" = "YouTube";
 "Your Lottie animation is ready." = "Lottieアニメーションの準備ができました。";
@@ -1019,7 +1039,9 @@
 "error" = "エラー";
 "group moved right to fit" = "収まるようにグループを右へ移動しました";
 "lowercase" = "小文字";
-"or use your own Anthropic key" = "またはご自身のAnthropicキーを使用";
+"or add your own Anthropic key" = "またはご自身のAnthropicキーを追加";
+"or add your own OpenAI key" = "またはご自身のOpenAIキーを追加";
 "result" = "結果";
-"using API key" = "APIキーを使用中";
+"using Anthropic API key" = "Anthropic APIキーを使用中";
+"using OpenAI API key" = "OpenAI APIキーを使用中";
 "you@example.com — so we can reply" = "you@example.com — 返信先として使用します";

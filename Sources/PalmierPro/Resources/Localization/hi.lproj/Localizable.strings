@@ -36,6 +36,7 @@
 "%lld text clips are ready in Palmier Pro." = "%lld टेक्स्ट क्लिप Palmier Pro में तैयार हैं।";
 "%lld videos are ready in Palmier Pro." = "%lld वीडियो Palmier Pro में तैयार हैं।";
 "%lldk credits" = "%lldk क्रेडिट";
+"(Recommended)" = "(अनुशंसित)";
 "(image payload)" = "(इमेज पेलोड)";
 "/ month" = "/ माह";
 "0 credits" = "0 क्रेडिट";
@@ -67,6 +68,8 @@
 "Activity unavailable" = "एक्टिविटी उपलब्ध नहीं है";
 "Add Range to Chat" = "रेंज को चैट में जोड़ें";
 "Add Text" = "टेक्स्ट जोड़ें";
+"Add an Anthropic API key or credits to use this model." = "इस मॉडल का उपयोग करने के लिए Anthropic API कुंजी या क्रेडिट जोड़ें।";
+"Add an OpenAI API key or credits to use this model." = "इस मॉडल का उपयोग करने के लिए OpenAI API कुंजी या क्रेडिट जोड़ें।";
 "Add an email above to enable a reply" = "जवाब पाने के लिए ऊपर ईमेल जोड़ें";
 "Add captions" = "कैप्शन जोड़ें";
 "Add credits" = "क्रेडिट जोड़ें";
@@ -158,10 +161,10 @@
 "Change to Match" = "मैच करने के लिए बदलें";
 "Changes take effect after restarting Palmier Pro." = "बदलाव Palmier Pro को रीस्टार्ट करने के बाद लागू होंगे।";
 "Changing the ratio preserves the shorter edge." = "रेशियो बदलने पर छोटी किनारी बनी रहती है।";
+"Chat" = "चैट";
 "Chat history" = "चैट इतिहास";
 "Chat with your agent! It can generate content, edit clips, organize your assets, and much more. Start by signing in, or bring your own Anthropic API key." = "अपने एजेंट से चैट करें। यह कंटेंट जेनरेट कर सकता है, क्लिप एडिट कर सकता है, एसेट व्यवस्थित कर सकता है और बहुत कुछ। शुरू करने के लिए साइन इन करें या अपनी Anthropic API कुंजी इस्तेमाल करें।";
 "Check for Updates…" = "अपडेट जाँचें…";
-"Choose Audio" = "ऑडियो चुनें";
 "Choose a .cube LUT file" = ".cube LUT फ़ाइल चुनें";
 "Choose a crop aspect" = "क्रॉप आस्पेक्ट चुनें";
 "Choose animation clip color" = "एनिमेशन क्लिप का रंग चुनें";
@@ -195,6 +198,7 @@
 "Close All Tabs" = "सभी टैब बंद करें";
 "Close Other Tabs" = "अन्य टैब बंद करें";
 "Close Tab" = "टैब बंद करें";
+"Close gaps" = "अंतराल बंद करें";
 "Cloud" = "क्लाउड";
 "Cloud auto-detects languages, produces more accurate transcripts, can identify speakers, and uses 25 credits/hr when a transcript is not cached." = "क्लाउड अपने आप भाषाएँ पहचानता है, अधिक सटीक ट्रांसक्रिप्ट बनाता है, स्पीकर पहचान सकता है और ट्रांसक्रिप्ट कैश न होने पर 25 क्रेडिट/घंटा उपयोग करता है।";
 "Codec" = "कोडेक";
@@ -282,7 +286,6 @@
 "Designer" = "डिज़ाइनर";
 "Destination" = "डेस्टिनेशन";
 "Detail" = "डिटेल";
-"Details" = "डिटेल्स";
 "Detect Beats" = "बीट्स पहचानें";
 "Detected %lld beats at %lld BPM." = "%lld बीट्स पहचानी गईं, %lld BPM पर।";
 "Detected %lld beats." = "%lld बीट्स पहचानी गईं।";
@@ -344,6 +347,7 @@
 "Exporting…" = "एक्सपोर्ट हो रहा है…";
 "Export…" = "एक्सपोर्ट करें…";
 "Exposure" = "एक्सपोज़र";
+"Extends a caption to close gaps up to this duration." = "इस अवधि तक अंतराल बंद करने के लिए कैप्शन बढ़ाता है।";
 "Extra Large" = "बहुत बड़ा";
 "Fade In" = "फ़ेड इन";
 "Fade Out" = "फ़ेड आउट";
@@ -398,13 +402,14 @@
 "Generate video, image, or audio with different models and settings. Drag assets from the media panel above into the reference frame." = "अलग-अलग मॉडल और सेटिंग्स से वीडियो, इमेज या ऑडियो जेनरेट करें। ऊपर के मीडिया पैनल से एसेट को रेफ़रेंस फ़्रेम में ड्रैग करें।";
 "Generate · %lld credits" = "जेनरेट करें · %lld क्रेडिट";
 "Generate · 1 credit" = "जेनरेट करें · 1 क्रेडिट";
-"Generated" = "जेनरेट किया गया";
 "Generating…" = "जेनरेट हो रहा है…";
 "Generation Failed" = "जेनरेशन विफल";
+"Generation Input" = "जनरेशन इनपुट";
 "Generation complete" = "जेनरेशन पूर्ण";
 "Generation in progress" = "जेनरेशन जारी है";
 "Generation panel" = "जेनरेशन पैनल";
 "Get Anthropic API key" = "Anthropic API कुंजी पाएँ";
+"Get OpenAI API key" = "OpenAI API कुंजी प्राप्त करें";
 "Get a notification when a generation finishes." = "जेनरेशन पूर्ण होने पर सूचना पाएँ।";
 "Getting the search model ready." = "सर्च मॉडल तैयार हो रहा है।";
 "Glow" = "ग्लो";
@@ -417,7 +422,10 @@
 "Hard Light" = "हार्ड लाइट";
 "Height" = "ऊँचाई";
 "Help" = "मदद";
+"Hide Info" = "जानकारी छिपाएँ";
 "Hide keyframe timeline" = "कीफ़्रेम टाइमलाइन छिपाएँ";
+"Hide reasoning" = "रीज़निंग छिपाएँ";
+"High" = "उच्च";
 "Highlight" = "हाइलाइट";
 "Highlight Block" = "हाइलाइट ब्लॉक";
 "Highlights" = "हाइलाइट्स";
@@ -442,6 +450,7 @@
 "Indexing %lld/%lld" = "इंडेक्स हो रहा है %lld/%lld";
 "Input" = "इनपुट";
 "Inspector" = "इंस्पेक्टर";
+"Inspector Panel" = "इंस्पेक्टर पैनल";
 "Install" = "इंस्टॉल करें";
 "Install in Claude Desktop" = "Claude Desktop में इंस्टॉल करें";
 "Install in Cursor" = "Cursor में इंस्टॉल करें";
@@ -504,6 +513,7 @@
 "Local runs with Apple's SpeechAnalyzer." = "लोकल मोड Apple के SpeechAnalyzer से चलता है।";
 "Local runs with Apple's SpeechAnalyzer. Cloud uses credits and a more accurate model with more capabilities." = "लोकल मोड Apple के SpeechAnalyzer से चलता है। क्लाउड क्रेडिट और अधिक क्षमताओं वाला ज़्यादा सटीक मॉडल उपयोग करता है।";
 "Log in for 250 free credits" = "250 मुफ़्त क्रेडिट के लिए लॉग इन करें";
+"Low" = "निम्न";
 "Luma" = "लूमा";
 "Luminosity" = "ल्यूमिनोसिटी";
 "Lyrics (optional). [Verse] and [Chorus] tags supported." = "लिरिक्स (वैकल्पिक)। [Verse] और [Chorus] टैग समर्थित हैं।";
@@ -526,6 +536,7 @@
 "Match Timeline" = "टाइमलाइन से मैच करें";
 "Match mouth movement to replacement audio" = "मुँह की गति को बदले गए ऑडियो से मैच करें";
 "Matches voices across clips, transcribing untranscribed timeline clips first (uses credits). Transcripts and voice fingerprints are cached, so re-runs are fast." = "क्लिप्स के बीच आवाज़ों को मैच करता है और पहले बिना ट्रांसक्रिप्ट वाली टाइमलाइन क्लिप्स को ट्रांसक्राइब करता है (क्रेडिट उपयोग होते हैं)। ट्रांसक्रिप्ट और वॉइस फ़िंगरप्रिंट कैश किए जाते हैं, इसलिए दोबारा चलाना तेज़ है।";
+"Max" = "अधिकतम";
 "Max plan" = "Max प्लान";
 "Max words" = "अधिकतम शब्द";
 "Maximize Focused Panel" = "फ़ोकस किए गए पैनल को बड़ा करें";
@@ -539,6 +550,7 @@
 "Medium" = "मध्यम";
 "Mic" = "माइक";
 "Midpoint" = "मिडपॉइंट";
+"Minimal" = "न्यूनतम";
 "Minimum Pause" = "न्यूनतम पॉज़";
 "Mixed" = "मिश्रित";
 "Mode" = "मोड";
@@ -617,6 +629,7 @@
 "Open Skills to browse community playbooks, create your own, or add them to other agents." = "कम्युनिटी प्लेबुक देखने, अपनी स्किल बनाने या दूसरे एजेंट में जोड़ने के लिए स्किल्स खोलें।";
 "Open Timeline" = "टाइमलाइन खोलें";
 "Open the AI Edit tab to upscale, prompt-edit, create video from a frame, or generate music, SFX, cleanup, and dubbing from the clip." = "AI Edit टैब खोलकर अपस्केल करें, प्रॉम्प्ट से एडिट करें, किसी फ़्रेम से वीडियो बनाएँ, या क्लिप से संगीत, SFX, क्लीनअप और डबिंग जेनरेट करें।";
+"OpenAI API Key" = "OpenAI API कुंजी";
 "Opening Google" = "Google खोला जा रहा है";
 "Opening Google…" = "Google खोला जा रहा है…";
 "Open…" = "खोलें…";
@@ -671,6 +684,7 @@
 "Range" = "रेंज";
 "Razor (C)" = "रेज़र (C)";
 "Razor Tool" = "रेज़र टूल";
+"Reasoning effort" = "रीज़निंग प्रयास";
 "Redetect Beats" = "बीट्स दोबारा पहचानें";
 "Redo" = "रीडू";
 "Redo (⇧⌘Z)" = "रीडू (⇧⌘Z)";
@@ -764,7 +778,6 @@
 "Select Forward on All Tracks" = "सभी ट्रैक पर आगे चुनें";
 "Select Forward on Track" = "ट्रैक पर आगे चुनें";
 "Select Range" = "रेंज चुनें";
-"Select a range" = "रेंज चुनें";
 "Select a single clip to enable" = "सक्षम करने के लिए एक क्लिप चुनें";
 "Select media files or folders to import" = "इम्पोर्ट करने के लिए मीडिया फ़ाइलें या फ़ोल्डर चुनें";
 "Selected" = "चयनित";
@@ -791,9 +804,11 @@
 "Sharpen" = "शार्पन";
 "Short-form and social" = "शॉर्ट-फ़ॉर्म और सोशल";
 "Shortcuts" = "शॉर्टकट्स";
+"Show Info" = "जानकारी दिखाएँ";
 "Show in Finder" = "Finder में दिखाएँ";
 "Show keyframe timeline" = "कीफ़्रेम टाइमलाइन दिखाएँ";
 "Show notifications" = "सूचनाएँ दिखाएँ";
+"Show reasoning" = "रीज़निंग दिखाएँ";
 "Side by Side" = "साथ-साथ";
 "Sign In" = "साइन इन";
 "Sign in" = "साइन इन";
@@ -801,6 +816,7 @@
 "Sign in to receive 250 free credits for AI chat and generation." = "AI चैट और जेनरेशन के लिए 250 मुफ़्त क्रेडिट पाने के लिए साइन इन करें।";
 "Sign in to subscribe and use AI generation." = "सब्सक्राइब करने और AI जेनरेशन इस्तेमाल करने के लिए साइन इन करें।";
 "Sign in to use AI" = "AI इस्तेमाल करने के लिए साइन इन करें";
+"Sign in to use AI chat." = "AI चैट उपयोग करने के लिए साइन इन करें।";
 "Sign in to use Cloud transcription." = "क्लाउड ट्रांसक्रिप्शन इस्तेमाल करने के लिए साइन इन करें।";
 "Sign in to use Cloud." = "क्लाउड इस्तेमाल करने के लिए साइन इन करें।";
 "Sign in with Google" = "Google से साइन इन करें";
@@ -848,11 +864,13 @@
 "Stopped" = "रुका हुआ";
 "Storage" = "स्टोरेज";
 "Streaming through your Anthropic API key (BYOK)" = "आपकी Anthropic API कुंजी (BYOK) से स्ट्रीम हो रहा है";
+"Streaming through your OpenAI API key (BYOK)" = "आपकी OpenAI API कुंजी से स्ट्रीमिंग (BYOK)";
 "Strikethrough" = "स्ट्राइकथ्रू";
 "Student" = "छात्र";
 "Style" = "स्टाइल";
 "Style instructions (optional). e.g., warm and slow, British accent." = "स्टाइल निर्देश (वैकल्पिक)। उदाहरण: गर्म और धीमा, ब्रिटिश उच्चारण।";
 "Subscribe" = "सब्सक्राइब करें";
+"Subscribe or add your own API key to use this model." = "इस मॉडल का उपयोग करने के लिए सदस्यता लें या अपनी API कुंजी जोड़ें।";
 "Subscription" = "सब्सक्रिप्शन";
 "Swap Media" = "मीडिया स्वैप करें";
 "Swap the clip's media when generation completes. Speed, volume, trim, and transform are preserved." = "जेनरेशन पूर्ण होने पर क्लिप का मीडिया स्वैप करें। स्पीड, वॉल्यूम, ट्रिम और ट्रांसफ़ॉर्म बने रहते हैं।";
@@ -880,14 +898,15 @@
 "The clip you're adding has different settings than the current project." = "आप जो क्लिप जोड़ रहे हैं उसकी सेटिंग्स मौजूदा प्रोजेक्ट से अलग हैं।";
 "The export" = "एक्सपोर्ट";
 "The project will be moved to the Trash." = "प्रोजेक्ट ट्रैश में ले जाया जाएगा।";
+"The selected model refused this request. Revise the prompt and try again." = "चयनित मॉडल ने यह अनुरोध अस्वीकार कर दिया। प्रॉम्प्ट संशोधित कर फिर कोशिश करें।";
 "The selected projects will be moved to the Trash." = "चयनित प्रोजेक्ट ट्रैश में भेज दिए जाएँगे।";
 "The timeline settings changed. Close this sheet and try again." = "टाइमलाइन सेटिंग्स बदल गई हैं। यह शीट बंद करके फिर कोशिश करें।";
 "Theme" = "थीम";
-"This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "यह टाइमलाइन रूलर है। रेंडर करने के लिए रेंज चुनने हेतु रूलर पर Shift+ड्रैग करें। उस रेंज के अनुकूल AI एडिट या संगीत जेनरेट करने के लिए कोई भी स्लॉट चुन सकते हैं।";
 "This is where all your footage and assets live." = "आपका सारा फ़ुटेज और सभी एसेट यहाँ रहते हैं।";
 "This is your preview panel to play a selected media or the whole timeline." = "यह चयनित मीडिया या पूरी टाइमलाइन चलाने का प्रीव्यू पैनल है।";
 "This model cannot cap the output at 60 FPS." = "यह मॉडल आउटपुट को 60 FPS पर सीमित नहीं कर सकता।";
 "This permanently removes %@." = "यह %@ को स्थायी रूप से हटाता है।";
+"Three-Stack" = "थ्री-स्टैक";
 "Three-Up" = "तीन पैनल";
 "Threshold" = "थ्रेशोल्ड";
 "Thumbnail Size" = "थंबनेल आकार";
@@ -895,6 +914,7 @@
 "Timeline" = "टाइमलाइन";
 "Timeline Format" = "टाइमलाइन फ़ॉर्मैट";
 "Timeline colors" = "टाइमलाइन के रंग";
+"Timelines" = "टाइमलाइन";
 "Tint" = "टिंट";
 "Tints waveforms by speaker. Voices are matched across clips using cloud transcripts." = "स्पीकर के अनुसार वेवफ़ॉर्म को रंग देता है। क्लाउड ट्रांसक्रिप्ट से क्लिप्स के बीच आवाज़ें मैच की जाती हैं।";
 "Toggle Agent Panel" = "एजेंट पैनल टॉगल करें";
@@ -930,7 +950,6 @@
 "Ungroup Multicam" = "मल्टीकैम अनग्रुप करें";
 "Unlink" = "अनलिंक";
 "Untitled" = "बिना शीर्षक";
-"Up to %@" = "%@ तक";
 "Update" = "अपडेट";
 "Update available" = "अपडेट उपलब्ध है";
 "Updating %@" = "%@ अपडेट हो रहा है";
@@ -997,6 +1016,7 @@
 "Word Slide" = "वर्ड स्लाइड";
 "Working on %@" = "%@ पर काम हो रहा है";
 "Workspace layout" = "वर्कस्पेस लेआउट";
+"X High" = "अति उच्च";
 "You're all set" = "सब तैयार है";
 "YouTube" = "YouTube";
 "Your Lottie animation is ready." = "आपका Lottie एनिमेशन तैयार है।";
@@ -1019,7 +1039,9 @@
 "error" = "एरर";
 "group moved right to fit" = "फ़िट करने के लिए ग्रुप को दाएँ ले जाया गया";
 "lowercase" = "लोअरकेस";
-"or use your own Anthropic key" = "या अपनी Anthropic कुंजी उपयोग करें";
+"or add your own Anthropic key" = "या अपनी Anthropic कुंजी जोड़ें";
+"or add your own OpenAI key" = "या अपनी OpenAI कुंजी जोड़ें";
 "result" = "परिणाम";
-"using API key" = "API कुंजी उपयोग हो रही है";
+"using Anthropic API key" = "Anthropic API कुंजी उपयोग हो रही है";
+"using OpenAI API key" = "OpenAI API कुंजी उपयोग हो रही है";
 "you@example.com — so we can reply" = "you@example.com — ताकि हम जवाब दे सकें";

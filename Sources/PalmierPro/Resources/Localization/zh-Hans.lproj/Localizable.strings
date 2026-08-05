@@ -36,6 +36,7 @@
 "%lld text clips are ready in Palmier Pro." = "%lld 个文本片段已在 Palmier Pro 中准备就绪。";
 "%lld videos are ready in Palmier Pro." = "%lld 个视频已在 Palmier Pro 中准备就绪。";
 "%lldk credits" = "%lldk 积分";
+"(Recommended)" = "(推荐)";
 "(image payload)" = "（图像载荷）";
 "/ month" = "/ 月";
 "0 credits" = "0 积分";
@@ -67,6 +68,8 @@
 "Activity unavailable" = "活动不可用";
 "Add Range to Chat" = "将范围添加到对话";
 "Add Text" = "添加文本";
+"Add an Anthropic API key or credits to use this model." = "添加 Anthropic API key 或积分以使用此模型。";
+"Add an OpenAI API key or credits to use this model." = "添加 OpenAI API key 或积分以使用此模型。";
 "Add an email above to enable a reply" = "在上方添加电子邮件以接收回复";
 "Add captions" = "添加字幕";
 "Add credits" = "添加积分";
@@ -158,10 +161,10 @@
 "Change to Match" = "更改以匹配";
 "Changes take effect after restarting Palmier Pro." = "更改将在重新启动 Palmier Pro 后生效。";
 "Changing the ratio preserves the shorter edge." = "更改比例时会保留较短边。";
+"Chat" = "对话";
 "Chat history" = "对话历史";
 "Chat with your agent! It can generate content, edit clips, organize your assets, and much more. Start by signing in, or bring your own Anthropic API key." = "与 Agent 对话。它可以生成内容、编辑片段、整理素材等。登录即可开始，也可以使用自己的 Anthropic API key。";
 "Check for Updates…" = "检查更新…";
-"Choose Audio" = "选择音频";
 "Choose a .cube LUT file" = "选择 .cube LUT 文件";
 "Choose a crop aspect" = "选择裁剪宽高比";
 "Choose animation clip color" = "选择动画片段颜色";
@@ -195,6 +198,7 @@
 "Close All Tabs" = "关闭所有标签页";
 "Close Other Tabs" = "关闭其他标签页";
 "Close Tab" = "关闭标签页";
+"Close gaps" = "填补间隙";
 "Cloud" = "云端";
 "Cloud auto-detects languages, produces more accurate transcripts, can identify speakers, and uses 25 credits/hr when a transcript is not cached." = "云端可自动检测语言、生成更准确的转录并识别说话人。转录未缓存时，每小时使用 25 积分。";
 "Codec" = "编解码器";
@@ -282,7 +286,6 @@
 "Designer" = "设计师";
 "Destination" = "目标位置";
 "Detail" = "细节";
-"Details" = "详细信息";
 "Detect Beats" = "检测节拍";
 "Detected %lld beats at %lld BPM." = "检测到 %lld 个节拍，速度为 %lld BPM。";
 "Detected %lld beats." = "检测到 %lld 个节拍。";
@@ -344,6 +347,7 @@
 "Exporting…" = "正在导出…";
 "Export…" = "导出…";
 "Exposure" = "曝光";
+"Extends a caption to close gaps up to this duration." = "延长字幕以填补不超过此时长的间隙。";
 "Extra Large" = "特大";
 "Fade In" = "淡入";
 "Fade Out" = "淡出";
@@ -398,13 +402,14 @@
 "Generate video, image, or audio with different models and settings. Drag assets from the media panel above into the reference frame." = "使用不同模型和设置生成视频、图像或音频。将素材从上方媒体面板拖入参考框。";
 "Generate · %lld credits" = "生成 · %lld 积分";
 "Generate · 1 credit" = "生成 · 1 积分";
-"Generated" = "已生成";
 "Generating…" = "正在生成…";
 "Generation Failed" = "生成失败";
+"Generation Input" = "生成输入";
 "Generation complete" = "生成完成";
 "Generation in progress" = "正在生成";
 "Generation panel" = "生成面板";
 "Get Anthropic API key" = "获取 Anthropic API key";
+"Get OpenAI API key" = "获取 OpenAI API key";
 "Get a notification when a generation finishes." = "在生成完成时接收通知。";
 "Getting the search model ready." = "正在准备搜索模型。";
 "Glow" = "辉光";
@@ -417,7 +422,10 @@
 "Hard Light" = "强光";
 "Height" = "高度";
 "Help" = "帮助";
+"Hide Info" = "隐藏信息";
 "Hide keyframe timeline" = "隐藏关键帧时间线";
+"Hide reasoning" = "隐藏推理";
+"High" = "高";
 "Highlight" = "高光";
 "Highlight Block" = "高亮色块";
 "Highlights" = "高光";
@@ -442,6 +450,7 @@
 "Indexing %lld/%lld" = "正在索引 %lld/%lld";
 "Input" = "输入";
 "Inspector" = "检查器";
+"Inspector Panel" = "检查器面板";
 "Install" = "安装";
 "Install in Claude Desktop" = "安装到 Claude Desktop";
 "Install in Cursor" = "安装到 Cursor";
@@ -504,6 +513,7 @@
 "Local runs with Apple's SpeechAnalyzer." = "本地转录使用 Apple SpeechAnalyzer。";
 "Local runs with Apple's SpeechAnalyzer. Cloud uses credits and a more accurate model with more capabilities." = "本地转录使用 Apple SpeechAnalyzer。云端会使用积分，并提供更准确、功能更多的模型。";
 "Log in for 250 free credits" = "登录即可获得 250 免费积分";
+"Low" = "低";
 "Luma" = "亮度";
 "Luminosity" = "明度";
 "Lyrics (optional). [Verse] and [Chorus] tags supported." = "歌词（可选）。支持 [Verse] 和 [Chorus] 标签。";
@@ -526,6 +536,7 @@
 "Match Timeline" = "匹配时间线";
 "Match mouth movement to replacement audio" = "让嘴部动作与替换音频匹配";
 "Matches voices across clips, transcribing untranscribed timeline clips first (uses credits). Transcripts and voice fingerprints are cached, so re-runs are fast." = "匹配不同片段中的声音，并先转录时间线上尚未转录的片段（使用积分）。转录和声音指纹会被缓存，因此再次运行速度很快。";
+"Max" = "最大";
 "Max plan" = "Max 方案";
 "Max words" = "最多字词数";
 "Maximize Focused Panel" = "最大化聚焦面板";
@@ -539,6 +550,7 @@
 "Medium" = "中";
 "Mic" = "麦克风";
 "Midpoint" = "中点";
+"Minimal" = "最低";
 "Minimum Pause" = "最短停顿";
 "Mixed" = "混合";
 "Mode" = "模式";
@@ -617,6 +629,7 @@
 "Open Skills to browse community playbooks, create your own, or add them to other agents." = "打开“技能”以浏览社区操作手册、创建自己的技能，或将其添加到其他 Agent。";
 "Open Timeline" = "打开时间线";
 "Open the AI Edit tab to upscale, prompt-edit, create video from a frame, or generate music, SFX, cleanup, and dubbing from the clip." = "打开“AI 编辑”标签页即可放大分辨率、用提示词编辑、从帧创建视频，或从片段生成音乐、音效、清理人声和配音。";
+"OpenAI API Key" = "OpenAI API key";
 "Opening Google" = "正在打开 Google";
 "Opening Google…" = "正在打开 Google…";
 "Open…" = "打开…";
@@ -671,6 +684,7 @@
 "Range" = "范围";
 "Razor (C)" = "剃刀 (C)";
 "Razor Tool" = "剃刀工具";
+"Reasoning effort" = "推理强度";
 "Redetect Beats" = "重新检测节拍";
 "Redo" = "重做";
 "Redo (⇧⌘Z)" = "重做 (⇧⌘Z)";
@@ -764,7 +778,6 @@
 "Select Forward on All Tracks" = "选择所有轨道上的后续片段";
 "Select Forward on Track" = "选择轨道上的后续片段";
 "Select Range" = "选择范围";
-"Select a range" = "选择范围";
 "Select a single clip to enable" = "选择单个片段以启用";
 "Select media files or folders to import" = "选择要导入的媒体文件或文件夹";
 "Selected" = "已选择";
@@ -791,9 +804,11 @@
 "Sharpen" = "锐化";
 "Short-form and social" = "短视频与社交媒体";
 "Shortcuts" = "快捷键";
+"Show Info" = "显示信息";
 "Show in Finder" = "在“访达”中显示";
 "Show keyframe timeline" = "显示关键帧时间线";
 "Show notifications" = "显示通知";
+"Show reasoning" = "显示推理";
 "Side by Side" = "并排";
 "Sign In" = "登录";
 "Sign in" = "登录";
@@ -801,6 +816,7 @@
 "Sign in to receive 250 free credits for AI chat and generation." = "登录即可获得 250 个免费积分，用于 AI 聊天和生成。";
 "Sign in to subscribe and use AI generation." = "登录以订阅并使用 AI 生成。";
 "Sign in to use AI" = "登录以使用 AI";
+"Sign in to use AI chat." = "登录以使用 AI 对话。";
 "Sign in to use Cloud transcription." = "登录以使用云端转录。";
 "Sign in to use Cloud." = "登录以使用云端。";
 "Sign in with Google" = "使用 Google 登录";
@@ -848,11 +864,13 @@
 "Stopped" = "已停止";
 "Storage" = "储存空间";
 "Streaming through your Anthropic API key (BYOK)" = "正在通过你的 Anthropic API key 流式传输 (BYOK)";
+"Streaming through your OpenAI API key (BYOK)" = "正在通过你的 OpenAI API key 流式传输 (BYOK)";
 "Strikethrough" = "删除线";
 "Student" = "学生";
 "Style" = "样式";
 "Style instructions (optional). e.g., warm and slow, British accent." = "样式说明（可选），例如温暖舒缓、英式口音。";
 "Subscribe" = "订阅";
+"Subscribe or add your own API key to use this model." = "订阅或添加自己的 API key 以使用此模型。";
 "Subscription" = "订阅";
 "Swap Media" = "替换媒体";
 "Swap the clip's media when generation completes. Speed, volume, trim, and transform are preserved." = "生成完成后替换片段的媒体。速度、音量、修剪和变换将保留。";
@@ -880,14 +898,15 @@
 "The clip you're adding has different settings than the current project." = "要添加的片段与当前项目的设置不同。";
 "The export" = "导出任务";
 "The project will be moved to the Trash." = "项目将被移到废纸篓。";
+"The selected model refused this request. Revise the prompt and try again." = "所选模型拒绝了此请求。请修改提示后重试。";
 "The selected projects will be moved to the Trash." = "所选项目将被移到废纸篓。";
 "The timeline settings changed. Close this sheet and try again." = "时间线设置已更改。请关闭此表单后重试。";
 "Theme" = "主题";
-"This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "这是时间线标尺。按住 Shift 在标尺上拖移以选择渲染范围。你可以选择任意区段进行 AI 编辑，或生成适合该范围的音乐。";
 "This is where all your footage and assets live." = "你的所有素材和资源都位于此处。";
 "This is your preview panel to play a selected media or the whole timeline." = "这是预览面板，用于播放所选媒体或整个时间线。";
 "This model cannot cap the output at 60 FPS." = "此模型无法将输出限制为 60 FPS。";
 "This permanently removes %@." = "这将永久移除 %@。";
+"Three-Stack" = "三层叠加";
 "Three-Up" = "三画面";
 "Threshold" = "阈值";
 "Thumbnail Size" = "缩略图大小";
@@ -895,6 +914,7 @@
 "Timeline" = "时间线";
 "Timeline Format" = "时间线格式";
 "Timeline colors" = "时间线颜色";
+"Timelines" = "时间线";
 "Tint" = "色调";
 "Tints waveforms by speaker. Voices are matched across clips using cloud transcripts." = "按说话人为波形着色。使用云端转录匹配不同片段中的声音。";
 "Toggle Agent Panel" = "显示或隐藏 Agent 面板";
@@ -930,7 +950,6 @@
 "Ungroup Multicam" = "取消多机位分组";
 "Unlink" = "取消链接";
 "Untitled" = "未命名";
-"Up to %@" = "最高 %@";
 "Update" = "更新";
 "Update available" = "有可用更新";
 "Updating %@" = "正在更新 %@";
@@ -997,6 +1016,7 @@
 "Word Slide" = "字词滑入";
 "Working on %@" = "正在处理 %@";
 "Workspace layout" = "工作区布局";
+"X High" = "极高";
 "You're all set" = "一切就绪";
 "YouTube" = "YouTube";
 "Your Lottie animation is ready." = "你的 Lottie 动画已准备就绪。";
@@ -1019,7 +1039,9 @@
 "error" = "错误";
 "group moved right to fit" = "组已右移以适应";
 "lowercase" = "小写";
-"or use your own Anthropic key" = "或使用你自己的 Anthropic 密钥";
+"or add your own Anthropic key" = "或添加你自己的 Anthropic 密钥";
+"or add your own OpenAI key" = "或添加你自己的 OpenAI 密钥";
 "result" = "结果";
-"using API key" = "使用 API key";
+"using Anthropic API key" = "使用 Anthropic API key";
+"using OpenAI API key" = "使用 OpenAI API key";
 "you@example.com — so we can reply" = "you@example.com，以便我们回复";

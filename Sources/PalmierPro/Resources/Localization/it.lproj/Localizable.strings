@@ -36,6 +36,7 @@
 "%lld text clips are ready in Palmier Pro." = "%lld clip di testo sono pronte in Palmier Pro.";
 "%lld videos are ready in Palmier Pro." = "%lld video sono pronti in Palmier Pro.";
 "%lldk credits" = "%lldk crediti";
+"(Recommended)" = "(Consigliato)";
 "(image payload)" = "(payload immagine)";
 "/ month" = "/ mese";
 "0 credits" = "0 crediti";
@@ -67,6 +68,8 @@
 "Activity unavailable" = "Attività non disponibile";
 "Add Range to Chat" = "Aggiungi intervallo alla chat";
 "Add Text" = "Aggiungi testo";
+"Add an Anthropic API key or credits to use this model." = "Aggiungi una chiave API Anthropic o crediti per usare questo modello.";
+"Add an OpenAI API key or credits to use this model." = "Aggiungi una chiave API OpenAI o crediti per usare questo modello.";
 "Add an email above to enable a reply" = "Aggiungi un indirizzo email qui sopra per consentire una risposta";
 "Add captions" = "Aggiungi sottotitoli";
 "Add credits" = "Aggiungi crediti";
@@ -158,10 +161,10 @@
 "Change to Match" = "Modifica per corrispondere";
 "Changes take effect after restarting Palmier Pro." = "Le modifiche avranno effetto dopo il riavvio di Palmier Pro.";
 "Changing the ratio preserves the shorter edge." = "La modifica delle proporzioni mantiene il lato più corto.";
+"Chat" = "Chat";
 "Chat history" = "Cronologia chat";
 "Chat with your agent! It can generate content, edit clips, organize your assets, and much more. Start by signing in, or bring your own Anthropic API key." = "Chatta con il tuo agente. Può generare contenuti, modificare clip, organizzare risorse e molto altro. Per iniziare, accedi oppure usa la tua chiave API Anthropic.";
 "Check for Updates…" = "Controlla aggiornamenti…";
-"Choose Audio" = "Scegli audio";
 "Choose a .cube LUT file" = "Scegli un file LUT .cube";
 "Choose a crop aspect" = "Scegli proporzioni di ritaglio";
 "Choose animation clip color" = "Scegli colore clip animazione";
@@ -195,6 +198,7 @@
 "Close All Tabs" = "Chiudi tutte le schede";
 "Close Other Tabs" = "Chiudi le altre schede";
 "Close Tab" = "Chiudi scheda";
+"Close gaps" = "Chiudi gli spazi";
 "Cloud" = "Cloud";
 "Cloud auto-detects languages, produces more accurate transcripts, can identify speakers, and uses 25 credits/hr when a transcript is not cached." = "Cloud rileva automaticamente le lingue, produce trascrizioni più accurate, può identificare gli interlocutori e usa 25 crediti/ora quando una trascrizione non è in cache.";
 "Codec" = "Codec";
@@ -282,7 +286,6 @@
 "Designer" = "Designer";
 "Destination" = "Destinazione";
 "Detail" = "Dettaglio";
-"Details" = "Dettagli";
 "Detect Beats" = "Rileva battiti";
 "Detected %lld beats at %lld BPM." = "Rilevati %lld battiti a %lld BPM.";
 "Detected %lld beats." = "Rilevati %lld battiti.";
@@ -344,6 +347,7 @@
 "Exporting…" = "Esportazione…";
 "Export…" = "Esporta…";
 "Exposure" = "Esposizione";
+"Extends a caption to close gaps up to this duration." = "Estende un sottotitolo per chiudere gli spazi fino a questa durata.";
 "Extra Large" = "Molto grande";
 "Fade In" = "Dissolvenza in entrata";
 "Fade Out" = "Dissolvenza in uscita";
@@ -398,13 +402,14 @@
 "Generate video, image, or audio with different models and settings. Drag assets from the media panel above into the reference frame." = "Genera video, immagini o audio con modelli e impostazioni diversi. Trascina le risorse dal pannello multimediale qui sopra nel fotogramma di riferimento.";
 "Generate · %lld credits" = "Genera · %lld crediti";
 "Generate · 1 credit" = "Genera · 1 credito";
-"Generated" = "Generato";
 "Generating…" = "Generazione…";
 "Generation Failed" = "Generazione non riuscita";
+"Generation Input" = "Input di generazione";
 "Generation complete" = "Generazione completata";
 "Generation in progress" = "Generazione in corso";
 "Generation panel" = "Pannello di generazione";
 "Get Anthropic API key" = "Ottieni chiave API Anthropic";
+"Get OpenAI API key" = "Ottieni chiave API OpenAI";
 "Get a notification when a generation finishes." = "Ricevi una notifica al termine di una generazione.";
 "Getting the search model ready." = "Preparazione del modello di ricerca.";
 "Glow" = "Bagliore";
@@ -417,7 +422,10 @@
 "Hard Light" = "Luce intensa";
 "Height" = "Altezza";
 "Help" = "Aiuto";
+"Hide Info" = "Nascondi info";
 "Hide keyframe timeline" = "Nascondi timeline fotogrammi chiave";
+"Hide reasoning" = "Nascondi ragionamento";
+"High" = "Alto";
 "Highlight" = "Luce";
 "Highlight Block" = "Blocco evidenziazione";
 "Highlights" = "Luci";
@@ -442,6 +450,7 @@
 "Indexing %lld/%lld" = "Indicizzazione %lld/%lld";
 "Input" = "Input";
 "Inspector" = "Inspector";
+"Inspector Panel" = "Pannello Inspector";
 "Install" = "Installa";
 "Install in Claude Desktop" = "Installa in Claude Desktop";
 "Install in Cursor" = "Installa in Cursor";
@@ -504,6 +513,7 @@
 "Local runs with Apple's SpeechAnalyzer." = "La modalità locale usa SpeechAnalyzer di Apple.";
 "Local runs with Apple's SpeechAnalyzer. Cloud uses credits and a more accurate model with more capabilities." = "La modalità locale usa SpeechAnalyzer di Apple. Cloud usa crediti e un modello più accurato con più funzioni.";
 "Log in for 250 free credits" = "Accedi per ottenere 250 crediti gratuiti";
+"Low" = "Basso";
 "Luma" = "Luma";
 "Luminosity" = "Luminosità";
 "Lyrics (optional). [Verse] and [Chorus] tags supported." = "Testo (facoltativo). Sono supportati i tag [Verse] e [Chorus].";
@@ -526,6 +536,7 @@
 "Match Timeline" = "Adatta alla timeline";
 "Match mouth movement to replacement audio" = "Adatta il movimento della bocca all'audio sostitutivo";
 "Matches voices across clips, transcribing untranscribed timeline clips first (uses credits). Transcripts and voice fingerprints are cached, so re-runs are fast." = "Abbina le voci tra le clip, trascrivendo prima le clip della timeline non ancora trascritte (usa crediti). Trascrizioni e impronte vocali vengono memorizzate nella cache, quindi le esecuzioni successive sono rapide.";
+"Max" = "Max";
 "Max plan" = "Piano Max";
 "Max words" = "Numero massimo di parole";
 "Maximize Focused Panel" = "Massimizza pannello attivo";
@@ -539,6 +550,7 @@
 "Medium" = "Medio";
 "Mic" = "Microfono";
 "Midpoint" = "Punto medio";
+"Minimal" = "Minimo";
 "Minimum Pause" = "Pausa minima";
 "Mixed" = "Misto";
 "Mode" = "Modalità";
@@ -617,6 +629,7 @@
 "Open Skills to browse community playbooks, create your own, or add them to other agents." = "Apri Competenze per sfogliare le procedure della community, crearne di tue o aggiungerle ad altri agenti.";
 "Open Timeline" = "Apri timeline";
 "Open the AI Edit tab to upscale, prompt-edit, create video from a frame, or generate music, SFX, cleanup, and dubbing from the clip." = "Apri la scheda Modifica AI per aumentare la risoluzione, modificare con un prompt, creare un video da un fotogramma oppure generare musica, effetti sonori, pulizia audio e doppiaggio dalla clip.";
+"OpenAI API Key" = "Chiave API OpenAI";
 "Opening Google" = "Apertura di Google";
 "Opening Google…" = "Apertura di Google…";
 "Open…" = "Apri…";
@@ -671,6 +684,7 @@
 "Range" = "Intervallo";
 "Razor (C)" = "Lametta (C)";
 "Razor Tool" = "Strumento lametta";
+"Reasoning effort" = "Sforzo di ragionamento";
 "Redetect Beats" = "Rileva nuovamente i battiti";
 "Redo" = "Ripeti";
 "Redo (⇧⌘Z)" = "Ripeti (⇧⌘Z)";
@@ -764,7 +778,6 @@
 "Select Forward on All Tracks" = "Seleziona in avanti su tutte le tracce";
 "Select Forward on Track" = "Seleziona in avanti sulla traccia";
 "Select Range" = "Seleziona intervallo";
-"Select a range" = "Seleziona un intervallo";
 "Select a single clip to enable" = "Seleziona una singola clip per abilitare";
 "Select media files or folders to import" = "Seleziona file o cartelle multimediali da importare";
 "Selected" = "Selezionato";
@@ -791,9 +804,11 @@
 "Sharpen" = "Nitidezza";
 "Short-form and social" = "Formato breve e social";
 "Shortcuts" = "Abbreviazioni";
+"Show Info" = "Mostra info";
 "Show in Finder" = "Mostra nel Finder";
 "Show keyframe timeline" = "Mostra timeline fotogrammi chiave";
 "Show notifications" = "Mostra notifiche";
+"Show reasoning" = "Mostra ragionamento";
 "Side by Side" = "Affiancati";
 "Sign In" = "Accedi";
 "Sign in" = "Accedi";
@@ -801,6 +816,7 @@
 "Sign in to receive 250 free credits for AI chat and generation." = "Accedi per ricevere 250 crediti gratuiti per chat e generazione AI.";
 "Sign in to subscribe and use AI generation." = "Accedi per abbonarti e usare la generazione AI.";
 "Sign in to use AI" = "Accedi per usare l'AI";
+"Sign in to use AI chat." = "Accedi per usare la chat IA.";
 "Sign in to use Cloud transcription." = "Accedi per usare la trascrizione Cloud.";
 "Sign in to use Cloud." = "Accedi per usare Cloud.";
 "Sign in with Google" = "Accedi con Google";
@@ -848,11 +864,13 @@
 "Stopped" = "Interrotto";
 "Storage" = "Archiviazione";
 "Streaming through your Anthropic API key (BYOK)" = "Streaming tramite la tua chiave API Anthropic (BYOK)";
+"Streaming through your OpenAI API key (BYOK)" = "Streaming con la tua chiave API OpenAI (BYOK)";
 "Strikethrough" = "Barrato";
 "Student" = "Studente";
 "Style" = "Stile";
 "Style instructions (optional). e.g., warm and slow, British accent." = "Istruzioni di stile (facoltative), ad es. caldo e lento, accento britannico.";
 "Subscribe" = "Abbonati";
+"Subscribe or add your own API key to use this model." = "Abbonati o aggiungi la tua chiave API per usare questo modello.";
 "Subscription" = "Abbonamento";
 "Swap Media" = "Scambia contenuti multimediali";
 "Swap the clip's media when generation completes. Speed, volume, trim, and transform are preserved." = "Scambia i contenuti multimediali della clip al termine della generazione. Velocità, volume, ritaglio e trasformazione vengono mantenuti.";
@@ -880,14 +898,15 @@
 "The clip you're adding has different settings than the current project." = "La clip che stai aggiungendo ha impostazioni diverse dal progetto attuale.";
 "The export" = "L'esportazione";
 "The project will be moved to the Trash." = "Il progetto verrà spostato nel Cestino.";
+"The selected model refused this request. Revise the prompt and try again." = "Il modello selezionato ha rifiutato questa richiesta. Rivedi il prompt e riprova.";
 "The selected projects will be moved to the Trash." = "I progetti selezionati verranno spostati nel Cestino.";
 "The timeline settings changed. Close this sheet and try again." = "Le impostazioni della timeline sono cambiate. Chiudi questo pannello e riprova.";
 "Theme" = "Tema";
-"This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "Questo è il righello della timeline. Tieni premuto Maiuscole e trascina sul righello per selezionare un intervallo da renderizzare. Puoi scegliere qualsiasi spazio per modificare con l'AI o generare musica adatta all'intervallo.";
 "This is where all your footage and assets live." = "Qui si trovano tutti i filmati e le risorse.";
 "This is your preview panel to play a selected media or the whole timeline." = "Questo è il pannello di anteprima per riprodurre i contenuti multimediali selezionati o l'intera timeline.";
 "This model cannot cap the output at 60 FPS." = "Questo modello non può limitare l'output a 60 FPS.";
 "This permanently removes %@." = "Rimuove definitivamente %@.";
+"Three-Stack" = "Tre livelli";
 "Three-Up" = "Tre riquadri";
 "Threshold" = "Soglia";
 "Thumbnail Size" = "Dimensione miniature";
@@ -895,6 +914,7 @@
 "Timeline" = "Timeline";
 "Timeline Format" = "Formato timeline";
 "Timeline colors" = "Colori timeline";
+"Timelines" = "Timeline";
 "Tint" = "Tinta";
 "Tints waveforms by speaker. Voices are matched across clips using cloud transcripts." = "Colora le forme d'onda per interlocutore. Le voci vengono abbinate tra le clip usando le trascrizioni Cloud.";
 "Toggle Agent Panel" = "Mostra/nascondi pannello agente";
@@ -930,7 +950,6 @@
 "Ungroup Multicam" = "Separa multicamera";
 "Unlink" = "Scollega";
 "Untitled" = "Senza titolo";
-"Up to %@" = "Fino a %@";
 "Update" = "Aggiorna";
 "Update available" = "Aggiornamento disponibile";
 "Updating %@" = "Aggiornamento di %@";
@@ -997,6 +1016,7 @@
 "Word Slide" = "Scorrimento parole";
 "Working on %@" = "Elaborazione di %@";
 "Workspace layout" = "Layout area di lavoro";
+"X High" = "Molto alto";
 "You're all set" = "Tutto pronto";
 "YouTube" = "YouTube";
 "Your Lottie animation is ready." = "L'animazione Lottie è pronta.";
@@ -1019,7 +1039,9 @@
 "error" = "errore";
 "group moved right to fit" = "gruppo spostato a destra per adattarlo";
 "lowercase" = "minuscolo";
-"or use your own Anthropic key" = "oppure usa la tua chiave Anthropic";
+"or add your own Anthropic key" = "o aggiungi la tua chiave Anthropic";
+"or add your own OpenAI key" = "o aggiungi la tua chiave OpenAI";
 "result" = "risultato";
-"using API key" = "con chiave API";
+"using Anthropic API key" = "con chiave API Anthropic";
+"using OpenAI API key" = "con chiave API OpenAI";
 "you@example.com — so we can reply" = "you@example.com — per consentirci di rispondere";

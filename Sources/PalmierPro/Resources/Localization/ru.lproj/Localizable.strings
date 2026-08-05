@@ -36,6 +36,7 @@
 "%lld text clips are ready in Palmier Pro." = "Текстовые клипы готовы в Palmier Pro: %lld.";
 "%lld videos are ready in Palmier Pro." = "Видео готовы в Palmier Pro: %lld.";
 "%lldk credits" = "%lld тыс. кредитов";
+"(Recommended)" = "(Рекомендуется)";
 "(image payload)" = "(данные изображения)";
 "/ month" = "/ месяц";
 "0 credits" = "0 кредитов";
@@ -67,6 +68,8 @@
 "Activity unavailable" = "История действий недоступна";
 "Add Range to Chat" = "Добавить диапазон в чат";
 "Add Text" = "Добавить текст";
+"Add an Anthropic API key or credits to use this model." = "Добавьте ключ Anthropic API или кредиты, чтобы использовать эту модель.";
+"Add an OpenAI API key or credits to use this model." = "Добавьте ключ OpenAI API или кредиты, чтобы использовать эту модель.";
 "Add an email above to enable a reply" = "Укажите адрес электронной почты выше, чтобы получить ответ";
 "Add captions" = "Добавить субтитры";
 "Add credits" = "Добавить кредиты";
@@ -158,10 +161,10 @@
 "Change to Match" = "Изменить под клип";
 "Changes take effect after restarting Palmier Pro." = "Изменения вступят в силу после перезапуска Palmier Pro.";
 "Changing the ratio preserves the shorter edge." = "При изменении соотношения сохраняется более короткая сторона.";
+"Chat" = "Чат";
 "Chat history" = "История чата";
 "Chat with your agent! It can generate content, edit clips, organize your assets, and much more. Start by signing in, or bring your own Anthropic API key." = "Общайтесь со своим агентом. Он может создавать контент, монтировать клипы, упорядочивать материалы и многое другое. Для начала войдите в систему или используйте свой API-ключ Anthropic.";
 "Check for Updates…" = "Проверить обновления…";
-"Choose Audio" = "Выбрать аудио";
 "Choose a .cube LUT file" = "Выберите файл LUT в формате .cube";
 "Choose a crop aspect" = "Выберите соотношение сторон кадрирования";
 "Choose animation clip color" = "Выберите цвет клипа анимации";
@@ -195,6 +198,7 @@
 "Close All Tabs" = "Закрыть все вкладки";
 "Close Other Tabs" = "Закрыть другие вкладки";
 "Close Tab" = "Закрыть вкладку";
+"Close gaps" = "Закрыть промежутки";
 "Cloud" = "Облако";
 "Cloud auto-detects languages, produces more accurate transcripts, can identify speakers, and uses 25 credits/hr when a transcript is not cached." = "Облако автоматически определяет языки, создаёт более точные расшифровки, распознаёт говорящих и использует 25 кредитов в час, если расшифровка не сохранена в кэше.";
 "Codec" = "Кодек";
@@ -282,7 +286,6 @@
 "Designer" = "Дизайнер";
 "Destination" = "Назначение";
 "Detail" = "Детализация";
-"Details" = "Сведения";
 "Detect Beats" = "Определить ритм";
 "Detected %lld beats at %lld BPM." = "Обнаружено долей: %lld при темпе %lld BPM.";
 "Detected %lld beats." = "Обнаружено долей: %lld.";
@@ -344,6 +347,7 @@
 "Exporting…" = "Экспорт…";
 "Export…" = "Экспортировать…";
 "Exposure" = "Экспозиция";
+"Extends a caption to close gaps up to this duration." = "Удлиняет субтитр, чтобы закрыть промежутки до этой длительности.";
 "Extra Large" = "Очень большой";
 "Fade In" = "Появление";
 "Fade Out" = "Затухание";
@@ -398,13 +402,14 @@
 "Generate video, image, or audio with different models and settings. Drag assets from the media panel above into the reference frame." = "Создавайте видео, изображения или аудио с разными моделями и настройками. Перетащите материалы из панели медиафайлов выше в область референса.";
 "Generate · %lld credits" = "Создать · %lld кредитов";
 "Generate · 1 credit" = "Создать · 1 кредит";
-"Generated" = "Создано";
 "Generating…" = "Создание…";
 "Generation Failed" = "Ошибка генерации";
+"Generation Input" = "Ввод генерации";
 "Generation complete" = "Генерация завершена";
 "Generation in progress" = "Идёт генерация";
 "Generation panel" = "Панель генерации";
 "Get Anthropic API key" = "Получить API-ключ Anthropic";
+"Get OpenAI API key" = "Получить ключ OpenAI API";
 "Get a notification when a generation finishes." = "Уведомлять о завершении генерации.";
 "Getting the search model ready." = "Подготавливаем модель поиска.";
 "Glow" = "Свечение";
@@ -417,7 +422,10 @@
 "Hard Light" = "Жёсткий свет";
 "Height" = "Высота";
 "Help" = "Справка";
+"Hide Info" = "Скрыть сведения";
 "Hide keyframe timeline" = "Скрыть таймлайн ключевых кадров";
+"Hide reasoning" = "Скрыть рассуждения";
+"High" = "Высокий";
 "Highlight" = "Выделение";
 "Highlight Block" = "Блок выделения";
 "Highlights" = "Светлые тона";
@@ -442,6 +450,7 @@
 "Indexing %lld/%lld" = "Индексация: %lld/%lld";
 "Input" = "Ввод";
 "Inspector" = "Инспектор";
+"Inspector Panel" = "Панель инспектора";
 "Install" = "Установить";
 "Install in Claude Desktop" = "Установить в Claude Desktop";
 "Install in Cursor" = "Установить в Cursor";
@@ -504,6 +513,7 @@
 "Local runs with Apple's SpeechAnalyzer." = "Локальный режим работает на базе Apple SpeechAnalyzer.";
 "Local runs with Apple's SpeechAnalyzer. Cloud uses credits and a more accurate model with more capabilities." = "Локальный режим работает на базе Apple SpeechAnalyzer. Облачный режим использует кредиты и более точную модель с дополнительными возможностями.";
 "Log in for 250 free credits" = "Войдите и получите 250 бесплатных кредитов";
+"Low" = "Низкий";
 "Luma" = "Яркостный канал";
 "Luminosity" = "Светимость";
 "Lyrics (optional). [Verse] and [Chorus] tags supported." = "Текст песни (необязательно). Поддерживаются теги [Verse] и [Chorus].";
@@ -526,6 +536,7 @@
 "Match Timeline" = "Подогнать под таймлайн";
 "Match mouth movement to replacement audio" = "Синхронизировать движения губ с заменённым аудио";
 "Matches voices across clips, transcribing untranscribed timeline clips first (uses credits). Transcripts and voice fingerprints are cached, so re-runs are fast." = "Сопоставляет голоса в клипах, предварительно расшифровывая клипы таймлайна без расшифровки (используются кредиты). Расшифровки и голосовые отпечатки кэшируются, поэтому повторный запуск выполняется быстро.";
+"Max" = "Макс.";
 "Max plan" = "План Max";
 "Max words" = "Максимум слов";
 "Maximize Focused Panel" = "Развернуть активную панель";
@@ -539,6 +550,7 @@
 "Medium" = "Средний";
 "Mic" = "Микрофон";
 "Midpoint" = "Средняя точка";
+"Minimal" = "Минимальный";
 "Minimum Pause" = "Минимальная пауза";
 "Mixed" = "Смешанный";
 "Mode" = "Режим";
@@ -617,6 +629,7 @@
 "Open Skills to browse community playbooks, create your own, or add them to other agents." = "Откройте раздел «Навыки», чтобы просмотреть сценарии сообщества, создать собственные или добавить их другим агентам.";
 "Open Timeline" = "Открыть таймлайн";
 "Open the AI Edit tab to upscale, prompt-edit, create video from a frame, or generate music, SFX, cleanup, and dubbing from the clip." = "Откройте вкладку «AI-правка», чтобы увеличить разрешение, изменить клип по запросу, создать видео из кадра или сгенерировать музыку, звуковые эффекты, очистку голоса и дубляж.";
+"OpenAI API Key" = "Ключ OpenAI API";
 "Opening Google" = "Открывается Google";
 "Opening Google…" = "Открывается Google…";
 "Open…" = "Открыть…";
@@ -671,6 +684,7 @@
 "Range" = "Диапазон";
 "Razor (C)" = "Лезвие (C)";
 "Razor Tool" = "Инструмент «Лезвие»";
+"Reasoning effort" = "Уровень рассуждений";
 "Redetect Beats" = "Повторно определить ритм";
 "Redo" = "Повторить";
 "Redo (⇧⌘Z)" = "Повторить (⇧⌘Z)";
@@ -764,7 +778,6 @@
 "Select Forward on All Tracks" = "Выбрать всё справа на всех дорожках";
 "Select Forward on Track" = "Выбрать всё справа на дорожке";
 "Select Range" = "Выбрать диапазон";
-"Select a range" = "Выберите диапазон";
 "Select a single clip to enable" = "Выберите один клип, чтобы включить";
 "Select media files or folders to import" = "Выберите медиафайлы или папки для импорта";
 "Selected" = "Выбрано";
@@ -791,9 +804,11 @@
 "Sharpen" = "Резкость";
 "Short-form and social" = "Короткие видео и соцсети";
 "Shortcuts" = "Сочетания клавиш";
+"Show Info" = "Показать сведения";
 "Show in Finder" = "Показать в Finder";
 "Show keyframe timeline" = "Показать таймлайн ключевых кадров";
 "Show notifications" = "Показывать уведомления";
+"Show reasoning" = "Показать рассуждения";
 "Side by Side" = "Бок о бок";
 "Sign In" = "Войти";
 "Sign in" = "Войти";
@@ -801,6 +816,7 @@
 "Sign in to receive 250 free credits for AI chat and generation." = "Войдите и получите 250 бесплатных кредитов на AI-чат и генерацию.";
 "Sign in to subscribe and use AI generation." = "Войдите, чтобы оформить подписку и использовать AI-генерацию.";
 "Sign in to use AI" = "Войдите, чтобы использовать AI";
+"Sign in to use AI chat." = "Войдите, чтобы использовать ИИ-чат.";
 "Sign in to use Cloud transcription." = "Войдите, чтобы использовать облачную расшифровку.";
 "Sign in to use Cloud." = "Войдите, чтобы использовать облако.";
 "Sign in with Google" = "Войти с Google";
@@ -848,11 +864,13 @@
 "Stopped" = "Остановлено";
 "Storage" = "Хранилище";
 "Streaming through your Anthropic API key (BYOK)" = "Потоковая передача через ваш API-ключ Anthropic (BYOK)";
+"Streaming through your OpenAI API key (BYOK)" = "Поток через ваш ключ OpenAI API (BYOK)";
 "Strikethrough" = "Зачёркивание";
 "Student" = "Студент";
 "Style" = "Стиль";
 "Style instructions (optional). e.g., warm and slow, British accent." = "Инструкции по стилю (необязательно). Например: тёплый и медленный голос, британский акцент.";
 "Subscribe" = "Подписаться";
+"Subscribe or add your own API key to use this model." = "Оформите подписку или добавьте свой API-ключ, чтобы использовать эту модель.";
 "Subscription" = "Подписка";
 "Swap Media" = "Заменить медиафайл";
 "Swap the clip's media when generation completes. Speed, volume, trim, and transform are preserved." = "Заменить медиафайл клипа после завершения генерации. Скорость, громкость, обрезка и трансформация сохраняются.";
@@ -880,14 +898,15 @@
 "The clip you're adding has different settings than the current project." = "У добавляемого клипа настройки отличаются от текущего проекта.";
 "The export" = "задачу экспорта";
 "The project will be moved to the Trash." = "Проект будет перемещён в Корзину.";
+"The selected model refused this request. Revise the prompt and try again." = "Выбранная модель отклонила запрос. Измените запрос и попробуйте снова.";
 "The selected projects will be moved to the Trash." = "Выбранные проекты будут перемещены в Корзину.";
 "The timeline settings changed. Close this sheet and try again." = "Настройки таймлайна изменились. Закройте это окно и повторите попытку.";
 "Theme" = "Тема";
-"This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "Это линейка таймлайна. Перетаскивайте по ней с зажатой клавишей Shift, чтобы выбрать диапазон для рендеринга. Можно выбрать любой слот для AI-монтажа или создания музыки под этот диапазон.";
 "This is where all your footage and assets live." = "Здесь хранятся все ваши материалы и ресурсы.";
 "This is your preview panel to play a selected media or the whole timeline." = "Это панель предпросмотра для воспроизведения выбранного медиафайла или всего таймлайна.";
 "This model cannot cap the output at 60 FPS." = "Эта модель не может ограничить результат частотой 60 FPS.";
 "This permanently removes %@." = "Это безвозвратно удалит %@.";
+"Three-Stack" = "Три слоя";
 "Three-Up" = "Три окна";
 "Threshold" = "Порог";
 "Thumbnail Size" = "Размер миниатюр";
@@ -895,6 +914,7 @@
 "Timeline" = "Таймлайн";
 "Timeline Format" = "Формат таймлайна";
 "Timeline colors" = "Цвета таймлайна";
+"Timelines" = "Таймлайны";
 "Tint" = "Оттенок";
 "Tints waveforms by speaker. Voices are matched across clips using cloud transcripts." = "Окрашивает волновые формы по говорящим. Голоса сопоставляются между клипами с помощью облачных расшифровок.";
 "Toggle Agent Panel" = "Показать или скрыть панель агента";
@@ -930,7 +950,6 @@
 "Ungroup Multicam" = "Разгруппировать мультикам";
 "Unlink" = "Отменить связь";
 "Untitled" = "Без названия";
-"Up to %@" = "До %@";
 "Update" = "Обновить";
 "Update available" = "Доступно обновление";
 "Updating %@" = "Обновляется %@";
@@ -997,6 +1016,7 @@
 "Word Slide" = "Сдвиг слов";
 "Working on %@" = "Выполняется: %@";
 "Workspace layout" = "Расположение рабочей области";
+"X High" = "Очень высокий";
 "You're all set" = "Всё готово";
 "YouTube" = "YouTube";
 "Your Lottie animation is ready." = "Ваша анимация Lottie готова.";
@@ -1019,7 +1039,9 @@
 "error" = "ошибка";
 "group moved right to fit" = "группа сдвинута вправо, чтобы поместиться";
 "lowercase" = "строчные";
-"or use your own Anthropic key" = "или используйте свой ключ Anthropic";
+"or add your own Anthropic key" = "или добавьте свой ключ Anthropic";
+"or add your own OpenAI key" = "или добавьте свой ключ OpenAI";
 "result" = "результат";
-"using API key" = "используется API-ключ";
+"using Anthropic API key" = "с ключом Anthropic API";
+"using OpenAI API key" = "с ключом OpenAI API";
 "you@example.com — so we can reply" = "you@example.com — чтобы мы могли ответить";
