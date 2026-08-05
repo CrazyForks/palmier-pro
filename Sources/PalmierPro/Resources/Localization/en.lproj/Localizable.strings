@@ -36,6 +36,7 @@
 "%lld text clips are ready in Palmier Pro." = "%lld text clips are ready in Palmier Pro.";
 "%lld videos are ready in Palmier Pro." = "%lld videos are ready in Palmier Pro.";
 "%lldk credits" = "%lldk credits";
+"(Recommended)" = "(Recommended)";
 "(image payload)" = "(image payload)";
 "/ month" = "/ month";
 "0 credits" = "0 credits";
@@ -459,6 +460,7 @@
 "Install update" = "Install update";
 "Install update v%@" = "Install update v%@";
 "Installed" = "Installed";
+"Installing %@" = "Installing %@";
 "Instructions" = "Instructions";
 "Instrumental" = "Instrumental";
 "Integration with your own agent" = "Integration with your own agent";
@@ -632,6 +634,7 @@
 "Opening Google" = "Opening Google";
 "Opening Google…" = "Opening Google…";
 "Open…" = "Open…";
+"Optional picks that help the agent and external tools work better. You can change these later in Settings." = "Optional picks that help the agent and external tools work better. You can change these later in Settings.";
 "Organize with Agent" = "Organize with Agent";
 "Original" = "Original";
 "Original FPS" = "Original FPS";
@@ -684,6 +687,7 @@
 "Razor (C)" = "Razor (C)";
 "Razor Tool" = "Razor Tool";
 "Reasoning effort" = "Reasoning effort";
+"Recommended setup" = "Recommended setup";
 "Redetect Beats" = "Redetect Beats";
 "Redo" = "Redo";
 "Redo (⇧⌘Z)" = "Redo (⇧⌘Z)";
@@ -796,6 +800,7 @@
 "Set as reference" = "Set as reference";
 "Settings" = "Settings";
 "Settings…" = "Settings…";
+"Setup" = "Setup";
 "Setup instructions" = "Setup instructions";
 "Shadow" = "Shadow";
 "Shadows" = "Shadows";

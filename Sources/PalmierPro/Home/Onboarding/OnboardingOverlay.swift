@@ -51,7 +51,7 @@ struct OnboardingOverlay: View {
             .padding(.horizontal, AppTheme.Spacing.xxl)
             .padding(.top, AppTheme.Spacing.xxl)
             .padding(.bottom, onboarding.step == .profile ? AppTheme.Spacing.md : AppTheme.Spacing.xxl)
-        if onboarding.step == .account {
+        if onboarding.step == .account || onboarding.step == .setup {
             ScrollView { content }
                 .scrollEdgeEffectStyle(.soft, for: .bottom)
         } else {
@@ -67,6 +67,8 @@ struct OnboardingOverlay: View {
             OnboardingWelcomeStep()
         case .profile:
             OnboardingProfileStep(onboarding: onboarding)
+        case .setup:
+            OnboardingSetupStep()
         case .account:
             OnboardingAccountStep(
                 account: account,
@@ -87,6 +89,8 @@ struct OnboardingOverlay: View {
                 primaryButton(L10n.string("Continue"), action: onboarding.advance)
             case .profile:
                 primaryButton(L10n.string("Continue"), action: onboarding.submitProfile)
+            case .setup:
+                primaryButton(L10n.string("Continue"), action: onboarding.advance)
             case .account:
                 secondaryButton(
                     L10n.string("Skip"),

@@ -164,7 +164,7 @@ struct OnboardingAccountStep: View {
     }
 }
 
-private struct OnboardingTitle: View {
+struct OnboardingTitle: View {
     let text: String
 
     init(_ text: String) {
@@ -179,7 +179,7 @@ private struct OnboardingTitle: View {
     }
 }
 
-private struct OnboardingDetail: View {
+struct OnboardingDetail: View {
     let text: String
 
     init(_ text: String) {

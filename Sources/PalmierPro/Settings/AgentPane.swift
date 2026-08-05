@@ -37,9 +37,14 @@ struct AgentPane: View {
 
     private var mcpHeader: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
-            Text(L10n.string("MCP Server"))
-                .font(.system(size: AppTheme.FontSize.md, weight: AppTheme.FontWeight.medium))
-                .foregroundStyle(AppTheme.Text.primaryColor)
+            HStack(alignment: .firstTextBaseline, spacing: AppTheme.Spacing.sm) {
+                Text(L10n.string("MCP Server"))
+                    .font(.system(size: AppTheme.FontSize.md, weight: AppTheme.FontWeight.medium))
+                    .foregroundStyle(AppTheme.Text.primaryColor)
+                Text(L10n.string("(Recommended)"))
+                    .font(.system(size: AppTheme.FontSize.sm))
+                    .foregroundStyle(AppTheme.Text.tertiaryColor)
+            }
 
             HStack(alignment: .firstTextBaseline, spacing: AppTheme.Spacing.sm) {
                 Text(L10n.string("Lets external clients like Cursor, Claude Desktop, Claude Code, and Codex edit your timeline."))

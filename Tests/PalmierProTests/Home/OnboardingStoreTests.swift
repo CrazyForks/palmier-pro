@@ -24,9 +24,20 @@ struct OnboardingStoreTests {
         }
     }
 
-    @Test func profileAdvancesDirectlyToAccount() throws {
+    @Test func profileAdvancesDirectlyToSetup() throws {
         try withDefaults { defaults in
             let store = OnboardingStore(defaults: defaults)
+            store.advance()
+            store.advance()
+
+            #expect(store.step == .setup)
+        }
+    }
+
+    @Test func setupAdvancesToAccount() throws {
+        try withDefaults { defaults in
+            let store = OnboardingStore(defaults: defaults)
+            store.advance()
             store.advance()
             store.advance()
 
@@ -41,6 +52,7 @@ struct OnboardingStoreTests {
 
             #expect(store.step == .welcome)
 
+            store.advance()
             store.advance()
             store.advance()
             store.advance()

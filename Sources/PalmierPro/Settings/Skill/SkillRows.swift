@@ -71,6 +71,7 @@ struct SkillRow: View {
     let actionTitle: String
     let primaryAction: Bool
     let working: Bool
+    var recommended: Bool = false
     var summaryAction: (() -> Void)? = nil
     let action: () -> Void
 
@@ -109,13 +110,13 @@ struct SkillRow: View {
     private var summary: some View {
         if let summaryAction {
             Button(action: summaryAction) {
-                SkillRowSummary(name: name, description: description)
+                SkillRowSummary(name: name, description: description, recommended: recommended)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel(L10n.string("Open \(name)"))
         } else {
-            SkillRowSummary(name: name, description: description)
+            SkillRowSummary(name: name, description: description, recommended: recommended)
         }
     }
 }
@@ -123,15 +124,24 @@ struct SkillRow: View {
 private struct SkillRowSummary: View {
     let name: String
     let description: String
+    var recommended: Bool = false
 
     var body: some View {
         HStack(spacing: AppTheme.Spacing.md) {
             SkillRowIcon()
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xxs) {
-                Text(name)
-                    .font(.system(size: AppTheme.FontSize.mdLg, weight: AppTheme.FontWeight.regular))
-                    .foregroundStyle(AppTheme.Text.primaryColor)
-                    .lineLimit(1)
+                HStack(alignment: .firstTextBaseline, spacing: AppTheme.Spacing.sm) {
+                    Text(name)
+                        .font(.system(size: AppTheme.FontSize.mdLg, weight: AppTheme.FontWeight.regular))
+                        .foregroundStyle(AppTheme.Text.primaryColor)
+                        .lineLimit(1)
+                    if recommended {
+                        Text(L10n.string("(Recommended)"))
+                            .font(.system(size: AppTheme.FontSize.sm))
+                            .foregroundStyle(AppTheme.Text.tertiaryColor)
+                            .lineLimit(1)
+                    }
+                }
                 Text(description)
                     .font(.system(size: AppTheme.FontSize.smMd))
                     .foregroundStyle(AppTheme.Text.tertiaryColor)

@@ -33,7 +33,12 @@ struct SkillsPane: View {
     private var communityEntries: [SkillCatalogEntry] {
         catalog.entries
             .filter { matches($0.name, $0.description) }
-            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+            .sorted { lhs, rhs in
+                let leftRecommended = RecommendedSkills.contains(lhs.id)
+                let rightRecommended = RecommendedSkills.contains(rhs.id)
+                if leftRecommended != rightRecommended { return leftRecommended && !rightRecommended }
+                return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+            }
     }
 
     var body: some View {
@@ -195,6 +200,7 @@ struct SkillsPane: View {
                         actionTitle: state == .update ? L10n.string("Update") : L10n.string("Open"),
                         primaryAction: false,
                         working: working.contains(skill.id),
+                        recommended: RecommendedSkills.contains(skill.id),
                         summaryAction: { present(skill.id) },
                         action: { state == .update ? update(skill) : present(skill.id) }
                     )
@@ -268,6 +274,7 @@ struct SkillsPane: View {
                 : state == .update ? L10n.string("Update") : L10n.string("Open"),
             primaryAction: skill == nil,
             working: working.contains(entry.id),
+            recommended: RecommendedSkills.contains(entry.id),
             summaryAction: skill.map { installedSkill in
                 { present(installedSkill.id) }
             },

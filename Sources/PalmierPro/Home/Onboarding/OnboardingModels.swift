@@ -1,7 +1,7 @@
 import Foundation
 
 enum OnboardingStep: Int {
-    case welcome, profile, account
+    case welcome, profile, setup, account
 }
 
 enum OnboardingSampleState: Equatable {
