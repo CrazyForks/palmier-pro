@@ -18,12 +18,18 @@ struct SkillDetailSheet: View {
     @State private var copyToast: CopyToast?
     @State private var showingSaveError = false
     @State private var failedExit: ExitAction?
-    @State private var remoteBody: String?
-    @State private var bodyLoadFailed = false
+    @State private var remoteDocument: SkillCatalogDocument?
+    @State private var remoteLoadError: RemoteLoadError?
+    @State private var failedInstallVersion: SkillCatalogVersion?
     @FocusState private var titleFocused: Bool
 
     private enum ExitAction {
         case close, preview
+    }
+
+    private struct RemoteLoadError {
+        let version: SkillCatalogVersion
+        let message: String
     }
 
     private struct CopyToast: Equatable {
@@ -141,16 +147,23 @@ struct SkillDetailSheet: View {
 
             ScrollView {
                 Group {
-                    if let remoteBody {
-                        viewContent(description: entry.description, instructions: remoteBody)
-                    } else if bodyLoadFailed {
-                        SkillEmptyState(
-                            systemName: "exclamationmark.triangle",
-                            title: L10n.string("Skill unavailable."),
-                            message: entry.description,
-                            actionTitle: L10n.string("Try Again"),
-                            action: { Task { await loadRemoteBody(entry) } }
-                        )
+                    if let document = remoteDocument(for: entry) {
+                        viewContent(description: entry.description, instructions: document.body)
+                    } else if let message = remoteLoadError(for: entry) {
+                        VStack(spacing: AppTheme.Spacing.smMd) {
+                            Text(verbatim: message)
+                                .font(.system(size: AppTheme.FontSize.sm))
+                                .foregroundStyle(AppTheme.Text.tertiaryColor)
+                                .multilineTextAlignment(.center)
+                            Button(L10n.string("Try Again")) {
+                                Task { await loadRemoteDocument(entry) }
+                            }
+                            .buttonStyle(.capsule(
+                                .secondary,
+                                fill: AnyShapeStyle(AppTheme.Background.raisedColor)
+                            ))
+                        }
+                        .frame(maxWidth: .infinity)
                     } else {
                         ProgressView()
                             .controlSize(.small)
@@ -170,8 +183,8 @@ struct SkillDetailSheet: View {
         .frame(width: AppTheme.Settings.skillDetailWidth)
         .frame(minHeight: AppTheme.Settings.skillDetailMinHeight)
         .background(AppTheme.Background.prominentColor)
-        .task(id: "\(entry.path)\0\(entry.sha)") {
-            await loadRemoteBody(entry)
+        .task(id: entry.version) {
+            await loadRemoteDocument(entry)
         }
     }
 
@@ -193,14 +206,20 @@ struct SkillDetailSheet: View {
 
                 Spacer(minLength: AppTheme.Spacing.md)
 
+                if failedInstallVersion == entry.version {
+                    Text(L10n.string("Failed"))
+                        .font(.system(size: AppTheme.FontSize.xs))
+                        .foregroundStyle(AppTheme.Status.errorColor)
+                }
+
                 if isInstalling {
                     ProgressView()
                         .controlSize(.small)
                         .accessibilityLabel(L10n.string("Working on \(entry.name)"))
                 } else {
-                    Button(L10n.string("Install")) { install(entry) }
+                    Button(L10n.string("Install")) { installPreview() }
                         .buttonStyle(.capsule(.prominent))
-                        .disabled(remoteBody == nil)
+                        .disabled(remoteDocument(for: entry) == nil)
                 }
             }
         }
@@ -353,34 +372,61 @@ struct SkillDetailSheet: View {
         }
     }
 
-    private func install(_ entry: SkillCatalogEntry) {
-        guard !isInstalling else { return }
+    private func installPreview() {
+        guard !isInstalling,
+              let entry = resolvedCatalogEntry,
+              let document = remoteDocument(for: entry)
+        else { return }
+        failedInstallVersion = nil
         isInstalling = true
         Task {
-            _ = await store.install(entry)
+            guard isCurrentPreview(entry) else {
+                isInstalling = false
+                return
+            }
+            let installed = store.install(entry, document: document)
+            if !installed, isCurrentPreview(entry) {
+                failedInstallVersion = entry.version
+            }
             isInstalling = false
         }
     }
 
-    private func loadRemoteBody(_ entry: SkillCatalogEntry) async {
-        bodyLoadFailed = false
-        remoteBody = nil
+    private func loadRemoteDocument(_ entry: SkillCatalogEntry) async {
+        let version = entry.version
+        if isCurrentPreview(entry) {
+            remoteLoadError = nil
+            remoteDocument = nil
+        }
         do {
-            let body = try await SkillCatalog.fetchBody(path: entry.path)
+            let document = try await SkillCatalog.fetchDocument(for: entry)
             guard !Task.isCancelled, isCurrentPreview(entry) else { return }
-            remoteBody = body
+            remoteDocument = document
         } catch is CancellationError {
             return
         } catch {
             guard !Task.isCancelled, isCurrentPreview(entry) else { return }
-            bodyLoadFailed = true
+            remoteLoadError = RemoteLoadError(
+                version: version,
+                message: error.localizedDescription
+            )
             Log.agent.error("skill preview load failed (\(entry.id)): \(error.localizedDescription)")
         }
     }
 
+    private func remoteDocument(for entry: SkillCatalogEntry) -> SkillCatalogDocument? {
+        guard let remoteDocument, remoteDocument.matches(entry) else { return nil }
+        return remoteDocument
+    }
+
+    private func remoteLoadError(for entry: SkillCatalogEntry) -> String? {
+        guard remoteLoadError?.version == entry.version else { return nil }
+        return remoteLoadError?.message
+    }
+
     private func isCurrentPreview(_ entry: SkillCatalogEntry) -> Bool {
         guard let current = resolvedCatalogEntry else { return false }
-        return current.path == entry.path && current.sha == entry.sha
+        return current.version == entry.version
     }
 
     @discardableResult

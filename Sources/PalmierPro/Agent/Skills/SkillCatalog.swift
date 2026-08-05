@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 
 /// One entry in the published catalog.json. `sha` is a content hash of the SKILL.md
 /// and is the version anchor: a changed sha means an update is available.
@@ -8,6 +9,25 @@ struct SkillCatalogEntry: Codable, Identifiable, Sendable {
     let description: String
     let sha: String
     let path: String
+
+    var version: SkillCatalogVersion {
+        SkillCatalogVersion(path: path, sha: sha)
+    }
+}
+
+struct SkillCatalogVersion: Hashable, Sendable {
+    let path: String
+    let sha: String
+}
+
+struct SkillCatalogDocument: Sendable {
+    let version: SkillCatalogVersion
+    let data: Data
+    let body: String
+
+    func matches(_ entry: SkillCatalogEntry) -> Bool {
+        version == entry.version
+    }
 }
 
 /// Fetches the community skill catalog from the palmier-skills repo (raw GitHub CDN)
@@ -37,20 +57,34 @@ final class SkillCatalog {
 
     static func bodyURL(path: String) -> URL? { URL(string: "\(base)/\(path)") }
 
-    static func fetchBody(path: String) async throws -> String {
-        try await fetchBody(from: bodyURL(path: path))
+    static func fetchDocument(for entry: SkillCatalogEntry) async throws -> SkillCatalogDocument {
+        try await fetchDocument(from: bodyURL(path: entry.path), entry: entry)
     }
 
-    static func fetchBody(from url: URL?) async throws -> String {
+    static func fetchDocument(
+        from url: URL?,
+        entry: SkillCatalogEntry
+    ) async throws -> SkillCatalogDocument {
         guard let url else { throw URLError(.badURL) }
         let data = try await fetch(url)
+        guard contentSHA(data) == entry.sha else {
+            throw URLError(.cannotParseResponse)
+        }
         guard let text = String(data: data, encoding: .utf8) else {
             throw URLError(.cannotDecodeContentData)
         }
         guard let parsed = SkillFrontmatter.requiredFields(text) else {
             throw URLError(.cannotParseResponse)
         }
-        return parsed.body
+        return SkillCatalogDocument(
+            version: entry.version,
+            data: data,
+            body: parsed.body
+        )
+    }
+
+    nonisolated static func contentSHA(_ data: Data) -> String {
+        String(SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined().prefix(12))
     }
 
     private func loadCache() {

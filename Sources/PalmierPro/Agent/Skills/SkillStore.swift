@@ -1,6 +1,5 @@
 import Foundation
 import AppKit
-import CryptoKit
 
 /// External coding agents that read the same SKILL.md format from their own folders.
 enum SkillExternalAgent: String, CaseIterable, Sendable {
@@ -92,7 +91,7 @@ final class SkillStore {
         return ParsedSkill(
             skill: Skill(id: id, name: parsed.name, description: parsed.description, path: path),
             body: parsed.body,
-            sha: sha12(Data(text.utf8))
+            sha: SkillCatalog.contentSHA(Data(text.utf8))
         )
     }
 
@@ -121,24 +120,37 @@ final class SkillStore {
 
     @discardableResult
     func install(_ entry: SkillCatalogEntry) async -> Bool {
-        guard let url = SkillCatalog.bodyURL(path: entry.path) else { return false }
-        guard let dir = Self.skillDirectory(for: entry.id) else {
-            Log.agent.error("install skill \(entry.id) rejected: invalid id")
+        do {
+            let document = try await SkillCatalog.fetchDocument(for: entry)
+            guard !Task.isCancelled else { return false }
+            return install(entry, document: document)
+        } catch {
+            Log.agent.error("install skill \(entry.id) failed: \(error.localizedDescription)")
+            return false
+        }
+    }
+
+    @discardableResult
+    func install(_ entry: SkillCatalogEntry, document: SkillCatalogDocument) -> Bool {
+        guard document.matches(entry),
+              SkillCatalog.contentSHA(document.data) == entry.sha,
+              let dir = Self.skillDirectory(for: entry.id)
+        else {
+            Log.agent.error("install skill \(entry.id) rejected: catalog content mismatch")
+            return false
+        }
+        guard let text = String(data: document.data, encoding: .utf8) else {
+            Log.agent.error("install skill \(entry.id) rejected: invalid UTF-8")
+            return false
+        }
+        let md = dir.appendingPathComponent("SKILL.md")
+        guard Self.parseSkill(id: entry.id, path: md, text: text) != nil else {
+            Log.agent.error("install skill \(entry.id) rejected: missing name or description frontmatter")
             return false
         }
         do {
-            let data = try await SkillCatalog.fetch(url)
-            guard let text = String(data: data, encoding: .utf8) else {
-                Log.agent.error("install skill \(entry.id) rejected: invalid UTF-8")
-                return false
-            }
-            let md = dir.appendingPathComponent("SKILL.md")
-            guard Self.parseSkill(id: entry.id, path: md, text: text) != nil else {
-                Log.agent.error("install skill \(entry.id) rejected: missing name or description frontmatter")
-                return false
-            }
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-            try data.write(to: md)
+            try document.data.write(to: md)
             reload()
             guard skills.contains(where: { $0.id == entry.id }) else {
                 try? FileManager.default.removeItem(at: dir)
@@ -172,10 +184,6 @@ final class SkillStore {
         let root = directory.standardizedFileURL.path
         let path = url.standardizedFileURL.path
         return path == root || path.hasPrefix(root + "/")
-    }
-
-    nonisolated private static func sha12(_ data: Data) -> String {
-        String(SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined().prefix(12))
     }
 
     private static func loadLedger() -> [String: String] {
