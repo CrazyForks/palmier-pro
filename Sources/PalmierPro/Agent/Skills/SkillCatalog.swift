@@ -37,6 +37,23 @@ final class SkillCatalog {
 
     static func bodyURL(path: String) -> URL? { URL(string: "\(base)/\(path)") }
 
+    /// Fetches SKILL.md body; rejects skills missing the same required frontmatter as install.
+    static func fetchBody(path: String) async throws -> String {
+        try await fetchBody(from: bodyURL(path: path))
+    }
+
+    static func fetchBody(from url: URL?) async throws -> String {
+        guard let url else { throw URLError(.badURL) }
+        let data = try await fetch(url)
+        guard let text = String(data: data, encoding: .utf8) else {
+            throw URLError(.cannotDecodeContentData)
+        }
+        guard let parsed = SkillFrontmatter.requiredFields(text) else {
+            throw URLError(.cannotParseResponse)
+        }
+        return parsed.body
+    }
+
     private func loadCache() {
         guard let data = try? Data(contentsOf: Self.cacheURL),
               let decoded = try? JSONDecoder().decode([SkillCatalogEntry].self, from: data)

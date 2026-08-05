@@ -22,6 +22,7 @@ struct SkillsPane: View {
 
     private struct PresentedSkill: Identifiable {
         let id: String
+        var catalogEntry: SkillCatalogEntry?
     }
 
     private var installedSkills: [Skill] {
@@ -54,7 +55,7 @@ struct SkillsPane: View {
             Task { await catalog.refresh() }
         }
         .sheet(item: $presentedSkill) { item in
-            SkillDetailSheet(skillID: item.id)
+            SkillDetailSheet(skillID: item.id, catalogEntry: item.catalogEntry)
         }
     }
 
@@ -268,8 +269,12 @@ struct SkillsPane: View {
                 : state == .update ? L10n.string("Update") : L10n.string("Open"),
             primaryAction: skill == nil,
             working: working.contains(entry.id),
-            summaryAction: skill.map { installedSkill in
-                { present(installedSkill.id) }
+            summaryAction: {
+                if skill != nil {
+                    present(entry.id)
+                } else {
+                    present(entry)
+                }
             },
             action: {
                 if let skill {
@@ -319,5 +324,9 @@ struct SkillsPane: View {
 
     private func present(_ id: String) {
         presentedSkill = PresentedSkill(id: id)
+    }
+
+    private func present(_ entry: SkillCatalogEntry) {
+        presentedSkill = PresentedSkill(id: entry.id, catalogEntry: entry)
     }
 }

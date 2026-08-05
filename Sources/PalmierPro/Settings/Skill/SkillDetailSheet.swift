@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SkillDetailSheet: View {
     let skillID: String
+    var catalogEntry: SkillCatalogEntry? = nil
 
     @Bindable private var store = SkillStore.shared
     @Bindable private var catalog = SkillCatalog.shared
@@ -11,11 +12,14 @@ struct SkillDetailSheet: View {
     @State private var originalDraft = ""
     @State private var confirmingDelete = false
     @State private var isUpdating = false
+    @State private var isInstalling = false
     @State private var editingTitle = false
     @State private var draftTitle = ""
     @State private var copyToast: CopyToast?
     @State private var showingSaveError = false
     @State private var failedExit: ExitAction?
+    @State private var remoteBody: String?
+    @State private var bodyLoadFailed = false
     @FocusState private var titleFocused: Bool
 
     private enum ExitAction {
@@ -35,6 +39,10 @@ struct SkillDetailSheet: View {
         store.skills.first { $0.id == skillID }
     }
 
+    private var resolvedCatalogEntry: SkillCatalogEntry? {
+        catalog.entry(id: skillID) ?? catalogEntry
+    }
+
     private var deleteTitle: String {
         guard let skill else { return L10n.string("Delete skill?") }
         return L10n.string("Delete \u{201C}\(skill.name)\u{201D}?")
@@ -44,6 +52,8 @@ struct SkillDetailSheet: View {
         Group {
             if let skill {
                 content(skill)
+            } else if let entry = resolvedCatalogEntry {
+                previewContent(entry)
             } else {
                 Text(L10n.string("Skill unavailable."))
                     .font(.system(size: AppTheme.FontSize.sm))
@@ -84,8 +94,11 @@ struct SkillDetailSheet: View {
                 editContent
             } else {
                 ScrollView {
-                    viewContent(skill)
-                        .padding(AppTheme.Spacing.xlXxl)
+                    viewContent(
+                        description: skill.description,
+                        instructions: store.body(for: skill.id) ?? ""
+                    )
+                    .padding(AppTheme.Spacing.xlXxl)
                 }
                 .scrollEdgeEffectStyle(.soft, for: .top)
                 .themedSurface(AppTheme.Background.raisedColor, cornerRadius: AppTheme.Radius.md)
@@ -119,6 +132,82 @@ struct SkillDetailSheet: View {
         } message: { skill in
             Text(L10n.string("This permanently removes \(displayPath(skill))."))
         }
+    }
+
+    /// Same layout as `content`, for an uninstalled catalog entry: no edit
+    /// controls, Install in the header, instructions fetched from the catalog.
+    private func previewContent(_ entry: SkillCatalogEntry) -> some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.zero) {
+            previewHeader(entry)
+            Divider().overlay(AppTheme.Border.subtleColor)
+
+            ScrollView {
+                Group {
+                    if let remoteBody {
+                        viewContent(description: entry.description, instructions: remoteBody)
+                    } else if bodyLoadFailed {
+                        SkillEmptyState(
+                            systemName: "exclamationmark.triangle",
+                            title: L10n.string("Skill unavailable."),
+                            message: entry.description,
+                            actionTitle: L10n.string("Try Again"),
+                            action: { Task { await loadRemoteBody(entry) } }
+                        )
+                    } else {
+                        ProgressView()
+                            .controlSize(.small)
+                            .frame(maxWidth: .infinity)
+                            .accessibilityLabel(L10n.string("Loading community skills"))
+                    }
+                }
+                .padding(AppTheme.Spacing.xlXxl)
+            }
+            .scrollEdgeEffectStyle(.soft, for: .top)
+            .themedSurface(AppTheme.Background.raisedColor, cornerRadius: AppTheme.Radius.md)
+            .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
+            .padding(.horizontal, AppTheme.Spacing.xlXxl)
+            .padding(.top, AppTheme.Spacing.mdLg)
+            .padding(.bottom, AppTheme.Spacing.xlXxl)
+        }
+        .frame(width: AppTheme.Settings.skillDetailWidth)
+        .frame(minHeight: AppTheme.Settings.skillDetailMinHeight)
+        .background(AppTheme.Background.prominentColor)
+        .task(id: "\(entry.path)\0\(entry.sha)") {
+            await loadRemoteBody(entry)
+        }
+    }
+
+    private func previewHeader(_ entry: SkillCatalogEntry) -> some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            HStack(spacing: AppTheme.Spacing.md) {
+                Text(entry.name)
+                    .font(.system(size: AppTheme.FontSize.xl, weight: AppTheme.FontWeight.regular))
+                    .foregroundStyle(AppTheme.Text.primaryColor)
+                    .lineLimit(1)
+                Spacer(minLength: AppTheme.Spacing.md)
+                closeButton
+            }
+
+            HStack(spacing: AppTheme.Spacing.smMd) {
+                Text(L10n.string("Available"))
+                    .font(.system(size: AppTheme.FontSize.xs))
+                    .foregroundStyle(AppTheme.Text.tertiaryColor)
+
+                Spacer(minLength: AppTheme.Spacing.md)
+
+                if isInstalling {
+                    ProgressView()
+                        .controlSize(.small)
+                        .accessibilityLabel(L10n.string("Working on \(entry.name)"))
+                } else {
+                    Button(L10n.string("Install")) { install(entry) }
+                        .buttonStyle(.capsule(.prominent))
+                        .disabled(remoteBody == nil)
+                }
+            }
+        }
+        .padding(.horizontal, AppTheme.Spacing.xlXxl)
+        .padding(.vertical, AppTheme.Spacing.mdLg)
     }
 
     private func header(_ skill: Skill) -> some View {
@@ -266,6 +355,36 @@ struct SkillDetailSheet: View {
         }
     }
 
+    private func install(_ entry: SkillCatalogEntry) {
+        guard !isInstalling else { return }
+        isInstalling = true
+        Task {
+            _ = await store.install(entry)
+            isInstalling = false
+        }
+    }
+
+    private func loadRemoteBody(_ entry: SkillCatalogEntry) async {
+        bodyLoadFailed = false
+        remoteBody = nil
+        do {
+            let body = try await SkillCatalog.fetchBody(path: entry.path)
+            guard !Task.isCancelled, isCurrentPreview(entry) else { return }
+            remoteBody = body
+        } catch is CancellationError {
+            return
+        } catch {
+            guard !Task.isCancelled, isCurrentPreview(entry) else { return }
+            bodyLoadFailed = true
+            Log.agent.error("skill preview load failed (\(entry.id)): \(error.localizedDescription)")
+        }
+    }
+
+    private func isCurrentPreview(_ entry: SkillCatalogEntry) -> Bool {
+        guard let current = resolvedCatalogEntry else { return false }
+        return current.path == entry.path && current.sha == entry.sha
+    }
+
     @discardableResult
     private func commitDraftIfDirty(onFailure exit: ExitAction? = nil) -> Bool {
         guard draft != originalDraft else { return true }
@@ -322,13 +441,13 @@ struct SkillDetailSheet: View {
             .replacingOccurrences(of: NSHomeDirectory(), with: "~")
     }
 
-    private func viewContent(_ skill: Skill) -> some View {
+    private func viewContent(description: String, instructions: String) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
                 Text(L10n.string("Description"))
                     .font(.system(size: AppTheme.FontSize.smMd, weight: AppTheme.FontWeight.regular))
                     .foregroundStyle(AppTheme.Text.primaryColor)
-                Text(skill.description)
+                Text(description)
                     .font(.system(size: AppTheme.FontSize.smMd))
                     .foregroundStyle(AppTheme.Text.secondaryColor)
                     .fixedSize(horizontal: false, vertical: true)
@@ -341,7 +460,7 @@ struct SkillDetailSheet: View {
                     .font(.system(size: AppTheme.FontSize.smMd, weight: AppTheme.FontWeight.regular))
                     .foregroundStyle(AppTheme.Text.primaryColor)
                 MarkdownText(
-                    text: store.body(for: skill.id) ?? "",
+                    text: instructions,
                     proseFont: .system(size: AppTheme.FontSize.smMd),
                     blockSpacing: AppTheme.Spacing.sm
                 )
