@@ -36,6 +36,12 @@ struct SkillLedger: Equatable, Sendable {
     var suppressed: Set<String> = []
 }
 
+enum SkillOrigin: String, Sendable {
+    case community
+    case communityModified = "community_modified"
+    case local
+}
+
 private struct PersistedSkillLedger: Codable {
     static let currentVersion = 1
 
@@ -141,6 +147,17 @@ final class SkillStore {
     // MARK: Catalog install / ledger
 
     func localSha(_ skill: Skill) -> String? { shaCache[skill.id] }
+
+    func contentSHA(for id: String) -> String? { shaCache[id] }
+
+    func origin(for id: String) -> SkillOrigin {
+        Self.skillOrigin(installedSHA: ledger?.installed[id], localSHA: shaCache[id])
+    }
+
+    nonisolated static func skillOrigin(installedSHA: String?, localSHA: String?) -> SkillOrigin {
+        guard let installedSHA else { return .local }
+        return localSHA == installedSHA ? .community : .communityModified
+    }
 
     func startSkillSync() {
         guard syncTask == nil else { return }
