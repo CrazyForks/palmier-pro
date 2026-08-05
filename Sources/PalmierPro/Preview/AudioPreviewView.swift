@@ -58,38 +58,61 @@ struct AudioPreviewView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 Canvas { context, size in
-                    guard size.width > 2, size.height > 2 else { return }
-                    let barCount = max(1, Int(size.width))
-                    let midY = size.height / 2
-                    let maxBarHeight = size.height * 0.92
-                    let progressX = size.width * progress
-                    let played = Color(ClipType.audio.themeForegroundColor)
-                        .opacity(AppTheme.Opacity.high)
-                    let unplayed = Color(ClipType.audio.themeForegroundColor)
-                        .opacity(AppTheme.Opacity.moderate)
-
-                    for i in 0..<barCount {
-                        let start = i * samples.count / barCount
-                        let end = max(start + 1, (i + 1) * samples.count / barCount)
-                        var loudest: Float = 1
-                        for s in start..<min(end, samples.count) {
-                            loudest = min(loudest, samples[s])
-                        }
-                        let amplitude = CGFloat(1 - loudest)
-                        let barHeight = max(AppTheme.BorderWidth.thin, amplitude * maxBarHeight)
-                        let x = CGFloat(i)
-                        let rect = CGRect(
-                            x: x,
-                            y: midY - barHeight / 2,
-                            width: 1,
-                            height: barHeight
-                        )
-                        context.fill(Path(rect), with: .color(x <= progressX ? played : unplayed))
-                    }
+                    Self.drawWaveform(
+                        samples: samples,
+                        progress: progress,
+                        in: size,
+                        context: &context
+                    )
                 }
             }
         }
         .accessibilityHidden(true)
+    }
+
+    private static let barWidth = AppTheme.Spacing.xxs
+    private static let barGap = AppTheme.BorderWidth.thin
+
+    private static func drawWaveform(
+        samples: [Float],
+        progress: CGFloat,
+        in size: CGSize,
+        context: inout GraphicsContext
+    ) {
+        guard size.width > 2, size.height > 2, !samples.isEmpty else { return }
+
+        let step = barWidth + barGap
+        let barCount = max(1, Int((size.width + barGap) / step))
+        let midY = size.height / 2
+        let maxBarHeight = size.height * 0.9
+        let minBarHeight = AppTheme.BorderWidth.medium
+        let progressX = size.width * progress
+        let barColor = AppTheme.MediaOverlay.primaryColor
+
+        for i in 0..<barCount {
+            let start = i * samples.count / barCount
+            let end = max(start + 1, (i + 1) * samples.count / barCount)
+            var loudest: Float = 1
+            for s in start..<min(end, samples.count) {
+                if samples[s] < loudest { loudest = samples[s] }
+            }
+            let amplitude = CGFloat(1 - loudest)
+            let barHeight = max(minBarHeight, amplitude * maxBarHeight)
+            let x = CGFloat(i) * step
+            let rect = CGRect(
+                x: x,
+                y: midY - barHeight / 2,
+                width: barWidth,
+                height: barHeight
+            )
+            let opacity = x + barWidth <= progressX
+                ? AppTheme.Opacity.prominent
+                : AppTheme.Opacity.medium
+            context.fill(Path(roundedRect: rect, cornerRadius: barWidth / 2), with: .color(barColor.opacity(opacity)))
+        }
+
+        let playhead = CGRect(x: progressX - 0.5, y: 0, width: 1, height: size.height)
+        context.fill(Path(playhead), with: .color(AppTheme.MediaOverlay.primaryColor.opacity(AppTheme.Opacity.high)))
     }
 
     private func textSection(_ text: String) -> some View {
