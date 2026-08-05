@@ -25,6 +25,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             Project.ensureStorageDirectory()
         }
 
+        Task {
+            await SkillStore.shared.ensureDefaultSkillsInstalled()
+        }
+
         AppNotifications.configure()
 
         AppState.shared.startMCPService()

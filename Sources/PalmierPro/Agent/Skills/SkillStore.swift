@@ -31,11 +31,32 @@ struct SkillScan: Sendable {
     let shas: [String: String]
 }
 
+/// Community skills seeded automatically on first launch when missing.
+enum DefaultSkills {
+    static let ids: [String] = [
+        "caption-templates",
+    ]
+
+    /// Catalog entries still needed for a first-run seed.
+    static func pendingInstalls(
+        catalogEntries: [SkillCatalogEntry],
+        presentIDs: Set<String>
+    ) -> [SkillCatalogEntry] {
+        ids.compactMap { id in
+            guard !presentIDs.contains(id) else { return nil }
+            return catalogEntries.first { $0.id == id }
+        }
+    }
+}
+
 /// Reads skills from `~/.palmier/skills/` — the single source of truth.
 @Observable
 @MainActor
 final class SkillStore {
     static let shared = SkillStore()
+
+    /// Set after a successful first-run seed so deleted defaults are not reinstalled.
+    static let defaultSkillsSeededKey = "defaultSkillsSeeded"
 
     private(set) var skills: [Skill] = []
 
@@ -59,6 +80,39 @@ final class SkillStore {
     private init() {
         installed = Self.loadLedger()
         Task { await reloadInBackground() }
+    }
+
+    /// Installs `DefaultSkills` from the community catalog when missing.
+    /// Retries on later launches until the seed completes; then leaves user deletions alone.
+    func ensureDefaultSkillsInstalled(
+        defaults: UserDefaults = .standard,
+        catalog: SkillCatalog = .shared
+    ) async {
+        guard !defaults.bool(forKey: Self.defaultSkillsSeededKey) else { return }
+
+        await reloadInBackground()
+        let present = Set(skills.map(\.id)).union(installed.keys)
+        let missingIDs = DefaultSkills.ids.filter { !present.contains($0) }
+        if missingIDs.isEmpty {
+            defaults.set(true, forKey: Self.defaultSkillsSeededKey)
+            return
+        }
+
+        await catalog.refresh()
+        guard !catalog.entries.isEmpty else { return }
+
+        var failed = false
+        for entry in DefaultSkills.pendingInstalls(
+            catalogEntries: catalog.entries,
+            presentIDs: Set(skills.map(\.id)).union(installed.keys)
+        ) {
+            if await !install(entry) { failed = true }
+        }
+        // IDs absent from a loaded catalog are skipped so a rename upstream cannot block seeding forever.
+        if !failed {
+            defaults.set(true, forKey: Self.defaultSkillsSeededKey)
+            Log.agent.notice("default skills seeded")
+        }
     }
 
     func reload() {
