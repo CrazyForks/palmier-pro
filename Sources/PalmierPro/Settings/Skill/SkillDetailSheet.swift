@@ -134,8 +134,6 @@ struct SkillDetailSheet: View {
         }
     }
 
-    /// Same layout as `content`, for an uninstalled catalog entry: no edit
-    /// controls, Install in the header, instructions fetched from the catalog.
     private func previewContent(_ entry: SkillCatalogEntry) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.zero) {
             previewHeader(entry)

@@ -37,7 +37,6 @@ final class SkillCatalog {
 
     static func bodyURL(path: String) -> URL? { URL(string: "\(base)/\(path)") }
 
-    /// Fetches SKILL.md body; rejects skills missing the same required frontmatter as install.
     static func fetchBody(path: String) async throws -> String {
         try await fetchBody(from: bodyURL(path: path))
     }
