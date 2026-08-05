@@ -13,21 +13,11 @@ enum AudioPreviewContent {
         let end: Double
     }
 
-    /// Prefer a cached transcript, then lyrics, then the generation prompt.
-    static func text(
-        transcript: String?,
-        generationInput: GenerationInput?
-    ) -> TextBlock? {
-        if let transcript = cleaned(transcript) {
-            return TextBlock(lines: lines(from: transcript))
-        }
-        if let lyrics = cleaned(generationInput?.lyrics) {
-            return TextBlock(lines: lines(from: lyrics))
-        }
-        if let prompt = cleaned(generationInput?.prompt) {
-            return TextBlock(lines: lines(from: prompt))
-        }
-        return nil
+    /// Cached transcript only — no title, lyrics, or prompt.
+    static func text(transcript: String?) -> TextBlock? {
+        guard let transcript = cleaned(transcript) else { return nil }
+        let lines = lines(from: transcript)
+        return lines.isEmpty ? nil : TextBlock(lines: lines)
     }
 
     static func timedLines(from transcript: TranscriptionResult?) -> [TimedLine] {
@@ -62,7 +52,6 @@ enum AudioPreviewContent {
     }
 
     static func activeLineIndex(progress: Double, lineCount: Int) -> Int {
-        guard lineCount > 0 else { return 0 }
         guard lineCount > 1 else { return 0 }
         let clamped = min(1, max(0, progress))
         return min(lineCount - 1, Int(clamped * Double(lineCount)))

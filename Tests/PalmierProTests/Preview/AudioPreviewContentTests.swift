@@ -5,66 +5,24 @@ import Testing
 @Suite("AudioPreviewContent")
 struct AudioPreviewContentTests {
 
-    @Test func prefersTranscriptOverLyricsAndPrompt() {
-        var input = GenerationInput(
-            prompt: "prompt text",
-            model: "model",
-            duration: 4,
-            aspectRatio: "1:1"
-        )
-        input.lyrics = "lyrics text"
-
-        let block = AudioPreviewContent.text(
-            transcript: "  spoken words  ",
-            generationInput: input
-        )
-
+    @Test func usesTranscriptOnly() {
+        let block = AudioPreviewContent.text(transcript: "  spoken words  ")
         #expect(block?.lines == ["spoken words"])
     }
 
-    @Test func prefersLyricsOverPromptWhenNoTranscript() {
-        var input = GenerationInput(
-            prompt: "prompt text",
-            model: "model",
-            duration: 4,
-            aspectRatio: "1:1"
-        )
-        input.lyrics = "verse one\nverse two"
-
-        let block = AudioPreviewContent.text(
-            transcript: "   ",
-            generationInput: input
-        )
-
-        #expect(block?.lines == ["verse one", "verse two"])
+    @Test func returnsNilWithoutTranscript() {
+        #expect(AudioPreviewContent.text(transcript: nil) == nil)
+        #expect(AudioPreviewContent.text(transcript: "   ") == nil)
     }
 
-    @Test func fallsBackToPromptPhrases() {
-        let input = GenerationInput(
-            prompt: "Say hello. Then leave.",
-            model: "tts",
-            duration: 2,
-            aspectRatio: "1:1"
-        )
+    @Test func splitsMultilineTranscript() {
+        let block = AudioPreviewContent.text(transcript: "line one\nline two")
+        #expect(block?.lines == ["line one", "line two"])
+    }
 
-        let block = AudioPreviewContent.text(
-            transcript: nil,
-            generationInput: input
-        )
-
+    @Test func splitsPhrasesWithoutNewlines() {
+        let block = AudioPreviewContent.text(transcript: "Say hello. Then leave.")
         #expect(block?.lines == ["Say hello.", "Then leave."])
-    }
-
-    @Test func returnsNilWhenNoCopyAvailable() {
-        let input = GenerationInput(
-            prompt: "   ",
-            model: "model",
-            duration: 1,
-            aspectRatio: "1:1"
-        )
-
-        #expect(AudioPreviewContent.text(transcript: nil, generationInput: input) == nil)
-        #expect(AudioPreviewContent.text(transcript: nil, generationInput: nil) == nil)
     }
 
     @Test func activeLineIndexTracksProgress() {

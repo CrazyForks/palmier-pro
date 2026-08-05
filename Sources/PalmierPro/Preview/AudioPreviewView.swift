@@ -19,14 +19,12 @@ struct AudioPreviewView: View {
             VStack(spacing: 0) {
                 if lines.isEmpty {
                     Spacer(minLength: AppTheme.Spacing.lg)
-                    titleFallback
-                    Spacer(minLength: AppTheme.Spacing.md)
                     waveform
                         .frame(height: emptyWaveformHeight(in: geo.size))
                         .padding(.horizontal, AppTheme.Spacing.xxl)
                     Spacer(minLength: AppTheme.Spacing.lg)
                 } else {
-                    lyricsPanel
+                    transcriptPanel
                     waveform
                         .frame(height: AppTheme.Spacing.xxl + AppTheme.Spacing.sm)
                         .padding(.horizontal, AppTheme.Spacing.xxl)
@@ -43,7 +41,7 @@ struct AudioPreviewView: View {
     }
 
     private var assetIdentity: String {
-        "\(asset.id)|\(asset.url.path)|\(asset.generationInput?.prompt ?? "")|\(asset.generationInput?.lyrics ?? "")"
+        "\(asset.id)|\(asset.url.path)"
     }
 
     private var progress: CGFloat {
@@ -76,28 +74,24 @@ struct AudioPreviewView: View {
         min(AppTheme.Spacing.xxl * 4, max(AppTheme.Spacing.xxl * 2, size.height * 0.22))
     }
 
-    private var titleFallback: some View {
-        Text(verbatim: asset.name)
-            .font(.system(size: AppTheme.FontSize.title1, weight: AppTheme.FontWeight.semibold))
-            .foregroundStyle(AppTheme.MediaOverlay.primaryColor)
-            .lineLimit(2)
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, AppTheme.Spacing.xxl)
-    }
-
-    private var lyricsPanel: some View {
+    private var transcriptPanel: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
                     ForEach(Array(lines.enumerated()), id: \.element.id) { index, line in
+                        let isActive = index == activeLineIndex
                         Text(verbatim: line.text)
                             .font(.system(
-                                size: lyricSize(distance: abs(index - activeLineIndex)),
-                                weight: index == activeLineIndex
+                                size: AppTheme.FontSize.mdLg,
+                                weight: isActive
                                     ? AppTheme.FontWeight.semibold
-                                    : AppTheme.FontWeight.medium
+                                    : AppTheme.FontWeight.regular
                             ))
-                            .foregroundStyle(lyricColor(distance: abs(index - activeLineIndex)))
+                            .foregroundStyle(
+                                isActive
+                                    ? AppTheme.MediaOverlay.primaryColor
+                                    : AppTheme.MediaOverlay.tertiaryColor
+                            )
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .id(index)
                     }
@@ -116,24 +110,6 @@ struct AudioPreviewView: View {
             .onAppear {
                 proxy.scrollTo(activeLineIndex, anchor: .center)
             }
-        }
-    }
-
-    private func lyricSize(distance: Int) -> CGFloat {
-        switch distance {
-        case 0: AppTheme.FontSize.title2
-        case 1: AppTheme.FontSize.title1
-        case 2: AppTheme.FontSize.xl
-        default: AppTheme.FontSize.lg
-        }
-    }
-
-    private func lyricColor(distance: Int) -> Color {
-        switch distance {
-        case 0: AppTheme.MediaOverlay.primaryColor
-        case 1: AppTheme.MediaOverlay.secondaryColor
-        case 2: AppTheme.MediaOverlay.tertiaryColor
-        default: AppTheme.MediaOverlay.mutedColor
         }
     }
 
@@ -206,7 +182,6 @@ struct AudioPreviewView: View {
     @MainActor
     private func loadContent() async {
         let url = asset.url
-        let generationInput = asset.generationInput
         async let transcriptTask: TranscriptionResult? = Task.detached(priority: .utility) {
             if let local = TranscriptCache.cachedOnDisk(for: url) {
                 return local
@@ -228,10 +203,7 @@ struct AudioPreviewView: View {
             lines = timed.enumerated().map {
                 DisplayLine(id: $0.offset, text: $0.element.text, start: $0.element.start, end: $0.element.end)
             }
-        } else if let block = AudioPreviewContent.text(
-            transcript: transcript?.text,
-            generationInput: generationInput
-        ) {
+        } else if let block = AudioPreviewContent.text(transcript: transcript?.text) {
             lines = block.lines.enumerated().map {
                 DisplayLine(id: $0.offset, text: $0.element, start: nil, end: nil)
             }
