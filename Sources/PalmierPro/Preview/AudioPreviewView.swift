@@ -55,7 +55,7 @@ struct AudioPreviewView: View {
         )
     }
 
-    static func activeLineIndex(at time: Double, in lines: [TranscriptionSegment]) -> Int {
+    nonisolated static func activeLineIndex(at time: Double, in lines: [TranscriptionSegment]) -> Int {
         lines.lastIndex { time >= $0.start } ?? 0
     }
 
