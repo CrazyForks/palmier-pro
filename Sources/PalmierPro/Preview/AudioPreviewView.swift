@@ -28,6 +28,7 @@ struct AudioPreviewView: View {
                     waveform
                         .frame(height: AppTheme.Spacing.xxl + AppTheme.Spacing.sm)
                         .padding(.horizontal, AppTheme.Spacing.xxl)
+                        .padding(.top, AppTheme.Spacing.lg)
                         .padding(.bottom, AppTheme.Spacing.lg)
                 }
             }
