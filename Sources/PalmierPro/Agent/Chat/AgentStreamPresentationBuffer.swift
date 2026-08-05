@@ -1,5 +1,6 @@
 import Foundation
 
+// Coalesces token deltas off-main so streamed chat cannot saturate SwiftUI layout.
 struct AgentStreamSnapshot: Sendable {
     let blocks: [AgentContentBlock]
     let stopReason: AgentStopReason
