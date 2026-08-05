@@ -155,8 +155,12 @@ struct TourOverlay: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             VStack(spacing: 0) {
-                linkRow(L10n.string("Skills"), "book.closed.fill") { SettingsWindowController.shared.show(tab: .skills) }
-                linkRow(L10n.string("MCP Setup"), "puzzlepiece.extension.fill") { HelpWindowController.shared.show(tab: .mcp) }
+                linkRow(L10n.string("Skills"), "book.closed.fill", recommended: true) {
+                    SettingsWindowController.shared.show(tab: .skills)
+                }
+                linkRow(L10n.string("MCP Setup"), "puzzlepiece.extension.fill", recommended: true) {
+                    HelpWindowController.shared.show(tab: .mcp)
+                }
                 linkRow(L10n.string("Keyboard Shortcuts"), "keyboard") { HelpWindowController.shared.show(tab: .shortcuts) }
                 linkRow(L10n.string("Documentation"), "book.fill") { NSWorkspace.shared.open(Self.docsURL, configuration: .init(), completionHandler: nil) }
                 linkRow(L10n.string("Settings"), "gearshape.fill") { SettingsWindowController.shared.show() }
@@ -172,7 +176,12 @@ struct TourOverlay: View {
         .tourGlassBackground()
     }
 
-    private func linkRow(_ title: String, _ icon: String, action: @escaping () -> Void) -> some View {
+    private func linkRow(
+        _ title: String,
+        _ icon: String,
+        recommended: Bool = false,
+        action: @escaping () -> Void
+    ) -> some View {
         Button(action: action) {
             HStack(spacing: AppTheme.Spacing.md) {
                 Image(systemName: icon)
@@ -182,6 +191,11 @@ struct TourOverlay: View {
                 Text(title)
                     .font(.system(size: AppTheme.FontSize.smMd))
                     .foregroundStyle(AppTheme.Text.primaryColor)
+                if recommended {
+                    Text(L10n.string("(Recommended)"))
+                        .font(.system(size: AppTheme.FontSize.sm))
+                        .foregroundStyle(AppTheme.Text.tertiaryColor)
+                }
                 Spacer()
                 Image(systemName: "arrow.up.right")
                     .font(.system(size: AppTheme.FontSize.xs))
