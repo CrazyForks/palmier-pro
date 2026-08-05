@@ -73,10 +73,10 @@ final class SkillStore {
     private var mutationTask: Task<Void, Never>?
 
     private init() {
-        Task { await reloadInBackground() }
+        Task { await reloadSkills() }
     }
 
-    func reloadInBackground() async {
+    private func reloadInBackground() async {
         reloadGeneration += 1
         let generation = reloadGeneration
         let result = await Task.detached(priority: .utility) {
@@ -84,9 +84,16 @@ final class SkillStore {
         }.value
         guard generation == reloadGeneration else { return }
         apply(result.0)
-        ledger = result.1
-        if ledger == nil {
+        if let loadedLedger = result.1 {
+            ledger = loadedLedger
+        } else {
             Log.agent.error("load skill ledger failed")
+        }
+    }
+
+    func reloadSkills() async {
+        _ = await serializeMutation("reload skills") { [self] in
+            await reloadInBackground()
         }
     }
 
@@ -160,7 +167,7 @@ final class SkillStore {
     }
 
     private func performSkillSync() async {
-        await reloadInBackground()
+        await reloadSkills()
         guard let ledger, !Task.isCancelled else { return }
         guard await SkillCatalog.shared.refresh() else { return }
         guard !Task.isCancelled else { return }
