@@ -11,6 +11,7 @@ final class MediaVisualCache {
 
     private var waveformSamples: [String: [Float]] = [:]
     private var waveformInFlight: Set<String> = []
+    private var waveformWaiters: [String: [CheckedContinuation<[Float]?, Never>]] = [:]
     /// Cap concurrent waveform extractions to avoid starving playback.
     private static let waveformGate = AsyncSemaphore(value: 2)
 
@@ -83,32 +84,64 @@ final class MediaVisualCache {
         guard asset.type == .audio || (asset.type == .video && asset.hasAudio) else { return }
         speech.generate(for: asset)
         beats.hydrate(for: asset)
+        startWaveformGenerationIfNeeded(for: asset)
+    }
+
+    /// Returns cached samples, or waits for in-flight / newly started extraction.
+    func ensureWaveform(for asset: MediaAsset) async -> [Float]? {
+        guard asset.type == .audio || (asset.type == .video && asset.hasAudio) else { return nil }
         let key = asset.id
-        guard waveformSamples[key] == nil, !waveformInFlight.contains(key) else { return }
+        if let existing = waveformSamples[key] { return existing }
+        return await withCheckedContinuation { continuation in
+            waveformWaiters[key, default: []].append(continuation)
+            startWaveformGenerationIfNeeded(for: asset)
+        }
+    }
+
+    private func startWaveformGenerationIfNeeded(for asset: MediaAsset) {
+        let key = asset.id
+        if let existing = waveformSamples[key] {
+            resumeWaveformWaiters(for: key, result: existing)
+            return
+        }
+        guard !waveformInFlight.contains(key) else { return }
         waveformInFlight.insert(key)
 
         let url = asset.url
         Task.detached(priority: .utility) { [weak self] in
             let result = await Self.loadOrGenerateWaveform(url: url)
-            guard let self else { return }
-            await MainActor.run { [self] in
+            await MainActor.run {
+                guard let self else { return }
                 self.waveformInFlight.remove(key)
                 if let result {
                     self.waveformSamples[key] = result
                     self.timelineView?.needsDisplay = true
                 }
+                self.resumeWaveformWaiters(for: key, result: result)
             }
+        }
+    }
+
+    private func resumeWaveformWaiters(for key: String, result: [Float]?) {
+        let waiters = waveformWaiters.removeValue(forKey: key) ?? []
+        for waiter in waiters {
+            waiter.resume(returning: result)
         }
     }
 
     /// Drops all in-memory state after a disk-cache clear so everything regenerates.
     func resetSessionState() {
+        let pendingKeys = Array(waveformWaiters.keys)
         waveformSamples.removeAll()
+        waveformInFlight.removeAll()
         speakerMasks.removeAll()
         speech.reset()
         beats.reset()
         videoThumbnails.removeAll()
         imageThumbnails.removeAll()
+        for key in pendingKeys {
+            resumeWaveformWaiters(for: key, result: nil)
+        }
         onDeadAirCacheInvalidated?()
         timelineView?.needsDisplay = true
     }
@@ -121,6 +154,7 @@ final class MediaVisualCache {
         beats.invalidate(mediaRef)
         videoThumbnails.removeValue(forKey: mediaRef)
         imageThumbnails.removeValue(forKey: mediaRef)
+        resumeWaveformWaiters(for: mediaRef, result: nil)
         onDeadAirCacheInvalidated?()
     }
 
