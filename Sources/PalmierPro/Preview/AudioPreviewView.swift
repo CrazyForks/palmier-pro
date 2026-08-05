@@ -5,112 +5,80 @@ struct AudioPreviewView: View {
     let asset: MediaAsset
 
     @State private var samples: [Float] = []
-    @State private var lines: [DisplayLine] = []
-
-    private struct DisplayLine: Identifiable, Equatable {
-        let id: Int
-        let text: String
-        let start: Double?
-        let end: Double?
-    }
+    @State private var transcript: TranscriptionResult?
 
     var body: some View {
-        GeometryReader { geo in
-            VStack(spacing: 0) {
-                if lines.isEmpty {
-                    Spacer(minLength: AppTheme.Spacing.lg)
-                    waveform
-                        .frame(height: emptyWaveformHeight(in: geo.size))
-                        .padding(.horizontal, AppTheme.Spacing.xxl)
-                    Spacer(minLength: AppTheme.Spacing.lg)
-                } else {
-                    transcriptPanel
-                    waveform
-                        .frame(height: AppTheme.Spacing.xxl + AppTheme.Spacing.sm)
-                        .padding(.horizontal, AppTheme.Spacing.xxl)
-                        .padding(.top, AppTheme.Spacing.lg)
-                        .padding(.bottom, AppTheme.Spacing.lg)
-                }
+        VStack(spacing: 0) {
+            if transcriptLines.isEmpty {
+                Spacer()
+            } else {
+                transcriptPanel
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            waveform
+                .frame(height: transcriptLines.isEmpty ? AppTheme.Spacing.xxl * 3 : AppTheme.Spacing.xxl)
+                .padding(.horizontal, AppTheme.Spacing.xxl)
+                .padding(.top, transcriptLines.isEmpty ? 0 : AppTheme.Spacing.lg)
+                .padding(.bottom, AppTheme.Spacing.lg)
+            if transcriptLines.isEmpty {
+                Spacer()
+            }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(AppTheme.Background.previewCanvasColor)
         .task(id: assetIdentity) {
             await loadContent()
         }
     }
 
-    private var assetIdentity: String {
-        "\(asset.id)|\(asset.url.path)"
-    }
+    private var assetIdentity: String { "\(asset.id)|\(asset.url.path)" }
 
     private var progress: CGFloat {
-        let duration = max(0, editor.activePreviewDurationFrames)
+        let duration = editor.activePreviewDurationFrames
         guard duration > 0 else { return 0 }
-        let frame = editor.playheadState.sourceFrame
-        return min(1, max(0, CGFloat(frame) / CGFloat(duration)))
+        return min(1, max(0, CGFloat(editor.playheadState.sourceFrame) / CGFloat(duration)))
     }
 
-    private var currentTimeSeconds: Double {
-        let fps = max(1, editor.timeline.fps)
-        return Double(editor.playheadState.sourceFrame) / Double(fps)
+    private var transcriptLines: [TranscriptionSegment] {
+        guard let transcript else { return [] }
+        let segments = transcript.segments.filter {
+            !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+        if !segments.isEmpty { return segments }
+        let text = transcript.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        return text.isEmpty ? [] : [TranscriptionSegment(text: text, start: 0, end: .infinity)]
     }
 
     private var activeLineIndex: Int {
-        if lines.contains(where: { $0.start != nil }) {
-            let timed = lines.compactMap { line -> AudioPreviewContent.TimedLine? in
-                guard let start = line.start, let end = line.end else { return nil }
-                return .init(text: line.text, start: start, end: end)
-            }
-            return AudioPreviewContent.activeTimedLineIndex(time: currentTimeSeconds, lines: timed)
-        }
-        return AudioPreviewContent.activeLineIndex(
-            progress: Double(progress),
-            lineCount: lines.count
+        Self.activeLineIndex(
+            at: Double(editor.playheadState.sourceFrame) / Double(max(1, editor.timeline.fps)),
+            in: transcriptLines
         )
     }
 
-    private func emptyWaveformHeight(in size: CGSize) -> CGFloat {
-        min(AppTheme.Spacing.xxl * 4, max(AppTheme.Spacing.xxl * 2, size.height * 0.22))
+    static func activeLineIndex(at time: Double, in lines: [TranscriptionSegment]) -> Int {
+        lines.lastIndex { time >= $0.start } ?? 0
     }
 
     private var transcriptPanel: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                    ForEach(Array(lines.enumerated()), id: \.element.id) { index, line in
-                        let isActive = index == activeLineIndex
-                        Text(verbatim: line.text)
-                            .font(.system(
-                                size: AppTheme.FontSize.mdLg,
-                                weight: isActive
-                                    ? AppTheme.FontWeight.semibold
-                                    : AppTheme.FontWeight.regular
-                            ))
-                            .foregroundStyle(
-                                isActive
-                                    ? AppTheme.MediaOverlay.primaryColor
-                                    : AppTheme.MediaOverlay.tertiaryColor
-                            )
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .id(index)
-                    }
-                }
-                .frame(maxWidth: 520, alignment: .leading)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, AppTheme.Spacing.xxl)
-                .padding(.vertical, AppTheme.Spacing.xxl)
-            }
-            .scrollIndicators(.hidden)
-            .onChange(of: activeLineIndex) { _, index in
-                withAnimation(.easeInOut(duration: AppTheme.Anim.transition)) {
-                    proxy.scrollTo(index, anchor: .center)
+        ScrollView {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                ForEach(transcriptLines.indices, id: \.self) { index in
+                    let isActive = index == activeLineIndex
+                    Text(verbatim: transcriptLines[index].text)
+                        .font(.system(
+                            size: AppTheme.FontSize.mdLg,
+                            weight: isActive ? AppTheme.FontWeight.semibold : AppTheme.FontWeight.regular
+                        ))
+                        .foregroundStyle(
+                            isActive ? AppTheme.MediaOverlay.primaryColor : AppTheme.MediaOverlay.tertiaryColor
+                        )
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
-            .onAppear {
-                proxy.scrollTo(activeLineIndex, anchor: .center)
-            }
+            .padding(.horizontal, AppTheme.Spacing.xxl)
+            .padding(.vertical, AppTheme.Spacing.xxl)
         }
+        .scrollIndicators(.hidden)
     }
 
     private var waveform: some View {
@@ -122,98 +90,54 @@ struct AudioPreviewView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 Canvas { context, size in
-                    Self.drawWaveform(
-                        samples: samples,
-                        progress: progress,
-                        in: size,
-                        context: &context
-                    )
+                    drawWaveform(in: &context, size: size)
                 }
             }
         }
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
     }
 
-    private static let barWidth = AppTheme.Spacing.xxs
-    private static let barGap = AppTheme.BorderWidth.thin
-
-    private static func drawWaveform(
-        samples: [Float],
-        progress: CGFloat,
-        in size: CGSize,
-        context: inout GraphicsContext
-    ) {
+    private func drawWaveform(in context: inout GraphicsContext, size: CGSize) {
         guard size.width > 2, size.height > 2, !samples.isEmpty else { return }
-
+        let barWidth = AppTheme.Spacing.xxs
+        let barGap = AppTheme.BorderWidth.thin
         let step = barWidth + barGap
         let barCount = max(1, Int((size.width + barGap) / step))
-        let midY = size.height / 2
-        let maxBarHeight = size.height * 0.9
-        let minBarHeight = AppTheme.BorderWidth.medium
         let progressX = size.width * progress
-        let barColor = AppTheme.MediaOverlay.primaryColor
 
         for i in 0..<barCount {
             let start = i * samples.count / barCount
-            let end = max(start + 1, (i + 1) * samples.count / barCount)
-            var loudest: Float = 1
-            for s in start..<min(end, samples.count) {
-                if samples[s] < loudest { loudest = samples[s] }
-            }
-            let amplitude = CGFloat(1 - loudest)
-            let barHeight = max(minBarHeight, amplitude * maxBarHeight)
+            let end = min(samples.count, max(start + 1, (i + 1) * samples.count / barCount))
+            let height = max(
+                AppTheme.BorderWidth.medium,
+                CGFloat(1 - (samples[start..<end].min() ?? 1)) * size.height * 0.9
+            )
             let x = CGFloat(i) * step
             let rect = CGRect(
                 x: x,
-                y: midY - barHeight / 2,
+                y: (size.height - height) / 2,
                 width: barWidth,
-                height: barHeight
+                height: height
             )
-            let opacity = x + barWidth <= progressX
-                ? AppTheme.Opacity.prominent
-                : AppTheme.Opacity.medium
             context.fill(
                 Path(roundedRect: rect, cornerRadius: barWidth / 2),
-                with: .color(barColor.opacity(opacity))
+                with: .color(AppTheme.MediaOverlay.primaryColor.opacity(
+                    x + barWidth <= progressX ? AppTheme.Opacity.prominent : AppTheme.Opacity.medium
+                ))
             )
         }
     }
 
-    @MainActor
     private func loadContent() async {
+        let identity = assetIdentity
         let url = asset.url
-        async let transcriptTask: TranscriptionResult? = Task.detached(priority: .utility) {
-            if let local = TranscriptCache.cachedOnDisk(for: url) {
-                return local
-            }
-            return await TranscriptCache.shared.cachedCloudTranscript(
-                for: url,
-                range: nil,
-                language: nil
-            )
-        }.value
-
-        async let waveformTask: [Float]? = editor.mediaVisualCache.ensureWaveform(for: asset)
-
-        let transcript = await transcriptTask
-        if Task.isCancelled { return }
-
-        let timed = AudioPreviewContent.timedLines(from: transcript)
-        if timed.contains(where: { $0.end > $0.start }) {
-            lines = timed.enumerated().map {
-                DisplayLine(id: $0.offset, text: $0.element.text, start: $0.element.start, end: $0.element.end)
-            }
-        } else if let block = AudioPreviewContent.text(transcript: transcript?.text) {
-            lines = block.lines.enumerated().map {
-                DisplayLine(id: $0.offset, text: $0.element, start: nil, end: nil)
-            }
-        } else {
-            lines = []
-        }
-
-        if let waveform = await waveformTask, !Task.isCancelled {
-            samples = waveform
-        }
+        samples = []
+        transcript = nil
+        async let waveform = editor.mediaVisualCache.waveform(for: asset)
+        let cachedTranscript = await TranscriptCache.shared.cachedTranscript(for: url)
+        guard !Task.isCancelled, assetIdentity == identity else { return }
+        transcript = cachedTranscript
+        let loadedSamples = await waveform
+        guard !Task.isCancelled, assetIdentity == identity else { return }
+        samples = loadedSamples ?? []
     }
 }

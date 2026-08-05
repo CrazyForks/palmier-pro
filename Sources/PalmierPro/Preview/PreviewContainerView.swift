@@ -19,11 +19,11 @@ struct PreviewContainerView: View {
 
             GeometryReader { geo in
                 let timelineState = timelineFrameState
-                let fillPanel = isAudio
                 let aspect = generatingAspect ?? CGFloat(editor.timeline.width) / CGFloat(editor.timeline.height)
-                let baseSize = fillPanel ? geo.size : fitSize(in: geo.size, aspect: aspect)
-                let scaledWidth = fillPanel ? geo.size.width : baseSize.width * editor.canvasZoom
-                let scaledHeight = fillPanel ? geo.size.height : baseSize.height * editor.canvasZoom
+                let baseSize = isAudio ? geo.size : fitSize(in: geo.size, aspect: aspect)
+                let zoom = isAudio ? 1 : editor.canvasZoom
+                let scaledWidth = baseSize.width * zoom
+                let scaledHeight = baseSize.height * zoom
                 ZStack {
                     PreviewView()
                     if isImage {
@@ -46,7 +46,7 @@ struct PreviewContainerView: View {
                     if let overlay = offlineOverlay(timelineState: timelineState) {
                         offlinePreview(assetId: overlay.assetId, path: overlay.path, isUnprocessable: overlay.isUnprocessable)
                     }
-                    if !fillPanel {
+                    if !isAudio {
                         if editor.chromaKeySamplingClipId != nil {
                             ChromaKeySamplerOverlayView()
                         } else if editor.cropEditingActive {
@@ -78,15 +78,15 @@ struct PreviewContainerView: View {
                     Rectangle()
                         .stroke(
                             AppTheme.MediaOverlay.primaryColor.opacity(
-                                !fillPanel && editor.canvasZoom < 1.0 ? AppTheme.Opacity.moderate : 0
+                                !isAudio && editor.canvasZoom < 1.0 ? AppTheme.Opacity.moderate : 0
                             ),
                             lineWidth: AppTheme.BorderWidth.thin
                         )
                 )
                 .position(x: geo.size.width / 2, y: geo.size.height / 2)
                 .offset(
-                    x: fillPanel ? 0 : editor.canvasOffset.width,
-                    y: fillPanel ? 0 : editor.canvasOffset.height
+                    x: isAudio ? 0 : editor.canvasOffset.width,
+                    y: isAudio ? 0 : editor.canvasOffset.height
                 )
             }
             .clipped()

@@ -44,6 +44,12 @@ actor TranscriptCache {
         return try? JSONDecoder().decode(TranscriptionResult.self, from: data)
     }
 
+    func cachedTranscript(for url: URL) -> TranscriptionResult? {
+        if let key = Self.key(for: url), let transcript = cached(key) { return transcript }
+        guard let key = Self.key(for: url, variant: .cloud(range: nil, language: nil)) else { return nil }
+        return cached(key)
+    }
+
     static func filter(_ r: TranscriptionResult, to range: ClosedRange<Double>) -> TranscriptionResult {
         let segments = r.segments.filter { $0.end > range.lowerBound && $0.start < range.upperBound }
         let words = r.words.filter { w in

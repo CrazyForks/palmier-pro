@@ -10,8 +10,7 @@ final class MediaVisualCache {
     // MARK: - Waveform samples (normalized 0=loud, 1=silence)
 
     private var waveformSamples: [String: [Float]] = [:]
-    private var waveformInFlight: Set<String> = []
-    private var waveformWaiters: [String: [CheckedContinuation<[Float]?, Never>]] = [:]
+    private var waveformTasks: [String: (id: UUID, url: URL, task: Task<[Float]?, Never>)] = [:]
     /// Cap concurrent waveform extractions to avoid starving playback.
     private static let waveformGate = AsyncSemaphore(value: 2)
 
@@ -84,77 +83,58 @@ final class MediaVisualCache {
         guard asset.type == .audio || (asset.type == .video && asset.hasAudio) else { return }
         speech.generate(for: asset)
         beats.hydrate(for: asset)
-        startWaveformGenerationIfNeeded(for: asset)
+        Task { _ = await waveform(for: asset) }
     }
 
-    /// Returns cached samples, or waits for in-flight / newly started extraction.
-    func ensureWaveform(for asset: MediaAsset) async -> [Float]? {
+    func waveform(for asset: MediaAsset) async -> [Float]? {
         guard asset.type == .audio || (asset.type == .video && asset.hasAudio) else { return nil }
         let key = asset.id
-        if let existing = waveformSamples[key] { return existing }
-        return await withCheckedContinuation { continuation in
-            waveformWaiters[key, default: []].append(continuation)
-            startWaveformGenerationIfNeeded(for: asset)
+        if let samples = waveformSamples[key] { return samples }
+        let request: (id: UUID, url: URL, task: Task<[Float]?, Never>)
+        if let existing = waveformTasks[key], existing.url == asset.url {
+            request = existing
+        } else {
+            waveformTasks[key]?.task.cancel()
+            let url = asset.url
+            request = (UUID(), url, Task.detached(priority: .utility) {
+                await Self.loadOrGenerateWaveform(url: url)
+            })
+            waveformTasks[key] = request
         }
-    }
-
-    private func startWaveformGenerationIfNeeded(for asset: MediaAsset) {
-        let key = asset.id
-        if let existing = waveformSamples[key] {
-            resumeWaveformWaiters(for: key, result: existing)
-            return
+        let result = await request.task.value
+        if let samples = waveformSamples[key] { return samples }
+        guard !Task.isCancelled, waveformTasks[key]?.id == request.id else { return nil }
+        waveformTasks.removeValue(forKey: key)
+        if let result {
+            waveformSamples[key] = result
+            timelineView?.needsDisplay = true
         }
-        guard !waveformInFlight.contains(key) else { return }
-        waveformInFlight.insert(key)
-
-        let url = asset.url
-        Task.detached(priority: .utility) { [weak self] in
-            let result = await Self.loadOrGenerateWaveform(url: url)
-            await MainActor.run {
-                guard let self else { return }
-                self.waveformInFlight.remove(key)
-                if let result {
-                    self.waveformSamples[key] = result
-                    self.timelineView?.needsDisplay = true
-                }
-                self.resumeWaveformWaiters(for: key, result: result)
-            }
-        }
-    }
-
-    private func resumeWaveformWaiters(for key: String, result: [Float]?) {
-        let waiters = waveformWaiters.removeValue(forKey: key) ?? []
-        for waiter in waiters {
-            waiter.resume(returning: result)
-        }
+        return result
     }
 
     /// Drops all in-memory state after a disk-cache clear so everything regenerates.
     func resetSessionState() {
-        let pendingKeys = Array(waveformWaiters.keys)
+        waveformTasks.values.forEach { $0.task.cancel() }
+        waveformTasks.removeAll()
         waveformSamples.removeAll()
-        waveformInFlight.removeAll()
         speakerMasks.removeAll()
         speech.reset()
         beats.reset()
         videoThumbnails.removeAll()
         imageThumbnails.removeAll()
-        for key in pendingKeys {
-            resumeWaveformWaiters(for: key, result: nil)
-        }
         onDeadAirCacheInvalidated?()
         timelineView?.needsDisplay = true
     }
 
     /// Clears every cached visual for `mediaRef` so relinked media regenerates.
     func invalidate(_ mediaRef: String) {
+        waveformTasks.removeValue(forKey: mediaRef)?.task.cancel()
         waveformSamples.removeValue(forKey: mediaRef)
         speakerMasks.removeValue(forKey: mediaRef)
         speech.invalidate(mediaRef)
         beats.invalidate(mediaRef)
         videoThumbnails.removeValue(forKey: mediaRef)
         imageThumbnails.removeValue(forKey: mediaRef)
-        resumeWaveformWaiters(for: mediaRef, result: nil)
         onDeadAirCacheInvalidated?()
     }
 
