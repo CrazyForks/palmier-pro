@@ -5,21 +5,33 @@ struct AudioPreviewView: View {
     let asset: MediaAsset
 
     @State private var samples: [Float] = []
-    @State private var textBlock: AudioPreviewContent.TextBlock?
+    @State private var lines: [DisplayLine] = []
+
+    private struct DisplayLine: Identifiable, Equatable {
+        let id: Int
+        let text: String
+        let start: Double?
+        let end: Double?
+    }
 
     var body: some View {
         GeometryReader { geo in
-            VStack(spacing: AppTheme.Spacing.lg) {
-                Spacer(minLength: AppTheme.Spacing.md)
-                waveform
-                    .frame(height: waveformHeight(in: geo.size))
-                    .padding(.horizontal, AppTheme.Spacing.xl)
-                if let textBlock {
-                    textSection(textBlock.text)
-                        .frame(maxHeight: textHeight(in: geo.size))
-                        .padding(.horizontal, AppTheme.Spacing.xl)
+            VStack(spacing: 0) {
+                if lines.isEmpty {
+                    Spacer(minLength: AppTheme.Spacing.lg)
+                    titleFallback
+                    Spacer(minLength: AppTheme.Spacing.md)
+                    waveform
+                        .frame(height: emptyWaveformHeight(in: geo.size))
+                        .padding(.horizontal, AppTheme.Spacing.xxl)
+                    Spacer(minLength: AppTheme.Spacing.lg)
+                } else {
+                    lyricsPanel
+                    waveform
+                        .frame(height: AppTheme.Spacing.xxl + AppTheme.Spacing.sm)
+                        .padding(.horizontal, AppTheme.Spacing.xxl)
+                        .padding(.bottom, AppTheme.Spacing.lg)
                 }
-                Spacer(minLength: AppTheme.Spacing.md)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -41,19 +53,95 @@ struct AudioPreviewView: View {
         return min(1, max(0, CGFloat(frame) / CGFloat(duration)))
     }
 
-    private func waveformHeight(in size: CGSize) -> CGFloat {
-        min(160, max(72, size.height * 0.28))
+    private var currentTimeSeconds: Double {
+        let fps = max(1, editor.timeline.fps)
+        return Double(editor.playheadState.sourceFrame) / Double(fps)
     }
 
-    private func textHeight(in size: CGSize) -> CGFloat {
-        min(160, max(64, size.height * 0.32))
+    private var activeLineIndex: Int {
+        if lines.contains(where: { $0.start != nil }) {
+            let timed = lines.compactMap { line -> AudioPreviewContent.TimedLine? in
+                guard let start = line.start, let end = line.end else { return nil }
+                return .init(text: line.text, start: start, end: end)
+            }
+            return AudioPreviewContent.activeTimedLineIndex(time: currentTimeSeconds, lines: timed)
+        }
+        return AudioPreviewContent.activeLineIndex(
+            progress: Double(progress),
+            lineCount: lines.count
+        )
+    }
+
+    private func emptyWaveformHeight(in size: CGSize) -> CGFloat {
+        min(AppTheme.Spacing.xxl * 4, max(AppTheme.Spacing.xxl * 2, size.height * 0.22))
+    }
+
+    private var titleFallback: some View {
+        Text(verbatim: asset.name)
+            .font(.system(size: AppTheme.FontSize.title1, weight: AppTheme.FontWeight.semibold))
+            .foregroundStyle(AppTheme.MediaOverlay.primaryColor)
+            .lineLimit(2)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, AppTheme.Spacing.xxl)
+    }
+
+    private var lyricsPanel: some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
+                    ForEach(Array(lines.enumerated()), id: \.element.id) { index, line in
+                        Text(verbatim: line.text)
+                            .font(.system(
+                                size: lyricSize(distance: abs(index - activeLineIndex)),
+                                weight: index == activeLineIndex
+                                    ? AppTheme.FontWeight.semibold
+                                    : AppTheme.FontWeight.medium
+                            ))
+                            .foregroundStyle(lyricColor(distance: abs(index - activeLineIndex)))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .id(index)
+                    }
+                }
+                .frame(maxWidth: 520, alignment: .leading)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, AppTheme.Spacing.xxl)
+                .padding(.vertical, AppTheme.Spacing.xxl)
+            }
+            .scrollIndicators(.hidden)
+            .onChange(of: activeLineIndex) { _, index in
+                withAnimation(.easeInOut(duration: AppTheme.Anim.transition)) {
+                    proxy.scrollTo(index, anchor: .center)
+                }
+            }
+            .onAppear {
+                proxy.scrollTo(activeLineIndex, anchor: .center)
+            }
+        }
+    }
+
+    private func lyricSize(distance: Int) -> CGFloat {
+        switch distance {
+        case 0: AppTheme.FontSize.title2
+        case 1: AppTheme.FontSize.title1
+        case 2: AppTheme.FontSize.xl
+        default: AppTheme.FontSize.lg
+        }
+    }
+
+    private func lyricColor(distance: Int) -> Color {
+        switch distance {
+        case 0: AppTheme.MediaOverlay.primaryColor
+        case 1: AppTheme.MediaOverlay.secondaryColor
+        case 2: AppTheme.MediaOverlay.tertiaryColor
+        default: AppTheme.MediaOverlay.mutedColor
+        }
     }
 
     private var waveform: some View {
         Group {
             if samples.isEmpty {
                 Image(systemName: "waveform")
-                    .font(.system(size: AppTheme.FontSize.display))
+                    .font(.system(size: AppTheme.FontSize.xl))
                     .foregroundStyle(AppTheme.MediaOverlay.mutedColor)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
@@ -108,47 +196,48 @@ struct AudioPreviewView: View {
             let opacity = x + barWidth <= progressX
                 ? AppTheme.Opacity.prominent
                 : AppTheme.Opacity.medium
-            context.fill(Path(roundedRect: rect, cornerRadius: barWidth / 2), with: .color(barColor.opacity(opacity)))
+            context.fill(
+                Path(roundedRect: rect, cornerRadius: barWidth / 2),
+                with: .color(barColor.opacity(opacity))
+            )
         }
-
-        let playhead = CGRect(x: progressX - 0.5, y: 0, width: 1, height: size.height)
-        context.fill(Path(playhead), with: .color(AppTheme.MediaOverlay.primaryColor.opacity(AppTheme.Opacity.high)))
-    }
-
-    private func textSection(_ text: String) -> some View {
-        ScrollView {
-            Text(verbatim: text)
-                .font(.system(size: AppTheme.FontSize.md, weight: AppTheme.FontWeight.regular))
-                .foregroundStyle(AppTheme.MediaOverlay.secondaryColor)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
-        }
-        .scrollIndicators(.hidden)
     }
 
     @MainActor
     private func loadContent() async {
         let url = asset.url
         let generationInput = asset.generationInput
-        async let transcriptTask: String? = Task.detached(priority: .utility) {
-            if let local = TranscriptCache.cachedOnDisk(for: url)?.text {
+        async let transcriptTask: TranscriptionResult? = Task.detached(priority: .utility) {
+            if let local = TranscriptCache.cachedOnDisk(for: url) {
                 return local
             }
             return await TranscriptCache.shared.cachedCloudTranscript(
                 for: url,
                 range: nil,
                 language: nil
-            )?.text
+            )
         }.value
 
         async let waveformTask: [Float]? = editor.mediaVisualCache.ensureWaveform(for: asset)
 
         let transcript = await transcriptTask
         if Task.isCancelled { return }
-        textBlock = AudioPreviewContent.text(
-            transcript: transcript,
+
+        let timed = AudioPreviewContent.timedLines(from: transcript)
+        if timed.contains(where: { $0.end > $0.start }) {
+            lines = timed.enumerated().map {
+                DisplayLine(id: $0.offset, text: $0.element.text, start: $0.element.start, end: $0.element.end)
+            }
+        } else if let block = AudioPreviewContent.text(
+            transcript: transcript?.text,
             generationInput: generationInput
-        )
+        ) {
+            lines = block.lines.enumerated().map {
+                DisplayLine(id: $0.offset, text: $0.element, start: nil, end: nil)
+            }
+        } else {
+            lines = []
+        }
 
         if let waveform = await waveformTask, !Task.isCancelled {
             samples = waveform

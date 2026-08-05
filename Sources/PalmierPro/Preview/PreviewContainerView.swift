@@ -18,11 +18,12 @@ struct PreviewContainerView: View {
                 .panelHeaderBar()
 
             GeometryReader { geo in
-                let aspect = generatingAspect ?? CGFloat(editor.timeline.width) / CGFloat(editor.timeline.height)
-                let fitSize = fitSize(in: geo.size, aspect: aspect)
-                let scaledWidth = fitSize.width * editor.canvasZoom
-                let scaledHeight = fitSize.height * editor.canvasZoom
                 let timelineState = timelineFrameState
+                let fillPanel = isAudio
+                let aspect = generatingAspect ?? CGFloat(editor.timeline.width) / CGFloat(editor.timeline.height)
+                let baseSize = fillPanel ? geo.size : fitSize(in: geo.size, aspect: aspect)
+                let scaledWidth = fillPanel ? geo.size.width : baseSize.width * editor.canvasZoom
+                let scaledHeight = fillPanel ? geo.size.height : baseSize.height * editor.canvasZoom
                 ZStack {
                     PreviewView()
                     if isImage {
@@ -45,12 +46,14 @@ struct PreviewContainerView: View {
                     if let overlay = offlineOverlay(timelineState: timelineState) {
                         offlinePreview(assetId: overlay.assetId, path: overlay.path, isUnprocessable: overlay.isUnprocessable)
                     }
-                    if editor.chromaKeySamplingClipId != nil {
-                        ChromaKeySamplerOverlayView()
-                    } else if editor.cropEditingActive {
-                        CropOverlayView()
-                    } else {
-                        TransformOverlayView()
+                    if !fillPanel {
+                        if editor.chromaKeySamplingClipId != nil {
+                            ChromaKeySamplerOverlayView()
+                        } else if editor.cropEditingActive {
+                            CropOverlayView()
+                        } else {
+                            TransformOverlayView()
+                        }
                     }
                     if let slip = editor.slipPreview, isTimeline {
                         SlipTwoUpView(state: slip)
@@ -74,12 +77,17 @@ struct PreviewContainerView: View {
                 .overlay(
                     Rectangle()
                         .stroke(
-                            AppTheme.MediaOverlay.primaryColor.opacity(editor.canvasZoom < 1.0 ? AppTheme.Opacity.moderate : 0),
+                            AppTheme.MediaOverlay.primaryColor.opacity(
+                                !fillPanel && editor.canvasZoom < 1.0 ? AppTheme.Opacity.moderate : 0
+                            ),
                             lineWidth: AppTheme.BorderWidth.thin
                         )
                 )
                 .position(x: geo.size.width / 2, y: geo.size.height / 2)
-                .offset(x: editor.canvasOffset.width, y: editor.canvasOffset.height)
+                .offset(
+                    x: fillPanel ? 0 : editor.canvasOffset.width,
+                    y: fillPanel ? 0 : editor.canvasOffset.height
+                )
             }
             .clipped()
             if !isImage {
@@ -137,12 +145,14 @@ struct PreviewContainerView: View {
             ) {
                 playbackRateMenuItems
             }
-            settingsMenuButton(
-                systemImage: "magnifyingglass",
-                label: zoomBadgeLabel,
-                help: L10n.string("Canvas Zoom")
-            ) {
-                zoomMenuItems
+            if !isAudio {
+                settingsMenuButton(
+                    systemImage: "magnifyingglass",
+                    label: zoomBadgeLabel,
+                    help: L10n.string("Canvas Zoom")
+                ) {
+                    zoomMenuItems
+                }
             }
         }
         .padding(.horizontal, AppTheme.Spacing.lg)
