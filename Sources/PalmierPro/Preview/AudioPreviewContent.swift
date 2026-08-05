@@ -68,20 +68,6 @@ enum AudioPreviewContent {
         return 0
     }
 
-    /// Failed generations are refunded; download failures after a successful job were charged.
-    static func showsNotChargedNotice(
-        isFailed: Bool,
-        hasGenerationInput: Bool,
-        pendingDownloadURL: URL?,
-        resultURLs: [String]?
-    ) -> Bool {
-        guard isFailed else { return false }
-        guard hasGenerationInput else { return false }
-        guard pendingDownloadURL == nil else { return false }
-        if let resultURLs, !resultURLs.isEmpty { return false }
-        return true
-    }
-
     private static func cleaned(_ value: String?) -> String? {
         guard let value else { return nil }
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)

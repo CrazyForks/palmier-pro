@@ -511,15 +511,7 @@ struct PreviewContainerView: View {
     }
 
     private func failedPreview(error: String) -> some View {
-        let showNotCharged = activeMediaAsset.map {
-            AudioPreviewContent.showsNotChargedNotice(
-                isFailed: true,
-                hasGenerationInput: $0.generationInput != nil,
-                pendingDownloadURL: $0.pendingDownloadURL,
-                resultURLs: $0.generationInput?.resultURLs
-            )
-        } ?? false
-        return ZStack {
+        ZStack {
             AppTheme.MediaOverlay.backgroundColor.opacity(AppTheme.Opacity.strong)
             VStack(spacing: AppTheme.Spacing.md) {
                 Image(systemName: "exclamationmark.triangle.fill")
@@ -539,13 +531,6 @@ struct PreviewContainerView: View {
                 }
                 .frame(maxWidth: 520, maxHeight: 240)
                 .fixedSize(horizontal: false, vertical: true)
-                if showNotCharged {
-                    Text(L10n.string("You were not charged for this generation"))
-                        .font(.system(size: AppTheme.FontSize.sm, weight: AppTheme.FontWeight.medium))
-                        .foregroundStyle(AppTheme.Status.successColor)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, AppTheme.Spacing.lg)
-                }
                 if let asset = activeMediaAsset, asset.pendingDownloadURL != nil {
                     Button {
                         editor.generationService.retryDownload(asset: asset, editor: editor)

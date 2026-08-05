@@ -57,48 +57,4 @@ struct AudioPreviewContentTests {
         let lines = AudioPreviewContent.timedLines(from: result)
         #expect(lines.map(\.text) == ["Hello", "world"])
     }
-
-    @Test func showsNotChargedForFailedGenerationWithoutResults() {
-        #expect(
-            AudioPreviewContent.showsNotChargedNotice(
-                isFailed: true,
-                hasGenerationInput: true,
-                pendingDownloadURL: nil,
-                resultURLs: nil
-            )
-        )
-    }
-
-    @Test func hidesNotChargedForDownloadRetryFailures() {
-        #expect(
-            !AudioPreviewContent.showsNotChargedNotice(
-                isFailed: true,
-                hasGenerationInput: true,
-                pendingDownloadURL: URL(string: "https://example.com/out.mp3"),
-                resultURLs: ["https://example.com/out.mp3"]
-            )
-        )
-    }
-
-    @Test func hidesNotChargedWhenResultURLsExist() {
-        #expect(
-            !AudioPreviewContent.showsNotChargedNotice(
-                isFailed: true,
-                hasGenerationInput: true,
-                pendingDownloadURL: nil,
-                resultURLs: ["https://example.com/out.mp3"]
-            )
-        )
-    }
-
-    @Test func hidesNotChargedWithoutGenerationInput() {
-        #expect(
-            !AudioPreviewContent.showsNotChargedNotice(
-                isFailed: true,
-                hasGenerationInput: false,
-                pendingDownloadURL: nil,
-                resultURLs: nil
-            )
-        )
-    }
 }
