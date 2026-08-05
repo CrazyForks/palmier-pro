@@ -267,6 +267,15 @@ final class TimelineView: NSView {
         let visibleHeight = enclosingScrollView?.contentView.bounds.height ?? bounds.height
         let rippleInsertPreview = currentRippleInsertPreview()
 
+        // Opaque clear under the pinned ruler chrome.
+        ctx.setFillColor(Self.trackBg)
+        ctx.fill(NSRect(
+            x: scrollOffset.x,
+            y: scrollOffset.y,
+            width: visibleWidth,
+            height: geo.rulerHeight
+        ))
+
         // Clip track content below the ruler so scrolled clips go under chrome, not over it.
         ctx.saveGState()
         ctx.clip(to: NSRect(
