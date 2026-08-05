@@ -18,6 +18,12 @@ struct TimelineContainerView: NSViewRepresentable {
         scrollView.drawsBackground = false
         scrollView.horizontalScroller?.controlSize = .mini
         scrollView.verticalScroller?.controlSize = .mini
+        scrollView.scrollerInsets = NSEdgeInsets(
+            top: Layout.rulerHeight,
+            left: 0,
+            bottom: 0,
+            right: AppTheme.AudioMeter.panelWidth
+        )
 
         let timelineView = TimelineView(editor: editor)
         timelineView.autoresizingMask = []

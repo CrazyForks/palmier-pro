@@ -14,6 +14,7 @@ final class TimelineView: NSView {
     private var cachedAngleLabels: [String: [String: String]] = [:]
     private(set) var hoveredClipId: String?
     private let canvas = TimelineCanvasView()
+    private let rulerChrome = TimelineRulerChromeView()
 
     // MARK: - Init
 
@@ -28,6 +29,9 @@ final class TimelineView: NSView {
         canvas.wantsLayer = true
         canvas.layerContentsRedrawPolicy = .onSetNeedsDisplay
         addSubview(canvas)
+        rulerChrome.timeline = self
+        rulerChrome.layer?.zPosition = 50
+        addSubview(rulerChrome)
         registerForDraggedTypes([.string, .fileURL])
         playheadOverlay = PlayheadOverlay(view: self, editor: editor)
         snapOverlay = SnapIndicatorOverlay(view: self)
@@ -59,21 +63,34 @@ final class TimelineView: NSView {
     }
 
     override func setNeedsDisplay(_ invalidRect: NSRect) {
-        layoutCanvas()
+        layoutChrome()
         canvas.setNeedsDisplay(convert(invalidRect, to: canvas))
+        rulerChrome.needsDisplay = true
     }
 
     // Safety net for any scroll path that moves the viewport without invalidating.
     override func viewWillDraw() {
-        layoutCanvas()
+        layoutChrome()
         super.viewWillDraw()
     }
 
-    private func layoutCanvas() {
+    private func layoutChrome() {
         let target = visibleRect
-        guard !target.isEmpty, canvas.frame != target else { return }
-        canvas.frame = target
-        canvas.needsDisplay = true
+        guard !target.isEmpty else { return }
+        if canvas.frame != target {
+            canvas.frame = target
+            canvas.needsDisplay = true
+        }
+        let rulerFrame = NSRect(
+            x: target.minX,
+            y: target.minY,
+            width: target.width,
+            height: Layout.rulerHeight
+        )
+        if rulerChrome.frame != rulerFrame {
+            rulerChrome.frame = rulerFrame
+            rulerChrome.needsDisplay = true
+        }
     }
 
     private static var trackBg: CGColor { AppTheme.Background.surface.cgColor }
@@ -247,7 +264,17 @@ final class TimelineView: NSView {
         let geo = geometry
         let scrollOffset = enclosingScrollView?.contentView.bounds.origin ?? .zero
         let visibleWidth = enclosingScrollView?.contentView.bounds.width ?? bounds.width
+        let visibleHeight = enclosingScrollView?.contentView.bounds.height ?? bounds.height
         let rippleInsertPreview = currentRippleInsertPreview()
+
+        // Clip track content below the ruler so scrolled clips go under chrome, not over it.
+        ctx.saveGState()
+        ctx.clip(to: NSRect(
+            x: scrollOffset.x,
+            y: scrollOffset.y + geo.rulerHeight,
+            width: visibleWidth,
+            height: max(0, visibleHeight - geo.rulerHeight)
+        ))
 
         drawTrackBackgrounds(geometry: geo, context: ctx)
         drawTimelineRangeSelectionTrackFill(geometry: geo, context: ctx)
@@ -303,15 +330,29 @@ final class TimelineView: NSView {
             ctx.setLineDash(phase: 0, lengths: [])
         }
 
+        ctx.restoreGState()
+    }
+
+    fileprivate func drawRulerChrome(in rect: NSRect, context ctx: CGContext) {
+        let geo = geometry
+        let scrollOffsetX = rect.minX
         TimelineRuler.draw(
-            in: NSRect(x: scrollOffset.x, y: scrollOffset.y, width: visibleWidth, height: Double(geo.rulerHeight)),
+            in: rect,
             fps: editor.timeline.fps,
             pixelsPerFrame: geo.pixelsPerFrame,
-            scrollOffsetX: scrollOffset.x,
+            scrollOffsetX: scrollOffsetX,
             context: ctx
         )
-        drawTimelineRangeSelectionRulerFill(geometry: geo, scrollOffset: scrollOffset, context: ctx)
-        drawTimelineRangeSelectionEdges(geometry: geo, scrollOffset: scrollOffset, context: ctx)
+        drawTimelineRangeSelectionRulerFill(
+            geometry: geo,
+            scrollOffset: NSPoint(x: scrollOffsetX, y: rect.minY),
+            context: ctx
+        )
+        drawTimelineRangeSelectionEdges(
+            geometry: geo,
+            scrollOffset: NSPoint(x: scrollOffsetX, y: rect.minY),
+            context: ctx
+        )
     }
 
     func updatePlayheadLayer() { playheadOverlay.update() }
@@ -766,7 +807,7 @@ final class TimelineView: NSView {
     private func makeGeneratingClipOverlay(for clipId: String) -> NSHostingView<ClipGeneratingOverlay> {
         let view = NSHostingView(rootView: ClipGeneratingOverlay())
         view.autoresizingMask = []
-        addSubview(view)
+        addSubview(view, positioned: .below, relativeTo: rulerChrome)
         generatingClipOverlays[clipId] = view
         return view
     }
@@ -1657,5 +1698,45 @@ private final class TimelineCanvasView: NSView {
         let origin = frame.origin
         ctx.translateBy(x: -origin.x, y: -origin.y)
         timeline.drawContent(in: dirtyRect.offsetBy(dx: origin.x, dy: origin.y), context: ctx)
+    }
+}
+
+/// Opaque viewport-pinned ruler so scrolled track content stays underneath.
+private final class TimelineRulerChromeView: NSView {
+    weak var timeline: TimelineView?
+
+    override var isFlipped: Bool { true }
+    override func hitTest(_ point: NSPoint) -> NSView? { nil }
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        wantsLayer = true
+        updateAppearanceColors()
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateAppearanceColors()
+        needsDisplay = true
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        guard let ctx = NSGraphicsContext.current?.cgContext,
+              let timeline else { return }
+        let origin = frame.origin
+        ctx.translateBy(x: -origin.x, y: -origin.y)
+        timeline.drawRulerChrome(
+            in: NSRect(x: origin.x, y: origin.y, width: bounds.width, height: bounds.height),
+            context: ctx
+        )
+    }
+
+    private func updateAppearanceColors() {
+        effectiveAppearance.performAsCurrentDrawingAppearance {
+            layer?.backgroundColor = AppTheme.Background.surface.cgColor
+        }
     }
 }

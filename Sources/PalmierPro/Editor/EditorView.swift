@@ -92,9 +92,10 @@ final class EditorSplitViewController: PaddedDividerSplitViewController {
                 .overlay(alignment: .bottom) {
                     Rectangle().fill(AppTheme.Border.primaryColor).frame(height: AppTheme.BorderWidth.thin)
                 }
-            HStack(spacing: 0) {
+            ZStack(alignment: .topTrailing) {
                 TimelineContainerView()
                 AudioMeterView()
+                    .padding(.top, Layout.rulerHeight)
             }
         },
         panel: .timeline
