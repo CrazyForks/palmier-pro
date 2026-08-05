@@ -456,11 +456,15 @@ final class AgentService {
                     stream,
                     model: chosenModel
                 ) { [weak self] snapshot in
-                    await self?.applyStreamSnapshot(snapshot, assistantID: assistantID)
+                    await self?.applyStreamSnapshot(
+                        snapshot,
+                        assistantID: assistantID,
+                        conversationID: conversationID
+                    )
                 }
                 let stopReason = finalSnapshot.stopReason
 
-                dropEmptyAssistantTurn(id: assistantID)
+                dropEmptyAssistantTurn(id: assistantID, conversationID: conversationID)
                 if stopReason == .refusal {
                     streamError = .refusal(chosenModel)
                     break loop
@@ -473,14 +477,14 @@ final class AgentService {
                 if Task.isCancelled { break loop }
                 break loop
             } catch is CancellationError {
-                dropEmptyAssistantTurn(id: assistantID)
+                dropEmptyAssistantTurn(id: assistantID, conversationID: conversationID)
                 break loop
             } catch let err as AgentServiceError {
-                dropEmptyAssistantTurn(id: assistantID)
+                dropEmptyAssistantTurn(id: assistantID, conversationID: conversationID)
                 streamError = err
                 break loop
             } catch {
-                dropEmptyAssistantTurn(id: assistantID)
+                dropEmptyAssistantTurn(id: assistantID, conversationID: conversationID)
                 streamError = .upstream(error.localizedDescription)
                 break loop
             }
@@ -498,12 +502,39 @@ final class AgentService {
         messages.remove(at: index)
     }
 
-    private func applyStreamSnapshot(
+    func applyStreamSnapshot(
         _ snapshot: AgentStreamSnapshot,
-        assistantID: UUID
+        assistantID: UUID,
+        conversationID: UUID
     ) {
-        guard let index = assistantMessageIndex(id: assistantID) else { return }
-        messages[index].blocks = snapshot.blocks
+        if currentSessionId == conversationID {
+            guard let index = assistantMessageIndex(id: assistantID) else { return }
+            messages[index].blocks = snapshot.blocks
+            return
+        }
+
+        guard let sessionIndex = sessions.firstIndex(where: { $0.id == conversationID }),
+              let messageIndex = sessions[sessionIndex].messages.firstIndex(where: {
+                  $0.id == assistantID && $0.role == .assistant
+              }) else { return }
+        sessions[sessionIndex].messages[messageIndex].blocks = snapshot.blocks
+        sessions[sessionIndex].updatedAt = Date()
+    }
+
+    private func dropEmptyAssistantTurn(id: UUID, conversationID: UUID) {
+        guard currentSessionId != conversationID else {
+            dropEmptyAssistantTurn(id: id)
+            return
+        }
+        guard let sessionIndex = sessions.firstIndex(where: { $0.id == conversationID }),
+              let messageIndex = sessions[sessionIndex].messages.firstIndex(where: {
+                  $0.id == id && $0.role == .assistant
+              }) else { return }
+        sessions[sessionIndex].messages[messageIndex].blocks.removeAll { !Self.isComplete($0) }
+        if sessions[sessionIndex].messages[messageIndex].blocks.isEmpty {
+            sessions[sessionIndex].messages.remove(at: messageIndex)
+        }
+        sessions[sessionIndex].updatedAt = Date()
     }
 
     private static func isComplete(_ block: AgentContentBlock) -> Bool {

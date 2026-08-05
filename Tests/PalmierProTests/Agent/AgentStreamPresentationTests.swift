@@ -1,7 +1,9 @@
+import Foundation
 import Testing
 @testable import PalmierPro
 
 @Suite("Agent stream presentation")
+@MainActor
 struct AgentStreamPresentationTests {
     @Test func burstCoalescesWithoutChangingText() async throws {
         let chunks = Array(repeating: AgentStreamEvent.textDelta("x"), count: 1_951)
@@ -56,6 +58,34 @@ struct AgentStreamPresentationTests {
         }
 
         #expect(await recorder.last.map { text(in: $0.blocks) } == "partial")
+    }
+
+    @Test func lateSnapshotUpdatesOriginatingSessionAfterSwitch() throws {
+        let suiteName = "AgentStreamPresentationTests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let assistant = AgentMessage(role: .assistant, blocks: [.text("visible")])
+        let original = ChatSession(messages: [assistant])
+        let selected = ChatSession()
+        let service = AgentService(userDefaults: defaults)
+        service.sessions = [original, selected]
+        service.currentSessionId = selected.id
+        service.messages = selected.messages
+
+        service.applyStreamSnapshot(
+            AgentStreamSnapshot(
+                blocks: [.text("visible plus buffered")],
+                stopReason: .endTurn,
+                revision: 2
+            ),
+            assistantID: assistant.id,
+            conversationID: original.id
+        )
+
+        let stored = try #require(service.sessions.first { $0.id == original.id })
+        #expect(text(in: stored.messages[0].blocks) == "visible plus buffered")
+        #expect(service.messages.isEmpty)
     }
 
     private func stream(
