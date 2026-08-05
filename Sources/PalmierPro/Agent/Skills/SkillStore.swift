@@ -42,6 +42,7 @@ final class SkillStore {
     /// Catalog-installed skills: id → the sha installed. A skill here is "community"; one
     /// in the folder but not here is the user's own.
     private(set) var installed: [String: String] = [:]
+    private var suppressed: Set<String>?
 
     // Filled by a scan so body and content hash are cache lookups, not per-render disk reads.
     private var bodyCache: [String: String] = [:]
@@ -52,26 +53,30 @@ final class SkillStore {
             .appendingPathComponent(".palmier/skills", isDirectory: true)
     }
 
-    private static var ledgerURL: URL { directory.appendingPathComponent(".installed.json") }
+    nonisolated private static var ledgerURL: URL { directory.appendingPathComponent(".installed.json") }
+    nonisolated private static var suppressedURL: URL { directory.appendingPathComponent(".suppressed.json") }
 
     private var reloadGeneration = 0
+    private var syncTask: Task<Void, Never>?
+    private var mutationTask: Task<Void, Never>?
 
     private init() {
         installed = Self.loadLedger()
         Task { await reloadInBackground() }
     }
 
-    func reload() {
-        reloadGeneration += 1
-        apply(Self.scan())
-    }
-
     func reloadInBackground() async {
         reloadGeneration += 1
         let generation = reloadGeneration
-        let scan = await Task.detached(priority: .utility) { Self.scan() }.value
+        let result = await Task.detached(priority: .utility) {
+            (Self.scan(), Self.loadSuppressed())
+        }.value
         guard generation == reloadGeneration else { return }
-        apply(scan)
+        apply(result.0)
+        suppressed = result.1
+        if suppressed == nil {
+            Log.agent.error("load suppressed community skills failed")
+        }
     }
 
     private func apply(_ scan: SkillScan) {
@@ -119,8 +124,61 @@ final class SkillStore {
 
     func localSha(_ skill: Skill) -> String? { shaCache[skill.id] }
 
+    func syncSkills() async {
+        if let syncTask {
+            await syncTask.value
+            return
+        }
+        let task = Task { await performSkillSync() }
+        syncTask = task
+        await task.value
+        syncTask = nil
+    }
+
+    func prepareForTermination() async {
+        syncTask?.cancel()
+        await syncTask?.value
+        await mutationTask?.value
+    }
+
+    private func performSkillSync() async {
+        await reloadInBackground()
+        guard let suppressed, !Task.isCancelled else { return }
+        guard await SkillCatalog.shared.refresh() else { return }
+        guard !Task.isCancelled else { return }
+
+        for entry in SkillCatalog.shared.entries {
+            guard !Task.isCancelled else { return }
+            guard automaticallyInstalls(entry, suppressed: suppressed) else { continue }
+            _ = await install(entry, automatically: true)
+        }
+    }
+
+    private func automaticallyInstalls(_ entry: SkillCatalogEntry, suppressed: Set<String>) -> Bool {
+        let skill = skills.first { $0.id == entry.id }
+        return Self.shouldAutomaticallyInstall(
+            localSHA: skill.flatMap(localSha),
+            installedSHA: installed[entry.id],
+            catalogSHA: entry.sha,
+            isSuppressed: suppressed.contains(entry.id)
+        )
+    }
+
+    nonisolated static func shouldAutomaticallyInstall(
+        localSHA: String?,
+        installedSHA: String?,
+        catalogSHA: String,
+        isSuppressed: Bool
+    ) -> Bool {
+        guard !isSuppressed else { return false }
+        guard let localSHA else { return installedSHA == nil }
+        guard let installedSHA else { return false }
+        return localSHA == installedSHA && installedSHA != catalogSHA
+    }
+
     @discardableResult
-    func install(_ entry: SkillCatalogEntry) async -> Bool {
+    func install(_ entry: SkillCatalogEntry, automatically: Bool = false) async -> Bool {
+        guard suppressed != nil else { return false }
         guard let url = SkillCatalog.bodyURL(path: entry.path) else { return false }
         guard let dir = Self.skillDirectory(for: entry.id) else {
             Log.agent.error("install skill \(entry.id) rejected: invalid id")
@@ -128,6 +186,11 @@ final class SkillStore {
         }
         do {
             let data = try await SkillCatalog.fetch(url)
+            try Task.checkCancellation()
+            guard Self.sha12(data) == entry.sha else {
+                Log.agent.error("install skill \(entry.id) rejected: catalog hash mismatch")
+                return false
+            }
             guard let text = String(data: data, encoding: .utf8) else {
                 Log.agent.error("install skill \(entry.id) rejected: invalid UTF-8")
                 return false
@@ -137,20 +200,55 @@ final class SkillStore {
                 Log.agent.error("install skill \(entry.id) rejected: missing name or description frontmatter")
                 return false
             }
-            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-            try data.write(to: md)
-            reload()
-            guard skills.contains(where: { $0.id == entry.id }) else {
-                try? FileManager.default.removeItem(at: dir)
-                Log.agent.error("install skill \(entry.id) rejected: SKILL.md not recognized after install")
-                return false
-            }
-            installed[entry.id] = entry.sha
-            writeLedger()
-            return true
+            return await serializeMutation("install skill \(entry.id)") { [self] in
+                if automatically {
+                    await reloadInBackground()
+                }
+                guard var suppressed else { return false }
+                if automatically {
+                    guard !Task.isCancelled,
+                          automaticallyInstalls(entry, suppressed: suppressed)
+                    else { return false }
+                }
+                try await Self.performFileOperation {
+                    try FileManager.default.createDirectory(
+                        at: dir, withIntermediateDirectories: true
+                    )
+                    try data.write(to: md, options: .atomic)
+                }
+                await reloadInBackground()
+                guard skills.contains(where: { $0.id == entry.id }) else {
+                    try? await Self.performFileOperation { try FileManager.default.removeItem(at: dir) }
+                    Log.agent.error("install skill \(entry.id) rejected: SKILL.md not recognized after install")
+                    return false
+                }
+                installed[entry.id] = entry.sha
+                suppressed.remove(entry.id)
+                self.suppressed = suppressed
+                await Self.persistState(installed, suppressed)
+                return true
+            } ?? false
         } catch {
             Log.agent.error("install skill \(entry.id) failed: \(error.localizedDescription)")
             return false
+        }
+    }
+
+    private func serializeMutation<T: Sendable>(
+        _ failureContext: String,
+        _ operation: @escaping @MainActor @Sendable () async throws -> T
+    ) async -> T? {
+        let previous = mutationTask
+        let task = Task { @MainActor in
+            await previous?.value
+            return try await operation()
+        }
+        mutationTask = Task { @MainActor in _ = try? await task.value }
+        do {
+            return try await task.value
+        } catch {
+            Log.agent.error("\(failureContext) failed: \(error.localizedDescription)")
+            return nil
         }
     }
 
@@ -178,6 +276,13 @@ final class SkillStore {
         String(SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined().prefix(12))
     }
 
+    @concurrent
+    private static func performFileOperation<T: Sendable>(
+        _ operation: @escaping @Sendable () throws -> T
+    ) async rethrows -> T {
+        try operation()
+    }
+
     private static func loadLedger() -> [String: String] {
         guard let data = try? Data(contentsOf: ledgerURL),
               let map = try? JSONDecoder().decode([String: String].self, from: data)
@@ -185,9 +290,24 @@ final class SkillStore {
         return map
     }
 
-    private func writeLedger() {
-        try? FileManager.default.createDirectory(at: Self.directory, withIntermediateDirectories: true)
-        if let data = try? JSONEncoder().encode(installed) { try? data.write(to: Self.ledgerURL) }
+    nonisolated private static func loadSuppressed() -> Set<String>? {
+        guard FileManager.default.fileExists(atPath: suppressedURL.path) else { return [] }
+        guard let data = try? Data(contentsOf: suppressedURL) else { return nil }
+        return decodeSuppressed(data)
+    }
+
+    nonisolated static func decodeSuppressed(_ data: Data) -> Set<String>? {
+        (try? JSONDecoder().decode([String].self, from: data)).map(Set.init)
+    }
+
+    @concurrent
+    private static func persistState(
+        _ installed: [String: String],
+        _ suppressed: Set<String>
+    ) async {
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try? JSONEncoder().encode(installed).write(to: ledgerURL, options: .atomic)
+        try? JSONEncoder().encode(suppressed.sorted()).write(to: suppressedURL, options: .atomic)
     }
 
     func body(for id: String) -> String? { bodyCache[id] }
@@ -209,16 +329,15 @@ final class SkillStore {
     }
 
     @discardableResult
-    func save(_ skill: Skill, raw: String) -> Bool {
+    func save(_ skill: Skill, raw: String) async -> Bool {
         guard Self.parseSkill(id: skill.id, path: skill.path, text: raw) != nil else { return false }
-        do {
-            try raw.write(to: skill.path, atomically: true, encoding: .utf8)
-            reload()
+        return await serializeMutation("save skill \(skill.id)") { [self] in
+            try await Self.performFileOperation {
+                try Data(raw.utf8).write(to: skill.path, options: .atomic)
+            }
+            await reloadInBackground()
             return true
-        } catch {
-            Log.agent.error("save skill \(skill.id) failed: \(error.localizedDescription)")
-            return false
-        }
+        } ?? false
     }
 
     /// Copies under a `palmier-` prefix so we only overwrite our own prior copy
@@ -238,15 +357,31 @@ final class SkillStore {
         }
     }
 
-    func delete(_ skill: Skill) {
-        try? FileManager.default.removeItem(at: skill.path.deletingLastPathComponent())
-        installed[skill.id] = nil
-        writeLedger()
-        reload()
+    @discardableResult
+    func delete(_ skill: Skill) async -> Bool {
+        await serializeMutation("delete skill \(skill.id)") { [self] in
+            guard var suppressed else { return false }
+            try await Self.performFileOperation {
+                try FileManager.default.removeItem(at: skill.path.deletingLastPathComponent())
+            }
+            if installed.removeValue(forKey: skill.id) != nil { suppressed.insert(skill.id) }
+            self.suppressed = suppressed
+            await Self.persistState(installed, suppressed)
+            await reloadInBackground()
+            return true
+        } ?? false
     }
 
     @discardableResult
-    func newSkill() -> String? {
+    func newSkill() async -> String? {
+        await serializeMutation("create skill") { [self] in
+            let id = try await Self.performFileOperation { try Self.createSkillFile() }
+            await reloadInBackground()
+            return id
+        }
+    }
+
+    nonisolated private static func createSkillFile() throws -> String {
         let fm = FileManager.default
         var id = "new-skill"
         var n = 2
@@ -265,23 +400,24 @@ final class SkillStore {
             1. First step.
             2. Second step.
             """
-        do {
-            try fm.createDirectory(at: dir, withIntermediateDirectories: true)
-            try template.write(to: md, atomically: true, encoding: .utf8)
-        } catch {
-            return nil
-        }
-        reload()
+        try fm.createDirectory(at: dir, withIntermediateDirectories: true)
+        try template.write(to: md, atomically: true, encoding: .utf8)
         return id
     }
 
     /// Updates only the `name` frontmatter field, leaving the rest of the SKILL.md intact.
-    func rename(_ skill: Skill, to name: String) {
+    func rename(_ skill: Skill, to name: String) async {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, trimmed != skill.name,
-              let text = try? String(contentsOf: skill.path, encoding: .utf8) else { return }
-        let updated = SkillFrontmatter.replacingName(text, name: trimmed)
-        try? updated.write(to: skill.path, atomically: true, encoding: .utf8)
-        reload()
+        guard !trimmed.isEmpty, trimmed != skill.name else { return }
+        await serializeMutation("rename skill \(skill.id)") { [self] in
+            try await Self.performFileOperation { try Self.renameSkillFile(skill, to: trimmed) }
+            await reloadInBackground()
+        }
+    }
+
+    nonisolated private static func renameSkillFile(_ skill: Skill, to name: String) throws {
+        let text = try String(contentsOf: skill.path, encoding: .utf8)
+        let updated = SkillFrontmatter.replacingName(text, name: name)
+        try updated.write(to: skill.path, atomically: true, encoding: .utf8)
     }
 }
