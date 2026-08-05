@@ -108,12 +108,20 @@ extension ToolExecutor {
 
         let sourceVideoDuration = trimmed?.durationSeconds ?? sourceAsset.resolvedDuration
         let draft = try draftMode(args, model: model)
-        let duration = model.usesOutputDuration
-            ? (args.int("duration") ?? model.durations.first ?? 0)
-            : (model.billingDurationSeconds(
+        let duration: Int
+        if model.usesOutputDuration {
+            duration = args.int("duration") ?? model.durations.first ?? 0
+        } else {
+            guard let billingDuration = model.billingDurationSeconds(
                 sourceVideoDuration: sourceVideoDuration,
                 sourceAudioDuration: audioRefs.first?.resolvedDuration
-            ) ?? 0)
+            ) else {
+                throw ToolError(model.isLipSync
+                    ? "Replacement audio has an invalid duration."
+                    : "Source video has an invalid duration.")
+            }
+            duration = billingDuration
+        }
         let aspectRatio = args.string("aspectRatio") ?? model.aspectRatios.first ?? ""
         let resolution = draft
             ? VideoModelConfig.draftResolution

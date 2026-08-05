@@ -316,6 +316,7 @@ final class GenerationService {
               let sourceJobId = originalInput.backendJobId else { return nil }
         var enhancedInput = originalInput
         enhancedInput.draft = false
+        enhancedInput.resolution = "1080p"
         enhancedInput.backendJobId = nil
         enhancedInput.resultURLs = nil
         enhancedInput.createdAt = Date()
