@@ -228,12 +228,6 @@ final class SkillStore {
                           automaticallyInstalls(entry, ledger: ledger)
                     else { return false }
                 }
-                let previous = try await Self.performFileOperation {
-                    let fm = FileManager.default
-                    let directoryExisted = fm.fileExists(atPath: dir.path)
-                    let data = fm.fileExists(atPath: md.path) ? try Data(contentsOf: md) : nil
-                    return (directoryExisted, data)
-                }
                 try await Self.performFileOperation {
                     try FileManager.default.createDirectory(
                         at: dir, withIntermediateDirectories: true
@@ -242,30 +236,13 @@ final class SkillStore {
                 }
                 await reloadInBackground()
                 guard skills.contains(where: { $0.id == entry.id }) else {
-                    await Self.restoreSkill(
-                        directory: dir,
-                        document: md,
-                        directoryExisted: previous.0,
-                        data: previous.1
-                    )
-                    await reloadInBackground()
+                    try? await Self.performFileOperation { try FileManager.default.removeItem(at: dir) }
                     Log.agent.error("install skill \(entry.id) rejected: SKILL.md not recognized after install")
                     return false
                 }
                 ledger.installed[entry.id] = entry.sha
                 ledger.suppressed.remove(entry.id)
-                do {
-                    try await Self.persistLedger(ledger)
-                } catch {
-                    await Self.restoreSkill(
-                        directory: dir,
-                        document: md,
-                        directoryExisted: previous.0,
-                        data: previous.1
-                    )
-                    await reloadInBackground()
-                    throw error
-                }
+                try await Self.persistLedger(ledger)
                 self.ledger = ledger
                 return true
             } ?? false
@@ -322,23 +299,6 @@ final class SkillStore {
         _ operation: @escaping @Sendable () throws -> T
     ) async rethrows -> T {
         try operation()
-    }
-
-    @concurrent
-    private static func restoreSkill(
-        directory: URL,
-        document: URL,
-        directoryExisted: Bool,
-        data: Data?
-    ) async {
-        let fm = FileManager.default
-        if let data {
-            try? data.write(to: document, options: .atomic)
-        } else if directoryExisted {
-            if fm.fileExists(atPath: document.path) { try? fm.removeItem(at: document) }
-        } else if fm.fileExists(atPath: directory.path) {
-            try? fm.removeItem(at: directory)
-        }
     }
 
     nonisolated private static func loadLedger() -> SkillLedger? {
@@ -424,30 +384,13 @@ final class SkillStore {
     func delete(_ skill: Skill) async -> Bool {
         await serializeMutation("delete skill \(skill.id)") { [self] in
             guard var ledger else { return false }
-            let directory = skill.path.deletingLastPathComponent()
-            let staged = Self.directory.deletingLastPathComponent()
-                .appendingPathComponent(".skill-delete-\(UUID().uuidString)", isDirectory: true)
             try await Self.performFileOperation {
-                try FileManager.default.moveItem(at: directory, to: staged)
+                try FileManager.default.removeItem(at: skill.path.deletingLastPathComponent())
             }
             if ledger.installed.removeValue(forKey: skill.id) != nil {
                 ledger.suppressed.insert(skill.id)
-                do {
-                    try await Self.persistLedger(ledger)
-                } catch {
-                    try? await Self.performFileOperation {
-                        try FileManager.default.moveItem(at: staged, to: directory)
-                    }
-                    throw error
-                }
+                try await Self.persistLedger(ledger)
                 self.ledger = ledger
-            }
-            do {
-                try await Self.performFileOperation {
-                    try FileManager.default.removeItem(at: staged)
-                }
-            } catch {
-                Log.agent.warning("deleted skill cleanup failed: \(error.localizedDescription)")
             }
             await reloadInBackground()
             return true
