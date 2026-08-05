@@ -32,7 +32,10 @@ final class EditorViewModel {
     // MARK: - Persisted state (synced with VideoProject)
 
     var timelines: [Timeline] {
-        didSet { timelineRenderRevision &+= 1 }
+        didSet {
+            timelineRenderRevision &+= 1
+            if pendingSwapClipId != nil { cancelMediaSwap() }
+        }
     }
     var activeTimelineId: String
     var openTimelineIds: [String]

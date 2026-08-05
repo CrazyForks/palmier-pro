@@ -48,8 +48,10 @@ extension EditorViewModel {
             cancelMediaSwap()
             return
         }
-        guard (try? swapClipMedia(clipId: clip.id, replacement: asset)) != nil else {
-            mediaPanelToast = MediaPanelToast(message: L10n.string("Can't swap this clip. Required media type: \(clip.sourceClipType.localizedTrackLabel)."))
+        do {
+            try swapClipMedia(clipId: clip.id, replacement: asset)
+        } catch {
+            mediaPanelToast = MediaPanelToast(message: L10n.string("This source can’t replace the clip."))
             return
         }
         cancelMediaSwap()

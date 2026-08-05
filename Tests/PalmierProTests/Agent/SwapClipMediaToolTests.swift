@@ -86,6 +86,17 @@ struct SwapClipMediaToolTests {
         await client.disconnect()
     }
 
+    @Test func timelineMutationCancelsPendingSwap() {
+        let clip = Fixtures.clip(id: "clip", start: 0, duration: 30)
+        let harness = ToolHarness(timeline: Fixtures.timeline(tracks: [Fixtures.videoTrack(clips: [clip])]))
+
+        harness.editor.beginMediaSwap(clipId: clip.id)
+        harness.editor.timeline.tracks[0].clips[0].linkGroupId = "changed"
+
+        #expect(harness.editor.pendingSwapClipId == nil)
+        #expect(harness.editor.pendingSwapTargetClipIds.isEmpty)
+    }
+
     private func callSwap(_ client: Client, clipId: String, mediaRef: String) async throws
         -> (content: [Tool.Content], isError: Bool?) {
         try await client.callTool(name: "swap_clip_media", arguments: [
