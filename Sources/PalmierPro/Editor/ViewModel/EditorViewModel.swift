@@ -114,6 +114,7 @@ final class EditorViewModel {
     var selectedFolderIds: Set<String> = []
     var selectedTimelineIds: Set<String> = []
     var pendingSwapClipId: String?
+    @ObservationIgnored var pendingSwapTargetClipIds: [String] = []
     var clipClipboard: [ClipClipboardEntry] = []
     var zoomScale: Double = Defaults.pixelsPerFrame
     var canvasZoom: CGFloat = 1.0 {
