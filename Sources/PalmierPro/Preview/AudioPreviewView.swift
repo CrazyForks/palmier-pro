@@ -35,7 +35,6 @@ struct AudioPreviewView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(AppTheme.Background.previewCanvasColor)
-        .allowsHitTesting(false)
         .task(id: assetIdentity) {
             await loadContent()
         }
@@ -132,6 +131,7 @@ struct AudioPreviewView: View {
                 }
             }
         }
+        .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
 
