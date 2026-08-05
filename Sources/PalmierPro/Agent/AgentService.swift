@@ -452,35 +452,13 @@ final class AgentService {
                     )
                 )
 
-                var stopReason: AgentStopReason = .endTurn
-
-                for try await event in stream {
-                    try Task.checkCancellation()
-                    switch event {
-                    case .thinkingDelta(let chunk):
-                        updateThinking(textDelta: chunk, toAssistant: assistantID)
-                    case .thinkingSignature(let signature):
-                        updateThinking(signatureDelta: signature, toAssistant: assistantID)
-                    case .redactedThinking(let data):
-                        appendRedactedThinking(data, toAssistant: assistantID)
-                    case .reasoningSummaryDelta(let chunk):
-                        appendReasoningDelta(chunk, model: chosenModel, toAssistant: assistantID)
-                    case .reasoningComplete(let itemID, let summary, let encryptedContent):
-                        completeReasoning(
-                            itemID: itemID,
-                            summary: summary,
-                            encryptedContent: encryptedContent,
-                            model: chosenModel,
-                            toAssistant: assistantID
-                        )
-                    case .textDelta(let chunk):
-                        appendTextDelta(chunk, toAssistant: assistantID)
-                    case .toolUseComplete(let id, let name, let inputJSON):
-                        appendToolUse(id: id, name: name, inputJSON: inputJSON, toAssistant: assistantID)
-                    case .messageStop(let reason):
-                        stopReason = reason
-                    }
+                let finalSnapshot = try await presentAgentStream(
+                    stream,
+                    model: chosenModel
+                ) { [weak self] snapshot in
+                    await self?.applyStreamSnapshot(snapshot, assistantID: assistantID)
                 }
+                let stopReason = finalSnapshot.stopReason
 
                 dropEmptyAssistantTurn(id: assistantID)
                 if stopReason == .refusal {
@@ -520,6 +498,14 @@ final class AgentService {
         messages.remove(at: index)
     }
 
+    private func applyStreamSnapshot(
+        _ snapshot: AgentStreamSnapshot,
+        assistantID: UUID
+    ) {
+        guard let index = assistantMessageIndex(id: assistantID) else { return }
+        messages[index].blocks = snapshot.blocks
+    }
+
     private static func isComplete(_ block: AgentContentBlock) -> Bool {
         switch block {
         case .thinking(_, let signature):
@@ -533,82 +519,6 @@ final class AgentService {
         case .toolUse, .toolResult:
             true
         }
-    }
-
-    private func updateThinking(
-        textDelta: String = "",
-        signatureDelta: String = "",
-        toAssistant id: UUID
-    ) {
-        guard let index = assistantMessageIndex(id: id) else { return }
-        if case .thinking(let text, let signature)? = messages[index].blocks.last {
-            messages[index].blocks[messages[index].blocks.count - 1] = .thinking(
-                text: text + textDelta,
-                signature: signature + signatureDelta
-            )
-        } else {
-            messages[index].blocks.append(.thinking(
-                text: textDelta,
-                signature: signatureDelta
-            ))
-        }
-    }
-
-    private func appendRedactedThinking(_ data: String, toAssistant id: UUID) {
-        guard let index = assistantMessageIndex(id: id) else { return }
-        messages[index].blocks.append(.redactedThinking(data: data))
-    }
-
-    /// Removes and returns the current streaming reasoning summary for `model`.
-    private func takeStreamingReasoningSummary(at index: Int, model: AgentModel) -> String {
-        guard case .openAIReasoning(let summary, _, _, let existingModel)?
-            = messages[index].blocks.last,
-            existingModel == model
-        else { return "" }
-        messages[index].blocks.removeLast()
-        return summary
-    }
-
-    private func appendReasoningDelta(_ chunk: String, model: AgentModel, toAssistant id: UUID) {
-        guard let index = assistantMessageIndex(id: id) else { return }
-        let existing = takeStreamingReasoningSummary(at: index, model: model)
-        messages[index].blocks.append(.openAIReasoning(
-            summary: existing + chunk,
-            encryptedContent: "",
-            itemID: nil,
-            model: model
-        ))
-    }
-
-    private func completeReasoning(
-        itemID: String?,
-        summary: String,
-        encryptedContent: String,
-        model: AgentModel,
-        toAssistant id: UUID
-    ) {
-        guard let index = assistantMessageIndex(id: id) else { return }
-        let existing = takeStreamingReasoningSummary(at: index, model: model)
-        messages[index].blocks.append(.openAIReasoning(
-            summary: summary.isEmpty ? existing : summary,
-            encryptedContent: encryptedContent,
-            itemID: itemID,
-            model: model
-        ))
-    }
-
-    private func appendTextDelta(_ chunk: String, toAssistant id: UUID) {
-        guard let index = assistantMessageIndex(id: id) else { return }
-        if case .text(let existing)? = messages[index].blocks.last {
-            messages[index].blocks[messages[index].blocks.count - 1] = .text(existing + chunk)
-        } else {
-            messages[index].blocks.append(.text(chunk))
-        }
-    }
-
-    private func appendToolUse(id toolUseID: String, name: String, inputJSON: String, toAssistant assistantID: UUID) {
-        guard let index = assistantMessageIndex(id: assistantID) else { return }
-        messages[index].blocks.append(.toolUse(id: toolUseID, name: name, inputJSON: inputJSON))
     }
 
     private func runPendingToolUses(assistantID: UUID, conversationID: UUID) async {
