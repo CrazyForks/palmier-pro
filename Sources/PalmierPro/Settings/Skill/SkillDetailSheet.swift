@@ -1,16 +1,22 @@
 import SwiftUI
 
 struct SkillDetailSheet: View {
-    enum Mode {
-        case draft(onSaved: (String) -> Void)
-        case existing(id: String, opensForEditing: Bool)
-    }
+    enum Mode: Identifiable {
+        case draft
+        case existing(id: String)
 
-    let mode: Mode
+        var id: String {
+            switch self {
+            case .draft: "draft"
+            case let .existing(id): id
+            }
+        }
+    }
 
     @Bindable private var store = SkillStore.shared
     @Bindable private var catalog = SkillCatalog.shared
     @Environment(\.dismiss) private var dismiss
+    @State private var skillID: String?
     @State private var editing: Bool
     @State private var draft: String
     @State private var originalDraft: String
@@ -25,12 +31,13 @@ struct SkillDetailSheet: View {
     @FocusState private var titleFocused: Bool
 
     init(mode: Mode) {
-        self.mode = mode
-        let isDraft = if case .draft = mode { true } else { false }
-        let draft = switch mode {
-        case .draft: SkillStore.newSkillTemplate
-        case .existing: ""
+        let skillID: String? = switch mode {
+        case .draft: nil
+        case let .existing(id): id
         }
+        let isDraft = skillID == nil
+        let draft = isDraft ? SkillStore.newSkillTemplate : ""
+        _skillID = State(initialValue: skillID)
         _editing = State(initialValue: isDraft)
         _draft = State(initialValue: draft)
         _originalDraft = State(initialValue: draft)
@@ -52,26 +59,11 @@ struct SkillDetailSheet: View {
     }
 
     private var skill: Skill? {
-        guard case let .existing(id, _) = mode else { return nil }
-        return store.skills.first { $0.id == id }
+        guard let skillID else { return nil }
+        return store.skills.first { $0.id == skillID }
     }
 
-    private var isDraft: Bool {
-        if case .draft = mode { return true }
-        return false
-    }
-
-    private var opensForEditing: Bool {
-        guard case let .existing(_, opensForEditing) = mode else { return false }
-        return opensForEditing
-    }
-
-    private var taskID: String {
-        switch mode {
-        case .draft: "draft"
-        case let .existing(id, _): id
-        }
-    }
+    private var isDraft: Bool { skillID == nil }
 
     private var draftName: String {
         let name = SkillFrontmatter.parse(draft).fields["name"]?
@@ -100,13 +92,8 @@ struct SkillDetailSheet: View {
             }
         }
         .interactiveDismissDisabled(isSaving || (!isDraft && (editing && draft != originalDraft || editingTitle)))
-        .task(id: taskID) {
-            if isDraft {
-                titleFocused = true
-                return
-            }
-            guard opensForEditing, let skill else { return }
-            await beginEditing(skill)
+        .task {
+            if isDraft { titleFocused = true }
         }
         .onExitCommand {
             if editingTitle {
@@ -388,11 +375,9 @@ struct SkillDetailSheet: View {
             showingSaveError = true
             return
         }
-        if case let .draft(onSaved: onSaved) = mode {
-            onSaved(id)
-        } else {
-            assertionFailure("Draft save requested for an existing skill")
-        }
+        skillID = id
+        originalDraft = draft
+        isSaving = false
     }
 
     private func commitTitle() async {

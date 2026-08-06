@@ -5,7 +5,7 @@ struct SkillsPane: View {
     @Bindable private var catalog = SkillCatalog.shared
     @State private var collection: SkillCollection = .installed
     @State private var query = ""
-    @State private var presentedSkill: PresentedSkill?
+    @State private var presentedSkill: SkillDetailSheet.Mode?
     @State private var working: Set<String> = []
     @State private var skillPendingDeletion: Skill?
 
@@ -17,18 +17,6 @@ struct SkillsPane: View {
             switch self {
             case .installed: L10n.key("Installed")
             case .community: L10n.key("Community")
-            }
-        }
-    }
-
-    private enum PresentedSkill: Identifiable {
-        case existing(id: String, opensForEditing: Bool)
-        case new
-
-        var id: String {
-            switch self {
-            case let .existing(id, _): "existing-\(id)"
-            case .new: "new"
             }
         }
     }
@@ -61,18 +49,8 @@ struct SkillsPane: View {
         .onAppear {
             Task { await store.syncSkills() }
         }
-        .sheet(item: $presentedSkill) { item in
-            switch item {
-            case let .existing(id, opensForEditing):
-                SkillDetailSheet(mode: .existing(id: id, opensForEditing: opensForEditing))
-            case .new:
-                SkillDetailSheet(
-                    mode: .draft(onSaved: { id in
-                        collection = .installed
-                        query = ""
-                        present(id, opensForEditing: true)
-                    }))
-            }
+        .sheet(item: $presentedSkill) { mode in
+            SkillDetailSheet(mode: mode)
         }
         .skillDeleteConfirmation(skill: $skillPendingDeletion, onDelete: deleteSkill)
     }
@@ -312,7 +290,9 @@ struct SkillsPane: View {
     }
 
     private func createSkill() {
-        presentedSkill = .new
+        collection = .installed
+        query = ""
+        presentedSkill = .draft
     }
 
     private func install(_ entry: SkillCatalogEntry) {
@@ -345,7 +325,7 @@ struct SkillsPane: View {
         }
     }
 
-    private func present(_ id: String, opensForEditing: Bool = false) {
-        presentedSkill = .existing(id: id, opensForEditing: opensForEditing)
+    private func present(_ id: String) {
+        presentedSkill = .existing(id: id)
     }
 }
