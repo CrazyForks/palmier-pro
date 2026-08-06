@@ -389,11 +389,12 @@ struct SkillDetailSheet: View {
             draft = SkillFrontmatter.replacingName(draft, name: name)
             return
         }
-        guard let skill, name != skill.name else { return }
+        guard let skill else { return }
         if editing {
             draft = SkillFrontmatter.replacingName(draft, name: name)
             return
         }
+        guard name != skill.name else { return }
         await store.rename(skill, to: name)
     }
 
