@@ -169,7 +169,7 @@ struct SkillDetailSheet: View {
 
         return VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
             HStack(spacing: AppTheme.Spacing.md) {
-                titleView(skill?.name ?? draftName)
+                titleView(editing ? draftName : skill?.name ?? draftName)
                 Spacer(minLength: AppTheme.Spacing.md)
                 closeButton
             }
@@ -268,6 +268,7 @@ struct SkillDetailSheet: View {
                 .hoverHighlight(cornerRadius: AppTheme.Radius.sm)
         }
         .buttonStyle(.plain)
+        .disabled(isSaving)
         .accessibilityLabel(L10n.string("Close"))
         .help(L10n.string("Close"))
     }
@@ -374,12 +375,14 @@ struct SkillDetailSheet: View {
     }
 
     private func saveDraft() async {
+        guard !isSaving else { return }
+        isSaving = true
         await commitTitle()
         guard SkillFrontmatter.requiredFields(draft) != nil else {
+            isSaving = false
             showingSaveError = true
             return
         }
-        isSaving = true
         guard let id = await store.createSkill(raw: draft) else {
             isSaving = false
             showingSaveError = true
@@ -404,6 +407,7 @@ struct SkillDetailSheet: View {
         guard let skill, name != skill.name else { return }
         if editing {
             draft = SkillFrontmatter.replacingName(draft, name: name)
+            return
         }
         await store.rename(skill, to: name)
     }
@@ -420,6 +424,7 @@ struct SkillDetailSheet: View {
     }
 
     private func close() {
+        guard !isSaving else { return }
         if isDraft {
             dismiss()
         } else {
