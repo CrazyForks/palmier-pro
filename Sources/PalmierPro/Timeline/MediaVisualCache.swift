@@ -103,7 +103,7 @@ final class MediaVisualCache {
         }
         let result = await request.task.value
         if let samples = waveformSamples[key] { return samples }
-        guard !Task.isCancelled, waveformTasks[key]?.id == request.id else { return nil }
+        guard waveformTasks[key]?.id == request.id else { return nil }
         waveformTasks.removeValue(forKey: key)
         if let result {
             waveformSamples[key] = result

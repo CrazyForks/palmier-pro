@@ -1,6 +1,11 @@
 import CryptoKit
 import Foundation
 
+extension Notification.Name {
+    /// Posted with the media `URL` after a transcript is written to the cache.
+    static let transcriptCacheDidStore = Notification.Name("io.palmier.pro.transcriptCacheDidStore")
+}
+
 /// Disk + memory cache for local and cloud transcripts, keyed by file identity so edits invalidate naturally.
 actor TranscriptCache {
     static let shared = TranscriptCache()
@@ -27,7 +32,10 @@ actor TranscriptCache {
             full = isVideo
                 ? try await Transcription.transcribeVideoAudio(videoURL: url)
                 : try await Transcription.transcribe(fileURL: url)
-            if let key { store(full, key: key) }
+            if let key {
+                store(full, key: key)
+                Self.notifyDidStore(url)
+            }
         }
         return range.map { Self.filter(full, to: $0) } ?? full
     }
@@ -46,6 +54,10 @@ actor TranscriptCache {
 
     func cachedTranscript(for url: URL) -> TranscriptionResult? {
         if let key = Self.key(for: url), let transcript = cached(key) { return transcript }
+        if let key = Self.key(for: url, variant: .cloudLookup), let transcript = cached(key) {
+            return transcript
+        }
+        // Pre-lookup cloud|auto|full entries written before cloudLookup dual-write.
         guard let key = Self.key(for: url, variant: .cloud(range: nil, language: nil)) else { return nil }
         return cached(key)
     }
@@ -90,6 +102,11 @@ actor TranscriptCache {
     ) {
         guard let key = Self.key(for: url, variant: .cloud(range: range, language: language)) else { return }
         store(result, key: key)
+        // Language-agnostic full key so preview/search can find locale-keyed cloud caches.
+        if range == nil, let lookupKey = Self.key(for: url, variant: .cloudLookup) {
+            store(result, key: lookupKey)
+        }
+        Self.notifyDidStore(url)
     }
 
     /// Drop in-memory entries so a disk clear isn't shadowed by the memory cache.
@@ -116,6 +133,10 @@ actor TranscriptCache {
         memory[key] = result
     }
 
+    private nonisolated static func notifyDidStore(_ url: URL) {
+        NotificationCenter.default.post(name: .transcriptCacheDidStore, object: url)
+    }
+
     private static func diskURL(_ key: String) -> URL {
         directory.appendingPathComponent("\(key).json")
     }
@@ -132,11 +153,15 @@ actor TranscriptCache {
     private enum CacheVariant {
         case local
         case cloud(range: ClosedRange<Double>?, language: String?)
+        /// Full cloud transcript lookup that ignores the language used when storing.
+        case cloudLookup
 
         var prefix: String? {
             switch self {
             case .local:
                 return nil
+            case .cloudLookup:
+                return "cloud|any|full"
             case .cloud(let range, let language):
                 let lang = language ?? "auto"
                 guard let range else { return "cloud|\(lang)|full" }

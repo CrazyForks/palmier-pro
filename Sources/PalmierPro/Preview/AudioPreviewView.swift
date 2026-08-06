@@ -28,6 +28,15 @@ struct AudioPreviewView: View {
         .task(id: assetIdentity) {
             await loadContent()
         }
+        .task(id: assetIdentity) {
+            let identity = assetIdentity
+            let url = asset.url
+            for await notification in NotificationCenter.default.notifications(named: .transcriptCacheDidStore) {
+                guard !Task.isCancelled else { return }
+                guard let stored = notification.object as? URL, stored.path == url.path else { continue }
+                await refreshTranscript(for: url, identity: identity)
+            }
+        }
     }
 
     private var assetIdentity: String { "\(asset.id)|\(asset.url.path)" }
@@ -48,15 +57,15 @@ struct AudioPreviewView: View {
         return text.isEmpty ? [] : [TranscriptionSegment(text: text, start: 0, end: .infinity)]
     }
 
-    private var activeLineIndex: Int {
+    private var activeLineIndex: Int? {
         Self.activeLineIndex(
             at: Double(editor.playheadState.sourceFrame) / Double(max(1, editor.timeline.fps)),
             in: transcriptLines
         )
     }
 
-    nonisolated static func activeLineIndex(at time: Double, in lines: [TranscriptionSegment]) -> Int {
-        lines.lastIndex { time >= $0.start } ?? 0
+    nonisolated static func activeLineIndex(at time: Double, in lines: [TranscriptionSegment]) -> Int? {
+        lines.lastIndex { time >= $0.start && time < $0.end }
     }
 
     private var transcriptPanel: some View {
@@ -133,11 +142,15 @@ struct AudioPreviewView: View {
         samples = []
         transcript = nil
         async let waveform = editor.mediaVisualCache.waveform(for: asset)
-        let cachedTranscript = await TranscriptCache.shared.cachedTranscript(for: url)
-        guard !Task.isCancelled, assetIdentity == identity else { return }
-        transcript = cachedTranscript
+        await refreshTranscript(for: url, identity: identity)
         let loadedSamples = await waveform
         guard !Task.isCancelled, assetIdentity == identity else { return }
         samples = loadedSamples ?? []
+    }
+
+    private func refreshTranscript(for url: URL, identity: String) async {
+        let cachedTranscript = await TranscriptCache.shared.cachedTranscript(for: url)
+        guard !Task.isCancelled, assetIdentity == identity else { return }
+        transcript = cachedTranscript
     }
 }
