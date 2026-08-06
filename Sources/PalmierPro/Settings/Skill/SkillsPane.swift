@@ -7,6 +7,7 @@ struct SkillsPane: View {
     @State private var query = ""
     @State private var presentedSkill: PresentedSkill?
     @State private var working: Set<String> = []
+    @State private var skillPendingDeletion: Skill?
 
     private enum SkillCollection: String {
         case installed = "Installed"
@@ -20,8 +21,16 @@ struct SkillsPane: View {
         }
     }
 
-    private struct PresentedSkill: Identifiable {
-        let id: String
+    private enum PresentedSkill: Identifiable {
+        case existing(id: String, opensForEditing: Bool)
+        case new
+
+        var id: String {
+            switch self {
+            case let .existing(id, _): "existing-\(id)"
+            case .new: "new"
+            }
+        }
     }
 
     private var installedSkills: [Skill] {
@@ -53,8 +62,19 @@ struct SkillsPane: View {
             Task { await store.syncSkills() }
         }
         .sheet(item: $presentedSkill) { item in
-            SkillDetailSheet(skillID: item.id)
+            switch item {
+            case let .existing(id, opensForEditing):
+                SkillDetailSheet(mode: .existing(id: id, opensForEditing: opensForEditing))
+            case .new:
+                SkillDetailSheet(
+                    mode: .draft(onSaved: { id in
+                        collection = .installed
+                        query = ""
+                        present(id, opensForEditing: true)
+                    }))
+            }
         }
+        .skillDeleteConfirmation(skill: $skillPendingDeletion, onDelete: deleteSkill)
     }
 
     private var introduction: some View {
@@ -195,6 +215,7 @@ struct SkillsPane: View {
                         primaryAction: false,
                         working: working.contains(skill.id),
                         summaryAction: { present(skill.id) },
+                        deleteAction: { skillPendingDeletion = skill },
                         action: { state == .update ? update(skill) : present(skill.id) }
                     )
                 }
@@ -270,6 +291,9 @@ struct SkillsPane: View {
             summaryAction: skill.map { installedSkill in
                 { present(installedSkill.id) }
             },
+            deleteAction: skill.map { installedSkill in
+                { skillPendingDeletion = installedSkill }
+            },
             action: {
                 if let skill {
                     state == .update ? update(skill) : present(skill.id)
@@ -288,12 +312,7 @@ struct SkillsPane: View {
     }
 
     private func createSkill() {
-        Task {
-            guard let id = await store.newSkill() else { return }
-            collection = .installed
-            query = ""
-            present(id)
-        }
+        presentedSkill = .new
     }
 
     private func install(_ entry: SkillCatalogEntry) {
@@ -318,7 +337,15 @@ struct SkillsPane: View {
         }
     }
 
-    private func present(_ id: String) {
-        presentedSkill = PresentedSkill(id: id)
+    private func deleteSkill(_ skill: Skill) {
+        working.insert(skill.id)
+        Task {
+            _ = await store.delete(skill)
+            working.remove(skill.id)
+        }
+    }
+
+    private func present(_ id: String, opensForEditing: Bool = false) {
+        presentedSkill = .existing(id: id, opensForEditing: opensForEditing)
     }
 }

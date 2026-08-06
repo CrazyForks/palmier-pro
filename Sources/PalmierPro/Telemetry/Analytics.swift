@@ -35,6 +35,12 @@ enum Analytics {
         return properties
     }
 
+    static func skillCreatedProperties(skillName: String) -> Payload {
+        var properties = originProperties()
+        properties["skill_name"] = skillName
+        return properties
+    }
+
     struct SessionActivation {
         private(set) var isActivated: Bool
 
@@ -59,6 +65,7 @@ enum Analytics {
         case exportFailed = "export failed"
         case agentSessionStarted = "agent session started"
         case agentToolCalled = "agent tool called"
+        case skillCreated = "skill created"
         case skillRead = "skill read"
         case agentStarterPromptClicked = "agent starter prompt clicked"
         case editorEditCommitted = "editor edit committed"
@@ -166,6 +173,11 @@ enum Analytics {
     }
 
     @discardableResult
+    static func captureSkillCreated(skillName: String) -> Bool {
+        capture(.skillCreated, properties: skillCreatedProperties(skillName: skillName))
+    }
+
+    @discardableResult
     static func captureSkillRead(skillID: String, skillSHA: String?, skillOrigin: String) -> Bool {
         capture(
             .skillRead,
@@ -269,6 +281,7 @@ enum Analytics {
             "roles",
             "session_id",
             "skill_id",
+            "skill_name",
             "skill_origin",
             "skill_sha",
             "source",

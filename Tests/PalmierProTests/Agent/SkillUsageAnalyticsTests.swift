@@ -23,6 +23,20 @@ struct SkillUsageAnalyticsTests {
         #expect(Set(properties.keys) == ["skill_id", "skill_sha", "skill_origin", "source", "session_id"])
     }
 
+    @Test func skillCreatedPropertiesAttributeTheCreator() {
+        let origin = Analytics.Origin(source: "agent", sessionID: "session-1")
+
+        let properties = Analytics.$origin.withValue(origin) {
+            Analytics.skillCreatedProperties(skillName: "Custom workflow")
+        }
+
+        #expect(Analytics.Event.skillCreated.rawValue == "skill created")
+        #expect(properties["skill_name"] as? String == "Custom workflow")
+        #expect(properties["source"] as? String == "agent")
+        #expect(properties["session_id"] as? String == "session-1")
+        #expect(Set(properties.keys) == ["skill_name", "source", "session_id"])
+    }
+
     @Test func skillOriginDistinguishesCommunityLocalAndModifiedSkills() {
         #expect(SkillStore.skillOrigin(installedSHA: "catalog", localSHA: "catalog") == .community)
         #expect(SkillStore.skillOrigin(installedSHA: "catalog", localSHA: "local") == .communityModified)
